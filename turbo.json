@@ -15,7 +15,15 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "COOKIE_DOMAIN",
+        "CORS_ORIGINS",
+        "DATABASE_URL",
+        "NEXT_PUBLIC_API_URL",
+        "NODE_ENV",
+        "PORT"
+      ]
     }
   }
 }

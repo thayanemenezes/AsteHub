@@ -19,11 +19,19 @@
   "devEngines": {
     "packageManager": {
       "name": "npm",
-      "version": "12.1.0"
+      "version": "^11.19.1",
+      "onFail": "warn"
     }
   },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "allowScripts": {
+    "@prisma/client@6.19.0": true,
+    "argon2@0.44.0": true,
+    "prisma@6.19.0": true,
+    "@prisma/engines@6.19.0": true,
+    "esbuild@0.28.2": true
+  }
 }
