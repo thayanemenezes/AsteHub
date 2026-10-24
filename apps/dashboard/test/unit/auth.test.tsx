@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import LoginPage from "../../src/app/login/page";
+import ResetPasswordPage from "../../src/app/reset-password/page";
 import RegisterPage from "../../src/app/register/page";
 import AccountPage from "../../src/app/account/page";
 import { AuthProvider } from "../../src/auth/auth-provider";
@@ -46,6 +47,10 @@ function renderRegister() {
       <RegisterPage />
     </AuthProvider>,
   );
+}
+
+function renderPasswordReset() {
+  return render(<ResetPasswordPage />);
 }
 
 beforeEach(() => {
@@ -108,6 +113,9 @@ describe("login form", () => {
     expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe(
       "http://localhost:3001/auth/me",
     );
+    expect(
+      screen.getByRole("link", { name: "Recuperar senha" }),
+    ).toHaveAttribute("href", "/reset-password");
   });
 
   it("logs in with the API contract and redirects after success", async () => {
@@ -179,6 +187,76 @@ describe("login form", () => {
       "Não foi possível conectar à API. Tente novamente.",
     );
   });
+});
+
+describe("password recovery", () => {
+  it("requests a reset without revealing whether the email exists", async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({
+        message:
+          "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.",
+      }, 202));
+    renderPasswordReset();
+
+    expect(
+      screen.getByRole("heading", { name: "Recuperar senha" }),
+    ).toBeVisible();
+    await user.type(
+      screen.getByRole("textbox", { name: "E-mail" }),
+      publicUser.email,
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Enviar instruções" }),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.",
+    );
+    expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe(
+      "http://localhost:3001/auth/password-reset",
+    );
+    expect(vi.mocked(fetch).mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ email: publicUser.email }),
+    });
+  });
+
+  it("submits a new password with the one-time token from the email", async () => {
+    window.history.replaceState({}, "", "/reset-password?token=reset-token");
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(null, 204));
+    renderPasswordReset();
+
+    await user.type(
+      await screen.findByLabelText("Nova senha"),
+      "a-new-secure-password",
+    );
+    await user.type(
+      screen.getByLabelText("Confirme a nova senha"),
+      "a-new-secure-password",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Redefinir senha" }),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Sua senha foi redefinida. Você já pode entrar.",
+    );
+    expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe(
+      "http://localhost:3001/auth/password-reset/confirm",
+    );
+    expect(vi.mocked(fetch).mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({
+        token: "reset-token",
+        password: "a-new-secure-password",
+      }),
+    });
+    window.history.replaceState({}, "", "/login");
+  });
+  window.history.replaceState({}, "", "/login");
 });
 
 describe("authentication API client", () => {

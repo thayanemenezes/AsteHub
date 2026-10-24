@@ -176,6 +176,126 @@ describe("authentication API", () => {
     assert.equal(absent.body.passwordHash, undefined);
   });
 
+  it("sends one-time password reset links and invalidates sessions after reset", async () => {
+    process.env.RESEND_API_KEY = "test-api-key";
+    process.env.EMAIL_FROM = "AsteHub <no-reply@example.com>";
+    process.env.DASHBOARD_URL = "http://localhost:3000";
+    const originalFetch = globalThis.fetch;
+    const sentEmails: { body: string }[] = [];
+    globalThis.fetch = async (_input, init) => {
+      sentEmails.push({ body: String(init?.body) });
+      return new Response(JSON.stringify({ id: "test-email" }), {
+        status: 200,
+      });
+    };
+
+    try {
+      const login = await request(app.getHttpServer())
+        .post("/auth/login")
+        .send({
+          email: "owner@example.com",
+          password: "correct-horse-battery-staple",
+        });
+      const sessionCookie = cookieValue(login);
+
+      const requested = await request(app.getHttpServer())
+        .post("/auth/password-reset")
+        .send({ email: "OWNER@example.com" });
+      assert.equal(requested.status, 202);
+      assert.deepEqual(requested.body, {
+        message:
+          "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.",
+      });
+      assert.equal(sentEmails.length, 1);
+      const email = JSON.parse(sentEmails[0]?.body ?? "{}") as {
+        to: string[];
+        html: string;
+      };
+      assert.deepEqual(email.to, ["owner@example.com"]);
+      const resetUrl = email.html.match(
+        /href="(http:\/\/localhost:3000\/reset-password\?token=[^"]+)"/,
+      )?.[1];
+      assert.ok(resetUrl);
+      const resetToken = new URL(resetUrl).searchParams.get("token");
+      assert.ok(resetToken);
+
+      const storedToken = await prisma.passwordResetToken.findUniqueOrThrow({
+        where: { userId: (await prisma.user.findUniqueOrThrow({
+          where: { email: "owner@example.com" },
+        })).id },
+      });
+      assert.notEqual(storedToken.tokenHash, resetToken);
+      assert.equal(storedToken.tokenHash.length, 64);
+
+      const cooldownRequest = await request(app.getHttpServer())
+        .post("/auth/password-reset")
+        .send({ email: "owner@example.com" });
+      const unknownRequest = await request(app.getHttpServer())
+        .post("/auth/password-reset")
+        .send({ email: "unknown@example.com" });
+      assert.equal(cooldownRequest.status, unknownRequest.status);
+      assert.deepEqual(cooldownRequest.body, unknownRequest.body);
+      assert.equal(sentEmails.length, 1);
+
+      const reset = await request(app.getHttpServer())
+        .post("/auth/password-reset/confirm")
+        .send({ token: resetToken, password: "a-new-secure-password" });
+      assert.equal(reset.status, 204);
+      assert.equal(
+        await prisma.passwordResetToken.count({
+          where: { id: storedToken.id },
+        }),
+        0,
+      );
+      assert.equal(
+        await prisma.session.count({
+          where: { user: { email: "owner@example.com" } },
+        }),
+        0,
+      );
+      assert.equal(
+        (
+          await request(app.getHttpServer())
+            .get("/auth/me")
+            .set("Cookie", sessionCookie)
+        ).status,
+        401,
+      );
+      assert.equal(
+        (
+          await request(app.getHttpServer())
+            .post("/auth/password-reset/confirm")
+            .send({ token: resetToken, password: "another-secure-password" })
+        ).status,
+        400,
+      );
+      assert.equal(
+        (
+          await request(app.getHttpServer())
+            .post("/auth/login")
+            .send({
+              email: "owner@example.com",
+              password: "correct-horse-battery-staple",
+            })
+        ).status,
+        401,
+      );
+      assert.equal(
+        (
+          await request(app.getHttpServer())
+            .post("/auth/login")
+            .send({
+              email: "owner@example.com",
+              password: "a-new-secure-password",
+            })
+        ).status,
+        201,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("sets credentialed CORS only for configured development origins", async () => {
     const allowed = await request(app.getHttpServer())
       .options("/auth/me")

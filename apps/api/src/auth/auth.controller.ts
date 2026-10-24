@@ -11,11 +11,16 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { AuthGuard } from "./auth.guard.js";
-import { LoginDto, RegisterDto } from "../dto/auth.dto.js";
 import { AuthService } from "./auth.service.js";
 import { CurrentUser } from "../decorator/current-user.decorator.js";
 import type { AuthenticatedUser } from "./authenticated-user.js";
 import { SESSION_COOKIE_NAME } from "./auth-session.js";
+import {
+  ConfirmPasswordResetDto,
+  LoginDto,
+  RegisterDto,
+  RequestPasswordResetDto,
+} from "../dto/auth.dto.js";
 
 @Controller("auth")
 export class AuthController {
@@ -35,6 +40,18 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return this.authService.login(input, response);
+  }
+
+  @Post("password-reset")
+  @HttpCode(HttpStatus.ACCEPTED)
+  requestPasswordReset(@Body() input: RequestPasswordResetDto) {
+    return this.authService.requestPasswordReset(input.email);
+  }
+
+  @Post("password-reset/confirm")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  confirmPasswordReset(@Body() input: ConfirmPasswordResetDto) {
+    return this.authService.confirmPasswordReset(input);
   }
 
   @Post("logout")

@@ -33,3 +33,20 @@ export class LoginDto {
   @MaxLength(128)
   password!: string;
 }
+
+export class RequestPasswordResetDto {
+  @IsEmail()
+  @MaxLength(320)
+  email!: string;
+}
+
+export class ConfirmPasswordResetDto {
+  @IsString()
+  @Length(43, 43)
+  token!: string;
+
+  @IsString()
+  @MinLength(12)
+  @MaxLength(128)
+  password!: string;
+}

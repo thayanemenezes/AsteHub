@@ -46,6 +46,12 @@ a {
   box-shadow: 0 24px 70px rgb(35 58 47 / 9%);
 }
 
+.auth-shell--single {
+  grid-template-columns: minmax(0, 1fr);
+  width: min(560px, calc(100% - 48px));
+  min-height: min(620px, calc(100vh - 64px));
+}
+
 .auth-card {
   align-self: center;
   width: min(100%, 470px);
@@ -142,6 +148,18 @@ h2 {
   color: #a2aca6;
 }
 
+.password-recovery-link {
+  align-self: flex-end;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.password-recovery-link:hover {
+  text-decoration: underline;
+}
+
 .field-hint {
   margin: 7px 0 0;
   color: var(--muted);
@@ -217,6 +235,10 @@ h2 {
 
 .error-message {
   color: var(--error);
+}
+
+.success-message {
+  color: var(--accent-dark);
 }
 
 .auth-aside {

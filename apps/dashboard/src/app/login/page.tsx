@@ -73,6 +73,9 @@ export default function LoginPage() {
             type="password"
             value={password}
           />
+          <Link className="password-recovery-link" href="/reset-password">
+            Recuperar senha
+          </Link>
 
           {error && (
             <p className="form-message error-message" role="alert">
@@ -103,7 +106,6 @@ export default function LoginPage() {
           em movimento.
         </h2>
         <p>Um espaço simples para você e sua equipe.</p>
-        <span className="aside-footnote">ASTE HUB · MOBILIDADE</span>
       </aside>
     </main>
   );

@@ -132,7 +132,6 @@ export default function RegisterPage() {
           jornada começa.
         </h2>
         <p>Crie seu espaço e traga sua equipe para perto.</p>
-        <span className="aside-footnote">ASTE HUB · MOBILIDADE</span>
       </aside>
     </main>
   );

@@ -17,14 +17,18 @@ npm run dev
 
 The root `npm run dev` starts both the API and web app. The sample environments use the development PostgreSQL database on port `5433` and the API at `http://localhost:3001`. Docker Compose also starts an isolated integration-test database on port `5434`; never use the development database for integration tests. Set `DATABASE_URL` to the appropriate PostgreSQL database before applying migrations in another environment. `COOKIE_DOMAIN` is optional; set it only when the API and web app share a parent domain. In production, configure `CORS_ORIGINS` with the exact comma-separated trusted origins. Production cookies are always `Secure`.
 
+Password reset email delivery is handled by the API through Resend. Configure `RESEND_API_KEY`, `EMAIL_FROM` (a verified sender), and `DASHBOARD_URL` (the dashboard origin) in the API environment. `DASHBOARD_URL` must use HTTPS in production. Never expose the Resend key to the dashboard.
+
 ## Authentication endpoints
 
 - `POST /auth/register` accepts `email`, `password` (12–128 characters), and `organizationName`; it creates a user, initial organization, active `OWNER` membership, and session atomically.
 - `POST /auth/login` accepts `email` and `password`.
+- `POST /auth/password-reset` accepts `email` and always returns the same response whether or not the account exists. For an eligible account, the API sends a single-use reset link that expires in 15 minutes; requests are limited to one per account per minute.
+- `POST /auth/password-reset/confirm` accepts the emailed `token` and a new `password` (12–128 characters). A successful reset consumes the token and invalidates all active sessions for the account.
 - `POST /auth/logout` invalidates the presented session and clears its cookie.
 - `GET /auth/me` returns the authenticated user's public profile, memberships, organization names, roles, and statuses.
 
-Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a seven-day lifetime. Only a SHA-256 hash of its token is stored. Authentication errors do not distinguish an unknown email from a wrong password.
+Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a seven-day lifetime. Only a SHA-256 hash of its token is stored. Reset tokens are random, single-use, expire after 15 minutes, and are stored only as SHA-256 hashes. Authentication errors do not distinguish an unknown email from a wrong password.
 
 ## Database and checks
 

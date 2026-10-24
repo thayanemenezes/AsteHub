@@ -21,6 +21,10 @@ export interface RegisterInput extends LoginInput {
   organizationName: string;
 }
 
+export interface PasswordResetRequestResponse {
+  message: string;
+}
+
 export class AuthApiError extends Error {
   constructor(readonly status: number) {
     super(`Authentication API request failed with status ${status}.`);
@@ -69,6 +73,23 @@ export class AuthApi {
 
   login(input: LoginInput): Promise<AuthUser> {
     return this.request<AuthUser>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  requestPasswordReset(email: string): Promise<PasswordResetRequestResponse> {
+    return this.request<PasswordResetRequestResponse>("/auth/password-reset", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  confirmPasswordReset(input: {
+    token: string;
+    password: string;
+  }): Promise<void> {
+    return this.request<void>("/auth/password-reset/confirm", {
       method: "POST",
       body: JSON.stringify(input),
     });
