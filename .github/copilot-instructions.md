@@ -537,6 +537,71 @@ Ao implementar qualquer funcionalidade:
 
 ---
 
+---
+
+## 14.1. Requisições à API, estado assíncrono e feedback de UI
+
+Toda tela ou componente de frontend que consuma dados da API deve tratar explicitamente o ciclo completo da requisição. Não implemente interfaces que assumam que dados remotos estarão disponíveis imediatamente.
+
+Para operações de leitura, considere no mínimo os estados:
+
+- `loading`: a requisição inicial ainda está em andamento;
+- `success`: os dados foram carregados com sucesso;
+- `empty`: a requisição foi concluída, mas não existem dados para exibir;
+- `error`: ocorreu uma falha ao carregar os dados;
+- `refreshing`/`refetching`, quando aplicável: já existem dados visíveis e uma atualização está em andamento.
+
+Para operações de escrita, como criar, editar, publicar ou excluir, trate também:
+
+- estado de submissão/processamento;
+- prevenção de múltiplos envios acidentais;
+- feedback de sucesso;
+- feedback de erro compreensível;
+- atualização ou invalidação coerente dos dados afetados.
+
+### Loading
+
+Não espalhe implementações diferentes de loading pelas telas.
+
+Crie e reutilize componentes de feedback visual adequados ao contexto, como `LoadingState`, `PageLoading`, `Skeleton` ou equivalentes, seguindo o sistema visual existente.
+
+Use o tipo de loading apropriado para a experiência:
+
+- skeleton quando a estrutura da interface já for conhecida e isso reduzir mudança brusca de layout;
+- indicador de carregamento para operações pontuais;
+- estado de página para carregamentos que bloqueiam o conteúdo principal.
+
+Não substitua conteúdo já carregado por uma tela vazia de loading durante refetch quando for possível manter os dados atuais visíveis.
+
+### Gerenciamento de estado
+
+Diferencie estado remoto de estado local da interface.
+
+Dados provenientes da API devem utilizar a estratégia de server state já adotada pelo projeto. Se já existir React Query/TanStack Query ou solução equivalente, reutilize-a para cache, loading, error, refetch, mutations e invalidação.
+
+Não duplique dados remotos desnecessariamente em `useState`, Context ou outro estado global.
+
+Estado local de UI, como abertura de modal, seleção temporária, filtros ainda não aplicados ou expansão de componentes, pode permanecer local quando apropriado.
+
+Não introduza uma nova biblioteca de gerenciamento de estado sem necessidade e sem antes verificar o que já existe no projeto.
+
+### Tratamento de erros e UX
+
+Erros da API devem produzir feedback de UI adequado ao contexto.
+
+- Não deixe a interface silenciosamente quebrada.
+- Não exponha stack traces, mensagens internas da API ou informações sensíveis ao usuário.
+- Quando fizer sentido, ofereça ação de tentar novamente.
+- Preserve dados já carregados quando uma atualização secundária falhar, sempre que possível.
+- Diferencie ausência legítima de dados de falha na requisição.
+- Botões que disparam mutations devem refletir visualmente o estado de processamento.
+- Formulários devem preservar os dados preenchidos quando uma falha recuperável ocorrer.
+- Evite layout shift desnecessário durante carregamentos.
+
+O tratamento desses estados faz parte da funcionalidade e deve ser considerado nos testes de comportamento relevantes.
+
+Ao criar uma nova tela integrada à API, ela não está concluída se implementar apenas o caminho de sucesso.
+
 ## 15. Desenvolvimento local
 
 A infraestrutura atual utiliza Docker para PostgreSQL.

@@ -1,11 +1,11 @@
 :root {
   color-scheme: light;
-  --ink: #19352f;
-  --muted: #70817a;
-  --accent: #28745c;
-  --accent-dark: #1c5e49;
-  --paper: #fffefa;
-  --line: #e5e9e2;
+  --ink: #191f35;
+  --muted: #707181;
+  --accent: #282b74;
+  --accent-dark: #1c405e;
+  --paper: #f2f2f8;
+  --line: #a7abd2;
   --error: #a64036;
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", Georgia, serif;
@@ -252,10 +252,10 @@ h2 {
   background:
     radial-gradient(
       ellipse at 75% 25%,
-      rgb(163 189 139 / 40%),
+      var(--accent),
       transparent 42%
     ),
-    linear-gradient(145deg, #224f42, #17382f 80%);
+    linear-gradient(145deg, #2a224f, #1e1738 80%);  
   color: white;
 }
 
@@ -389,7 +389,7 @@ h2 {
   height: 100vh;
   flex-direction: column;
   padding: 25px 18px 18px;
-  background: #17382f;
+  background: var(--accent-dark);
   color: #f3f7f0;
 }
 
@@ -400,13 +400,13 @@ h2 {
 .dashboard-sidebar .brand {
   gap: 10px;
   margin: 0 0 20px;
-  color: #f6f8f2;
+  color: var(--paper);
 }
 
 .dashboard-sidebar .brand-mark {
   width: 32px;
   height: 32px;
-  color: #b9d2a7;
+  color: var(--line);
 }
 
 .dashboard-organization {
@@ -427,8 +427,8 @@ h2 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 9px;
-  background: #b9d2a7;
-  color: #17382f;
+  background: var(--line);
+  color: var(--accent);
   font-size: 14px;
   font-weight: 700;
 }
@@ -442,7 +442,7 @@ h2 {
 
 .dashboard-organization-label,
 .dashboard-navigation-label {
-  color: #a9c2b3;
+  color: var(--line);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -450,7 +450,7 @@ h2 {
 
 .dashboard-organization-name {
   overflow: hidden;
-  color: #f3f7f0;
+  color: var(--paper);
   font-size: 12px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -482,7 +482,7 @@ h2 {
   gap: 12px;
   padding: 0 11px;
   border-radius: 8px;
-  color: #c2d1c8;
+  color: var(--paper);
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
@@ -508,7 +508,7 @@ h2 {
 
 .dashboard-navigation-link[aria-current="page"] {
   background: #e8efe4;
-  color: #1c5e49;
+  color: var(--accent-dark);
   font-weight: 700;
 }
 
@@ -620,15 +620,15 @@ h2 {
   place-items: center;
   border: 1px solid #d6e4d1;
   border-radius: 50%;
-  background: #edf3e9;
-  color: #1c5e49;
+  background: #e9ebf3;
+  color: var(--accent-dark);
   font-size: 12px;
   font-weight: 700;
 }
 
 .dashboard-user-email {
   overflow: hidden;
-  color: #f3f7f0;
+  color: #e9ebf3;
   font-size: 11px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -636,7 +636,7 @@ h2 {
 }
 
 .dashboard-user-role {
-  color: #a9c2b3;
+  color: #e9ebf3;
   font-size: 10px;
 }
 
@@ -647,7 +647,7 @@ h2 {
   border: 1px solid rgb(235 245 231 / 15%);
   border-radius: 8px;
   background: transparent;
-  color: #d5e0d8;
+  color: #e9ebf3;
   cursor: pointer;
   font-size: 11px;
   text-align: left;
@@ -684,7 +684,7 @@ h2 {
   align-items: center;
   justify-content: space-between;
   padding: 0 42px;
-  border-bottom: 1px solid #e8ece6;
+  border-bottom: 1px solid var(--paper);
   background: rgb(255 255 255 / 94%);
   backdrop-filter: blur(12px);
 }
@@ -693,12 +693,12 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #96a29b;
+  color: var(--line);
   font-size: 11px;
 }
 
 .dashboard-breadcrumb strong {
-  color: #29443a;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -706,7 +706,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #53685e;
+  color: var(--accent);
   font-size: 11px;
 }
 
@@ -741,7 +741,7 @@ h2 {
 
 .dashboard-page-heading > p:last-child {
   margin: 10px 0 0;
-  color: #77857e;
+  color: #777c85;
   font-size: 13px;
   line-height: 1.65;
 }
@@ -754,11 +754,11 @@ h2 {
   justify-content: space-between;
   overflow: hidden;
   padding: 32px 38px;
-  border: 1px solid #dce8d9;
+  border: 1px solid #b5c2cb;
   border-radius: 15px;
   background:
-    radial-gradient(ellipse at 90% 20%, rgb(185 210 167 / 38%), transparent 34%),
-    linear-gradient(115deg, #eaf1e7, #f7f8f2 78%);
+    radial-gradient(ellipse at 90% 20%, rgba(167, 183, 210, 0.38), transparent 34%),
+    linear-gradient(115deg, #e7eef1, #f5f2f8 78%);
 }
 
 .dashboard-welcome-copy {
@@ -769,7 +769,7 @@ h2 {
 
 .dashboard-welcome-eyebrow {
   margin: 0 0 11px;
-  color: #4e795e;
+  color: #4e5679;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -777,7 +777,7 @@ h2 {
 
 .dashboard-welcome-card h2 {
   overflow-wrap: anywhere;
-  color: #1c4336;
+  color: #1c2943;
   font-size: clamp(23px, 3vw, 31px);
   line-height: 1.2;
 }
@@ -785,7 +785,7 @@ h2 {
 .dashboard-welcome-card .dashboard-welcome-copy > p:not(.dashboard-welcome-eyebrow) {
   max-width: 520px;
   margin: 11px 0 0;
-  color: #64766c;
+  color: #646c76;
   font-size: 12px;
   line-height: 1.7;
 }
@@ -793,7 +793,7 @@ h2 {
 .dashboard-welcome-organization {
   display: inline-block;
   margin-top: 15px;
-  color: #397053;
+  color: #394270;
   font-size: 11px;
   font-weight: 700;
 }
@@ -808,7 +808,7 @@ h2 {
   border: 1px solid rgb(47 111 76 / 13%);
   border-radius: 50%;
   background: rgb(255 255 255 / 54%);
-  color: #4d855d;
+  color: #4d5585;
 }
 
 .dashboard-welcome-art svg {
@@ -826,7 +826,7 @@ h2 {
 }
 
 .dashboard-section-heading h2 {
-  color: #233f34;
+  color: #26233f;
   font-family: var(--font-display);
   font-size: 23px;
   font-weight: 500;
@@ -835,7 +835,7 @@ h2 {
 
 .dashboard-section-heading > p {
   margin: 0 0 2px;
-  color: #849088;
+  color: #848590;
   font-size: 11px;
 }
 
@@ -878,8 +878,8 @@ h2 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 10px;
-  background: #f0f5ed;
-  color: #4a7a59;
+  background: var(--paper);
+  color: var(--accent-dark);
 }
 
 .dashboard-shortcut-copy {
