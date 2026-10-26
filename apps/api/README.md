@@ -30,6 +30,19 @@ Password reset email delivery is handled by the API through Resend. Configure `R
 
 Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a seven-day lifetime. Only a SHA-256 hash of its token is stored. Reset tokens are random, single-use, expire after 15 minutes, and are stored only as SHA-256 hashes. Authentication errors do not distinguish an unknown email from a wrong password.
 
+## Vehicle endpoints
+
+All vehicle endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
+
+- `GET /vehicles?organizationId=<id>&page=1&limit=10` returns a paginated vehicle list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /vehicles/:id?organizationId=<id>` returns a vehicle in that organization.
+- `POST /vehicles?organizationId=<id>` creates a vehicle from `make`, `model`, `year`, and optional `description`.
+- `PATCH /vehicles/:id?organizationId=<id>` updates one or more of those fields.
+- `DELETE /vehicles/:id?organizationId=<id>` deletes one vehicle.
+- `DELETE /vehicles/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and deletes all requested vehicles atomically.
+
+Vehicle identifiers belonging to another organization are returned as not found. Requests for an organization without an active membership are forbidden.
+
 ## Database and checks
 
 Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.

@@ -8,10 +8,12 @@ import type { INestApplication } from "@nestjs/common";
 import { AppModule } from "../../../api/dist/app.module.js";
 import { configureApp } from "../../../api/dist/configure-app.js";
 import { AuthApi } from "../../src/auth/auth-api.js";
+import { VehicleApi } from "../../src/vehicles/vehicle-api.js";
 
-describe("web authentication client with the real API and PostgreSQL", () => {
+describe("dashboard API clients with the real API and PostgreSQL", () => {
   let app: INestApplication;
   let api: AuthApi;
+  let vehicleApi: VehicleApi;
   let cookie: string | undefined;
 
   beforeAll(async () => {
@@ -37,22 +39,22 @@ describe("web authentication client with the real API and PostgreSQL", () => {
     app = nestApp;
     const address = app.getHttpServer().address();
     assert.ok(address && typeof address !== "string");
-    api = new AuthApi(
-      `http://127.0.0.1:${address.port}`,
-      async (input, init) => {
-        expect(init?.credentials).toBe("include");
-        const headers = new Headers(init?.headers);
-        if (cookie) {
-          headers.set("Cookie", cookie);
-        }
-        const response = await fetch(input, { ...init, headers });
-        const setCookie = response.headers.getSetCookie()[0];
-        if (setCookie) {
-          cookie = setCookie.split(";")[0];
-        }
-        return response;
-      },
-    );
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+    const fetchWithSession: typeof fetch = async (input, init) => {
+      expect(init?.credentials).toBe("include");
+      const headers = new Headers(init?.headers);
+      if (cookie) {
+        headers.set("Cookie", cookie);
+      }
+      const response = await fetch(input, { ...init, headers });
+      const setCookie = response.headers.getSetCookie()[0];
+      if (setCookie) {
+        cookie = setCookie.split(";")[0];
+      }
+      return response;
+    };
+    api = new AuthApi(baseUrl, fetchWithSession);
+    vehicleApi = new VehicleApi(baseUrl, fetchWithSession);
   });
 
   afterAll(async () => {
@@ -84,6 +86,51 @@ describe("web authentication client with the real API and PostgreSQL", () => {
     );
     expect(currentUser && "passwordHash" in currentUser).toBe(false);
     expect(currentUser && "token" in currentUser).toBe(false);
+
+    const organizationId = currentUser?.organizations?.[0]?.id;
+    assert.ok(organizationId);
+    const createdVehicle = await vehicleApi.create(organizationId, {
+      make: "Toyota",
+      model: "Corolla",
+      year: 2024,
+      description: "Sedan automático",
+    });
+    expect(createdVehicle).toMatchObject({
+      make: "Toyota",
+      model: "Corolla",
+      year: 2024,
+    });
+    expect(await vehicleApi.getById(organizationId, createdVehicle.id)).toMatchObject({
+      id: createdVehicle.id,
+      description: "Sedan automático",
+    });
+    expect(await vehicleApi.list(organizationId, 1, 10)).toMatchObject({
+      total: 1,
+      data: [expect.objectContaining({ id: createdVehicle.id })],
+    });
+    const singleDeleteVehicle = await vehicleApi.create(organizationId, {
+      make: "Ford",
+      model: "Ka",
+      year: 2022,
+    });
+    await vehicleApi.delete(organizationId, singleDeleteVehicle.id);
+    expect((await vehicleApi.list(organizationId, 1, 10)).total).toBe(1);
+    expect(
+      await vehicleApi.update(organizationId, createdVehicle.id, {
+        make: "Toyota",
+        model: "Corolla Cross",
+        year: 2025,
+      }),
+    ).toMatchObject({ model: "Corolla Cross", year: 2025 });
+    expect(
+      await vehicleApi.deleteMany(organizationId, [createdVehicle.id]),
+    ).toEqual({ deletedCount: 1 });
+    expect((await vehicleApi.list(organizationId, 1, 10)).total).toBe(0);
+    expect(await vehicleApi.list(organizationId, 2, 10)).toMatchObject({
+      page: 1,
+      totalPages: 0,
+      data: [],
+    });
 
     await api.logout();
     expect(await api.getCurrentUser()).toBeNull();

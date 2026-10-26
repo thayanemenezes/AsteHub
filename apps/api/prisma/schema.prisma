@@ -36,6 +36,21 @@ model Organization {
   createdAt   DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime     @updatedAt @db.Timestamptz(3)
   memberships Membership[]
+  vehicles    Vehicle[]
+}
+
+model Vehicle {
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  organizationId String       @db.VarChar(30)
+  make           String       @db.VarChar(80)
+  model          String       @db.VarChar(100)
+  year           Int
+  description    String?      @db.VarChar(1000)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
 }
 
 model Membership {

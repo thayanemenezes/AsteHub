@@ -368,4 +368,130 @@ describe("authentication API", () => {
     assert.equal(expired.status, 401);
     assert.equal(await prisma.session.count({ where: { id: session.id } }), 0);
   });
+
+  it("manages vehicles with pagination and enforces organization isolation", async () => {
+    const firstUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "vehicle-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Vehicle Rental A",
+      });
+    const secondUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "another-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Vehicle Rental B",
+      });
+    const firstCookie = cookieValue(firstUser);
+    const secondCookie = cookieValue(secondUser);
+    const firstOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Vehicle Rental A" },
+    });
+    const secondOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Vehicle Rental B" },
+    });
+    const makeVehicle = (cookie: string, organizationId: string, body: object) =>
+      request(app.getHttpServer())
+        .post(`/vehicles?organizationId=${organizationId}`)
+        .set("Cookie", cookie)
+        .send(body);
+
+    const firstVehicle = await makeVehicle(firstCookie, firstOrg.id, {
+      make: "Toyota",
+      model: "Corolla",
+      year: 2024,
+      description: "Sedan automático",
+    });
+    assert.equal(firstVehicle.status, 201, JSON.stringify(firstVehicle.body));
+    assert.equal(firstVehicle.body.make, "Toyota");
+    assert.equal(firstVehicle.body.organizationId, undefined);
+    assert.equal(
+      (
+        await makeVehicle(secondCookie, firstOrg.id, {
+          make: "Honda",
+          model: "Civic",
+          year: 2023,
+        })
+      ).status,
+      403,
+    );
+    const secondVehicle = await makeVehicle(secondCookie, secondOrg.id, {
+      make: "Honda",
+      model: "Civic",
+      year: 2023,
+    });
+    assert.equal(secondVehicle.status, 201);
+    const crossTenantBulkDelete = await request(app.getHttpServer())
+      .delete(`/vehicles/bulk?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ ids: [firstVehicle.body.id, secondVehicle.body.id] });
+    assert.equal(crossTenantBulkDelete.status, 404);
+    assert.equal(
+      await prisma.vehicle.count({
+        where: { organizationId: firstOrg.id, id: firstVehicle.body.id },
+      }),
+      1,
+    );
+
+    const createdVehicle = firstVehicle.body as { id: string };
+    const fetched = await request(app.getHttpServer())
+      .get(`/vehicles/${createdVehicle.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie);
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.model, "Corolla");
+
+    const crossTenantRead = await request(app.getHttpServer())
+      .get(`/vehicles/${createdVehicle.id}?organizationId=${secondOrg.id}`)
+      .set("Cookie", secondCookie);
+    assert.equal(crossTenantRead.status, 404);
+
+    const list = await request(app.getHttpServer())
+      .get(`/vehicles?organizationId=${firstOrg.id}&page=1&limit=1`)
+      .set("Cookie", firstCookie);
+    assert.equal(list.status, 200);
+    assert.equal(list.body.total, 1);
+    assert.equal(list.body.page, 1);
+    assert.equal(list.body.limit, 1);
+    assert.equal(list.body.data.length, 1);
+
+    const updated = await request(app.getHttpServer())
+      .patch(`/vehicles/${createdVehicle.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ make: "Toyota", model: "Corolla Cross", year: 2025 });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.body.model, "Corolla Cross");
+    assert.equal(updated.body.year, 2025);
+
+    const bulkDelete = await request(app.getHttpServer())
+      .delete(`/vehicles/bulk?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ ids: [createdVehicle.id] });
+    assert.equal(bulkDelete.status, 200);
+    assert.equal(bulkDelete.body.deletedCount, 1);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .get(`/vehicles/${createdVehicle.id}?organizationId=${firstOrg.id}`)
+          .set("Cookie", firstCookie)
+      ).status,
+      404,
+    );
+
+    const invalidInput = await makeVehicle(firstCookie, firstOrg.id, {
+      make: "",
+      model: "",
+      year: 1800,
+    });
+    assert.equal(invalidInput.status, 400);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .delete(`/vehicles/${secondVehicle.body.id}?organizationId=${firstOrg.id}`)
+          .set("Cookie", firstCookie)
+      ).status,
+      404,
+    );
+  });
 });
