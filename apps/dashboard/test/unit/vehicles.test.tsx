@@ -1,8 +1,19 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "react-toastify";
 import VehiclesPage from "../../src/app/dashboard/vehicles/page";
 import { AuthProvider } from "../../src/auth/auth-provider";
+
+vi.mock("react-toastify", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+  ToastContainer: ({ autoClose }: { autoClose: number }) => (
+    <div data-testid="toast-container" data-auto-close={autoClose} />
+  ),
+}));
 
 const currentUser = {
   id: "user-1",
@@ -46,6 +57,7 @@ function renderVehiclesPage() {
 }
 
 beforeEach(() => {
+  vi.mocked(toast.success).mockClear();
   vehicles = [{ ...vehicle }];
   vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:3001");
   vi.stubGlobal(
@@ -93,6 +105,14 @@ beforeEach(() => {
         vehicles = vehicles.filter((item) => !ids.includes(item.id));
         return jsonResponse({ deletedCount: ids.length });
       }
+      if (
+        url.pathname.startsWith("/vehicles/") &&
+        init?.method === "DELETE"
+      ) {
+        const id = url.pathname.split("/").at(-1) ?? "";
+        vehicles = vehicles.filter((item) => item.id !== id);
+        return jsonResponse(null, 204);
+      }
       return jsonResponse({ message: "Not found" }, 404);
     }),
   );
@@ -102,6 +122,11 @@ describe("vehicle management page", () => {
   it("loads the tenant vehicle list and integrates create, edit, and bulk delete", async () => {
     const user = userEvent.setup();
     renderVehiclesPage();
+
+    expect(await screen.findByTestId("toast-container")).toHaveAttribute(
+      "data-auto-close",
+      "4000",
+    );
 
     const table = await screen.findByRole("table", {
       name: "Veículos da organização",
@@ -122,6 +147,10 @@ describe("vehicle management page", () => {
     await user.click(
       within(createDialog).getByRole("button", { name: "Salvar veículo" }),
     );
+    expect(toast.success).toHaveBeenNthCalledWith(
+      1,
+      "Veículo cadastrado com sucesso.",
+    );
 
     const createdRow = await screen.findByRole("row", {
       name: /Honda Civic 2025/,
@@ -138,6 +167,10 @@ describe("vehicle management page", () => {
     await user.click(
       within(editDialog).getByRole("button", { name: "Salvar alterações" }),
     );
+    expect(toast.success).toHaveBeenNthCalledWith(
+      2,
+      "Veículo atualizado com sucesso.",
+    );
     expect(await screen.findByText(/Civic Touring/)).toBeVisible();
 
     const selection = screen.getByRole("checkbox", {
@@ -150,6 +183,10 @@ describe("vehicle management page", () => {
     });
     await user.click(
       within(confirmation).getByRole("button", { name: "Excluir veículos" }),
+    );
+    expect(toast.success).toHaveBeenNthCalledWith(
+      3,
+      "Veículos selecionados excluídos com sucesso.",
     );
     expect(await screen.findByText("Nenhum veículo cadastrado.")).toBeVisible();
 
@@ -179,6 +216,26 @@ describe("vehicle management page", () => {
           init.body === JSON.stringify({ ids: ["vehicle-2", "vehicle-1"] }),
       ),
     ).toBe(true);
+  });
+
+  it("shows a Toastify success notification after deleting one vehicle", async () => {
+    const user = userEvent.setup();
+    renderVehiclesPage();
+
+    const row = await screen.findByRole("row", { name: /Toyota Corolla 2024/ });
+    await user.click(
+      within(row).getByRole("button", { name: "Excluir Toyota Corolla" }),
+    );
+    const confirmation = screen.getByRole("dialog", {
+      name: "Excluir veículo?",
+    });
+    await user.click(
+      within(confirmation).getByRole("button", { name: "Excluir veículo" }),
+    );
+
+    expect(toast.success).toHaveBeenCalledWith(
+      "Veículo excluído com sucesso.",
+    );
   });
 
   it("navigates between pages without hiding the current list while refreshing", async () => {

@@ -37,6 +37,7 @@ model Organization {
   updatedAt   DateTime     @updatedAt @db.Timestamptz(3)
   memberships Membership[]
   vehicles    Vehicle[]
+  vehicleCategories VehicleCategory[]
 }
 
 model Vehicle {
@@ -50,6 +51,19 @@ model Vehicle {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId, createdAt])
+}
+
+model VehicleCategory {
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  organizationId String       @db.VarChar(30)
+  name           String       @db.VarChar(80)
+  description    String?      @db.VarChar(500)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
   @@index([organizationId, createdAt])
 }
 

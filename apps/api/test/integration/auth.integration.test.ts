@@ -494,4 +494,132 @@ describe("authentication API", () => {
       404,
     );
   });
+
+  it("manages vehicle categories with pagination and enforces organization isolation", async () => {
+    const firstUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "category-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Category Rental A",
+      });
+    const secondUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "another-category-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Category Rental B",
+      });
+    const firstCookie = cookieValue(firstUser);
+    const secondCookie = cookieValue(secondUser);
+    const firstOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Category Rental A" },
+    });
+    const secondOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Category Rental B" },
+    });
+    const createCategory = (
+      cookie: string,
+      organizationId: string,
+      body: object,
+    ) =>
+      request(app.getHttpServer())
+        .post(`/vehicle-categories?organizationId=${organizationId}`)
+        .set("Cookie", cookie)
+        .send(body);
+
+    const firstCategory = await createCategory(firstCookie, firstOrg.id, {
+      name: "SUV",
+      description: "Utilitários esportivos",
+    });
+    assert.equal(firstCategory.status, 201, JSON.stringify(firstCategory.body));
+    assert.equal(firstCategory.body.name, "SUV");
+    assert.equal(firstCategory.body.organizationId, undefined);
+    assert.equal(
+      (
+        await createCategory(secondCookie, firstOrg.id, {
+          name: "Sedan",
+        })
+      ).status,
+      403,
+    );
+    const secondCategory = await createCategory(secondCookie, secondOrg.id, {
+      name: "SUV",
+    });
+    assert.equal(secondCategory.status, 201);
+
+    const crossTenantBulkDelete = await request(app.getHttpServer())
+      .delete(`/vehicle-categories/bulk?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ ids: [firstCategory.body.id, secondCategory.body.id] });
+    assert.equal(crossTenantBulkDelete.status, 404);
+    assert.equal(
+      await prisma.vehicleCategory.count({
+        where: { organizationId: firstOrg.id, id: firstCategory.body.id },
+      }),
+      1,
+    );
+
+    const fetched = await request(app.getHttpServer())
+      .get(
+        `/vehicle-categories/${firstCategory.body.id}?organizationId=${firstOrg.id}`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.name, "SUV");
+
+    const crossTenantRead = await request(app.getHttpServer())
+      .get(
+        `/vehicle-categories/${firstCategory.body.id}?organizationId=${secondOrg.id}`,
+      )
+      .set("Cookie", secondCookie);
+    assert.equal(crossTenantRead.status, 404);
+
+    const duplicateName = await createCategory(firstCookie, firstOrg.id, {
+      name: "SUV",
+    });
+    assert.equal(duplicateName.status, 409);
+
+    const list = await request(app.getHttpServer())
+      .get(
+        `/vehicle-categories?organizationId=${firstOrg.id}&page=1&limit=1`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(list.status, 200);
+    assert.equal(list.body.total, 1);
+    assert.equal(list.body.data[0].name, "SUV");
+
+    const updated = await request(app.getHttpServer())
+      .patch(
+        `/vehicle-categories/${firstCategory.body.id}?organizationId=${firstOrg.id}`,
+      )
+      .set("Cookie", firstCookie)
+      .send({ name: "SUV compacto", description: null });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.body.name, "SUV compacto");
+    assert.equal(updated.body.description, null);
+
+    const deleted = await request(app.getHttpServer())
+      .delete(
+        `/vehicle-categories/${firstCategory.body.id}?organizationId=${firstOrg.id}`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(deleted.status, 204);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .get(
+            `/vehicle-categories/${firstCategory.body.id}?organizationId=${firstOrg.id}`,
+          )
+          .set("Cookie", firstCookie)
+      ).status,
+      404,
+    );
+
+    const invalidInput = await createCategory(firstCookie, firstOrg.id, {
+      name: " ",
+      unexpected: "field",
+    });
+    assert.equal(invalidInput.status, 400);
+  });
 });

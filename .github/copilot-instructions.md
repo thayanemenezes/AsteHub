@@ -537,70 +537,180 @@ Ao implementar qualquer funcionalidade:
 
 ---
 
+## 14.1. Arquitetura de frontend e separação de responsabilidades
+
+O frontend deve seguir uma arquitetura limpa, previsível e orientada a responsabilidades. Separe composição de página, orquestração, regras da feature, acesso a dados e apresentação visual. Não crie camadas apenas por cerimônia: a separação deve reduzir acoplamento, duplicação ou mistura de responsabilidades.
+
+### Regra de dependência
+
+```text
+page/layout
+    ↓
+container / feature orchestration
+    ↓
+hooks / use cases / services
+    ↓
+API client
+    ↓
+API
+
+UI compartilhada
+    ↑
+views e componentes de feature
+```
+
+A UI pode depender dos contratos e comportamentos da feature, mas regras de negócio não devem depender de componentes visuais. Não coloque acesso à API, transformação relevante de dados, efeitos complexos, regras da feature e layout no mesmo componente.
+
+### Pages e layouts
+
+Arquivos `page.tsx` são pontos de entrada e composição. Devem preferencialmente montar a feature/container, fornecer parâmetros da rota e evitar lógica de negócio, chamadas diretas à API, gerenciamento complexo de estado e JSX extenso de uma tela inteira.
+
+Use `layout.tsx` para estruturas realmente compartilhadas por um conjunto de rotas, como shell autenticado, sidebar, header e área principal. Não replique sidebar, header, breadcrumbs, largura máxima, espaçamentos estruturais ou wrappers de página em cada rota.
+
+### Containers e orquestração
+
+Quando uma tela possuir comportamento relevante, utilize um container da feature, como `container.tsx`, ou o padrão equivalente já existente. O container coordena hooks, server state, mutations, estado local necessário ao fluxo, handlers, permissões de apresentação, transformação simples de dados, estados de loading/error/empty e composição da view.
+
+Se renderizar JSX, o container deve usar `.tsx`, não `.ts`. Não crie container vazio ou que apenas repasse props. Telas estáticas e triviais não precisam ganhar uma camada artificial.
+
+### Hooks, services e API
+
+Chamadas HTTP não devem ficar espalhadas por componentes visuais. Centralize acesso remoto conforme os padrões existentes: client HTTP compartilhado, services/clients por domínio quando necessários e hooks de query/mutation para integrar server state à UI.
+
+Hooks encapsulam comportamento reutilizável ou coordenação de estado, não funcionam como depósito arbitrário de funções. Services e API clients não contêm JSX.
+
+### Componentes com responsabilidade clara
+
+Evite tanto componentes monolíticos quanto fragmentação em componentes sem valor arquitetural. Não extraia um componente apenas porque um trecho de JSX tem algumas linhas. Extraia quando houver reutilização, responsabilidade visual bem definida, comportamento próprio, redução real de complexidade, necessidade de teste isolado ou pertencimento ao design system.
+
+Componentes de apresentação podem receber props e não conter regras de negócio quando representam uma abstração visual real. Evite wrappers específicos de uma única página, componentes de uma única `div`, variações duplicadas ou componentes cujo único propósito seja deslocar JSX para outro arquivo.
+
+### Organização por feature
+
+Código específico de domínio deve permanecer próximo da feature. Estrutura conceitual:
+
+```text
+features/
+  vehicles/
+    components/
+    hooks/
+    services/
+    types/
+    container.tsx
+    view.tsx
+```
+
+Adapte à estrutura real. Não crie toda essa árvore automaticamente. Componentes exclusivos de uma feature não devem ir para o pacote global `ui` apenas para parecerem reutilizáveis.
+
 ---
 
-## 14.1. Requisições à API, estado assíncrono e feedback de UI
+## 14.2. Design system, layouts e reutilização de componentes
 
-Toda tela ou componente de frontend que consuma dados da API deve tratar explicitamente o ciclo completo da requisição. Não implemente interfaces que assumam que dados remotos estarão disponíveis imediatamente.
+A interface deve possuir uma linguagem visual única. Antes de criar qualquer elemento, procure por componente equivalente no pacote `ui`, por componentes compartilhados do dashboard e por padrões já usados em outras features.
 
-Para operações de leitura, considere no mínimo os estados:
+### Fonte de verdade dos componentes
 
-- `loading`: a requisição inicial ainda está em andamento;
-- `success`: os dados foram carregados com sucesso;
-- `empty`: a requisição foi concluída, mas não existem dados para exibir;
-- `error`: ocorreu uma falha ao carregar os dados;
-- `refreshing`/`refetching`, quando aplicável: já existem dados visíveis e uma atualização está em andamento.
+O pacote `ui` é a fonte preferencial para componentes visuais reutilizáveis entre telas. Padrões recorrentes como Button, Input, Select, Textarea, Checkbox/Switch, Dialog, Card, Badge/Status, Table/DataTable, Pagination, EmptyState, Loading/Skeleton, ErrorState, PageHeader, SectionHeader e barras de ações devem ter implementação consistente e reutilizável. Respeite os nomes e APIs reais já existentes.
 
-Para operações de escrita, como criar, editar, publicar ou excluir, trate também:
+Antes de criar um componente:
 
-- estado de submissão/processamento;
-- prevenção de múltiplos envios acidentais;
-- feedback de sucesso;
-- feedback de erro compreensível;
-- atualização ou invalidação coerente dos dados afetados.
+1. procure no pacote `ui`;
+2. procure componentes compartilhados existentes no dashboard;
+3. procure um padrão equivalente em outra feature;
+4. reutilize ou estenda de forma compatível quando fizer sentido;
+5. crie algo novo somente se o conceito realmente não existir.
 
-### Loading
+### Proibição de variações aleatórias por página
 
-Não espalhe implementações diferentes de loading pelas telas.
+Não crie versões independentes do mesmo padrão visual em páginas diferentes. Evite headers diferentes para CRUDs equivalentes, múltiplos empty states, loaders distintos por módulo, botões primários inconsistentes, tabelas arbitrariamente diferentes, filtros com padrões diferentes sem motivo funcional, cards equivalentes com estilos divergentes ou diálogos reinventados por feature.
 
-Crie e reutilize componentes de feedback visual adequados ao contexto, como `LoadingState`, `PageLoading`, `Skeleton` ou equivalentes, seguindo o sistema visual existente.
+Quando uma tela precisar de um padrão existente, consuma o componente compartilhado. Se um novo padrão tiver potencial real de reutilização, implemente-o no nível compartilhado adequado antes de duplicá-lo.
 
-Use o tipo de loading apropriado para a experiência:
+### Layout versus lógica
 
-- skeleton quando a estrutura da interface já for conhecida e isso reduzir mudança brusca de layout;
-- indicador de carregamento para operações pontuais;
-- estado de página para carregamentos que bloqueiam o conteúdo principal.
+Componentes de layout cuidam de estrutura, posicionamento, responsividade e composição. Eles não conhecem regras específicas de veículos, leads, unidades ou outras features. Features fornecem conteúdo e comportamento; layouts fornecem estrutura.
 
-Não substitua conteúdo já carregado por uma tela vazia de loading durante refetch quando for possível manter os dados atuais visíveis.
+```text
+DashboardLayout
+  ├── Sidebar
+  ├── Header
+  └── MainContent
+        └── FeatureContainer
+              └── FeatureView
+```
 
-### Gerenciamento de estado
+Não faça `DashboardLayout` buscar dados específicos de uma feature. Não faça cada feature recriar margens, largura máxima, header principal ou estrutura base do dashboard.
 
-Diferencie estado remoto de estado local da interface.
+### CSS Modules
 
-Dados provenientes da API devem utilizar a estratégia de server state já adotada pelo projeto. Se já existir React Query/TanStack Query ou solução equivalente, reutilize-a para cache, loading, error, refetch, mutations e invalidação.
+Utilize CSS Modules para estilos específicos de componentes e features. Não concentre estilos específicos de páginas no arquivo global. O CSS global deve conter somente reset/base, tokens, variáveis, tipografia global e estilos deliberadamente transversais.
 
-Não duplique dados remotos desnecessariamente em `useState`, Context ou outro estado global.
+---
 
-Estado local de UI, como abertura de modal, seleção temporária, filtros ainda não aplicados ou expansão de componentes, pode permanecer local quando apropriado.
+## 14.3. Cores, tokens e consistência visual
 
-Não introduza uma nova biblioteca de gerenciamento de estado sem necessidade e sem antes verificar o que já existe no projeto.
+O `global.css`, especialmente as variáveis declaradas em `:root`, é a fonte de verdade para a paleta de cores e tokens globais do frontend. Toda criação, manutenção ou refatoração deve primeiro consultar e reutilizar esses tokens.
 
-### Tratamento de erros e UX
+Antes de adicionar qualquer cor: consulte `:root`, utilize o token existente adequado, não replique valores e não crie paleta paralela dentro de uma feature. Na manutenção, se houver cor hardcoded com equivalente claro na paleta, normalize para o token existente quando isso puder ser feito com segurança dentro do escopo.
 
-Erros da API devem produzir feedback de UI adequado ao contexto.
+Se nenhuma variável atender a uma necessidade real, confirme que não é apenas uma variação visual desnecessária, adicione o token ao `:root`, siga a nomenclatura existente, utilize-o nos locais correspondentes e informe no resumo da tarefa por que a paleta anterior não era suficiente.
 
-- Não deixe a interface silenciosamente quebrada.
-- Não exponha stack traces, mensagens internas da API ou informações sensíveis ao usuário.
-- Quando fizer sentido, ofereça ação de tentar novamente.
-- Preserve dados já carregados quando uma atualização secundária falhar, sempre que possível.
-- Diferencie ausência legítima de dados de falha na requisição.
-- Botões que disparam mutations devem refletir visualmente o estado de processamento.
-- Formulários devem preservar os dados preenchidos quando uma falha recuperável ocorrer.
-- Evite layout shift desnecessário durante carregamentos.
+Evite diretamente em componentes, salvo necessidade técnica justificada: hexadecimal, `rgb/rgba`, `hsl/hsla`, nomes de cores e classes arbitrárias fora da paleta. Estados `hover`, `focus`, `active`, `disabled`, `loading`, `success`, `warning` e `error` também devem respeitar os tokens globais.
 
-O tratamento desses estados faz parte da funcionalidade e deve ser considerado nos testes de comportamento relevantes.
+---
 
-Ao criar uma nova tela integrada à API, ela não está concluída se implementar apenas o caminho de sucesso.
+## 14.4. Server state, loading, erros e feedback de UI
+
+Toda tela ou componente que dependa da API deve tratar o ciclo completo da operação. Implementar apenas o caminho de sucesso não conclui a feature.
+
+### Server state
+
+Diferencie dados remotos de estado local. Dados da API devem usar a estratégia de server state já adotada. Se React Query/TanStack Query ou equivalente estiver configurado, reutilize-o para queries, cache, loading, refetch, mutations, invalidação e erros. Não copie dados remotos para `useState`, Context ou estado global sem necessidade real. Estado puramente visual pode permanecer local. Não introduza outra biblioteca sem necessidade.
+
+### Estados obrigatórios de leitura
+
+Considere, quando aplicável: `loading`, `success`, `empty`, `error` e `refreshing/refetching`. Não confunda `empty` com `error`. Durante refetch, preserve dados atuais quando possível em vez de desmontar a tela.
+
+### Loading padronizado
+
+Não crie loaders diferentes em cada página. Utilize componentes compartilhados existentes no `ui`, como `LoadingState`, `PageLoading`, `Skeleton` ou equivalentes reais. Use skeleton para preservar estrutura conhecida, indicador para ações pontuais e loading de página apenas quando o conteúdo principal depender da carga inicial. Evite layout shift desnecessário.
+
+### Mutations e feedback
+
+Criar, editar, publicar, excluir ou executar ações deve tratar processamento, prevenção de submissão duplicada, sucesso, erro, atualização/invalidação coerente e preservação de formulário em falhas recuperáveis.
+
+Utilize `react-toastify` para feedback transitório de sucesso/erro quando esse for o padrão adotado. Não crie modal apenas para informar sucesso ou erro. Toast não substitui estados estruturais: falha ao carregar uma listagem deve possuir `ErrorState` no conteúdo, não somente toast. Não exponha stack traces ou mensagens internas. Ofereça retry quando apropriado.
+
+---
+
+## 14.5. Ícones e consistência de implementação
+
+Utilize os ícones do Ant Design disponibilizados através de `react-icons`, conforme a dependência adotada. Não desenhe SVGs customizados sem necessidade, não misture bibliotecas de ícones entre páginas e não use ícones diferentes para a mesma ação em features distintas.
+
+---
+
+## 14.6. Checklist obrigatório para criação ou manutenção de UI
+
+Antes de concluir uma tela ou componente, verifique:
+
+1. Existe componente equivalente no `ui`?
+2. Estou duplicando um padrão visual existente em outra página?
+3. `page.tsx` está compondo a feature ou acumulou lógica?
+4. Layout e regra da feature estão separados?
+5. Acesso à API está fora dos componentes puramente visuais?
+6. Server state usa a estratégia padrão do projeto?
+7. Loading, empty, error, refetch e mutation foram tratados quando aplicáveis?
+8. Loading e feedback usam componentes/padrões compartilhados?
+9. As cores vêm de `global.css :root`?
+10. Criei cor, botão, card, tabela, header, loader ou empty state que já existia?
+11. CSS específico está em CSS Module em vez de poluir o global?
+12. Ícones seguem o pacote e o padrão definidos?
+13. A implementação é consistente com as demais telas?
+14. Testes relevantes cobrem comportamento observável e estados assíncronos?
+
+Se houver duplicação ou nova variação visual sem motivo funcional, refatore antes de considerar a tarefa concluída.
+
+---
 
 ## 15. Desenvolvimento local
 
@@ -737,3 +847,4 @@ Ao tomar decisões, priorize esta ideia:
 > O AsteHub é um produto SaaS multi-tenant para permitir que diferentes locadoras administrem sua presença digital, catálogo, unidades e geração de leads através de uma única plataforma, mantendo seus dados e operações isolados.
 
 Construa para o problema atual, mantendo espaço para evolução futura sem implementar o futuro antes de ele existir.
+

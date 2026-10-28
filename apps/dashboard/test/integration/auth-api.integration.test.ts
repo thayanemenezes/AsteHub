@@ -9,11 +9,13 @@ import { AppModule } from "../../../api/dist/app.module.js";
 import { configureApp } from "../../../api/dist/configure-app.js";
 import { AuthApi } from "../../src/auth/auth-api.js";
 import { VehicleApi } from "../../src/vehicles/vehicle-api.js";
+import { VehicleCategoryApi } from "../../src/vehicle-categories/vehicle-category-api.js";
 
 describe("dashboard API clients with the real API and PostgreSQL", () => {
   let app: INestApplication;
   let api: AuthApi;
   let vehicleApi: VehicleApi;
+  let vehicleCategoryApi: VehicleCategoryApi;
   let cookie: string | undefined;
 
   beforeAll(async () => {
@@ -55,6 +57,7 @@ describe("dashboard API clients with the real API and PostgreSQL", () => {
     };
     api = new AuthApi(baseUrl, fetchWithSession);
     vehicleApi = new VehicleApi(baseUrl, fetchWithSession);
+    vehicleCategoryApi = new VehicleCategoryApi(baseUrl, fetchWithSession);
   });
 
   afterAll(async () => {
@@ -131,6 +134,39 @@ describe("dashboard API clients with the real API and PostgreSQL", () => {
       totalPages: 0,
       data: [],
     });
+
+    const category = await vehicleCategoryApi.create(organizationId, {
+      name: "SUV",
+      description: "Utilitários esportivos",
+    });
+    expect(category).toMatchObject({
+      name: "SUV",
+      description: "Utilitários esportivos",
+    });
+    expect(
+      await vehicleCategoryApi.getById(organizationId, category.id),
+    ).toMatchObject({ id: category.id, name: "SUV" });
+    expect(await vehicleCategoryApi.list(organizationId, 1, 10)).toMatchObject({
+      total: 1,
+      data: [expect.objectContaining({ id: category.id })],
+    });
+    const singleDeleteCategory = await vehicleCategoryApi.create(
+      organizationId,
+      { name: "Sedan" },
+    );
+    await vehicleCategoryApi.delete(organizationId, singleDeleteCategory.id);
+    expect(
+      await vehicleCategoryApi.update(organizationId, category.id, {
+        name: "SUV compacto",
+        description: "Categoria atualizada",
+      }),
+    ).toMatchObject({ name: "SUV compacto" });
+    expect(
+      await vehicleCategoryApi.deleteMany(organizationId, [category.id]),
+    ).toEqual({ deletedCount: 1 });
+    expect((await vehicleCategoryApi.list(organizationId, 1, 10)).total).toBe(
+      0,
+    );
 
     await api.logout();
     expect(await api.getCurrentUser()).toBeNull();

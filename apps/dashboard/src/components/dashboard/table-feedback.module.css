@@ -1,0 +1,137 @@
+.emptyState,
+.loadingCard {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.emptyState {
+  display: grid;
+  min-height: 280px;
+  justify-items: center;
+  align-content: center;
+  gap: 0;
+  padding: 35px 22px;
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--accent-dark);
+}
+
+.emptyState h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.emptyState p {
+  max-width: 460px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.loadingCard {
+  min-height: 260px;
+}
+
+.tableViewport {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  height: 43px;
+  padding: 0 14px;
+  background: var(--surface-subtle);
+}
+
+.table td {
+  height: 54px;
+  padding: 0 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.table th:first-child,
+.table td:first-child {
+  width: 42px;
+  padding-left: 18px;
+}
+
+.skeletonHeader,
+.skeletonCell {
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-subtle) 25%,
+    var(--border-subtle) 50%,
+    var(--surface-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonHeader {
+  width: min(100%, 90px);
+}
+
+.skeletonCell {
+  width: min(100%, 180px);
+  height: 12px;
+}
+
+.skeletonCellShort {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .emptyState {
+    min-height: 240px;
+    padding: 28px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonHeader,
+  .skeletonCell {
+    animation: none;
+  }
+}

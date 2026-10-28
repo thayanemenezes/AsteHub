@@ -43,6 +43,19 @@ All vehicle endpoints require an authenticated session and an `organizationId` q
 
 Vehicle identifiers belonging to another organization are returned as not found. Requests for an organization without an active membership are forbidden.
 
+## Vehicle category endpoints
+
+All vehicle category endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
+
+- `GET /vehicle-categories?organizationId=<id>&page=1&limit=10` returns a paginated category list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /vehicle-categories/:id?organizationId=<id>` returns one category in that organization.
+- `POST /vehicle-categories?organizationId=<id>` creates a category from a required `name` (up to 80 characters) and optional `description` (up to 500 characters).
+- `PATCH /vehicle-categories/:id?organizationId=<id>` updates the category name and/or description.
+- `DELETE /vehicle-categories/:id?organizationId=<id>` deletes one category.
+- `DELETE /vehicle-categories/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and atomically deletes all requested categories.
+
+Category names must be unique within an organization. Duplicate names return `409 Conflict`. Category identifiers belonging to another organization are returned as not found; requests for an organization without an active membership are forbidden.
+
 ## Database and checks
 
 Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.

@@ -7,6 +7,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
 import {
@@ -59,7 +60,6 @@ export function useVehiclesContainer() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
-  const [feedback, setFeedback] = useState("");
 
   const loadVehicles = useCallback(
     (signal: AbortSignal): Promise<VehiclePage> => {
@@ -157,11 +157,11 @@ export function useVehiclesContainer() {
     try {
       if (vehicleDialog.type === "create") {
         await api.create(organizationId, input);
-        setFeedback("Veículo cadastrado com sucesso.");
+        toast.success("Veículo cadastrado com sucesso.");
         setPage(1);
       } else {
         await api.update(organizationId, vehicleDialog.vehicle.id, input);
-        setFeedback("Veículo atualizado com sucesso.");
+        toast.success("Veículo atualizado com sucesso.");
       }
       setVehicleDialog(null);
       resource.retry();
@@ -183,10 +183,10 @@ export function useVehiclesContainer() {
     try {
       if (vehicleDialog.type === "delete") {
         await api.delete(organizationId, vehicleDialog.vehicle.id);
-        setFeedback("Veículo excluído com sucesso.");
+        toast.success("Veículo excluído com sucesso.");
       } else if (vehicleDialog.type === "bulk-delete") {
         await api.deleteMany(organizationId, selectedIds);
-        setFeedback("Veículos selecionados excluídos com sucesso.");
+        toast.success("Veículos selecionados excluídos com sucesso.");
       } else {
         return;
       }
@@ -231,7 +231,6 @@ export function useVehiclesContainer() {
     confirmDelete,
     currentVehicles,
     closeDialog,
-    feedback,
     form,
     goToNextPage,
     goToPreviousPage,

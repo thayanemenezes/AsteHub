@@ -10,7 +10,6 @@ export function DashboardModulePage({
   return (
     <section className="dashboard-page" aria-labelledby="module-heading">
       <header className="dashboard-page-heading">
-        <p className="dashboard-eyebrow">MÓDULO</p>
         <h1 id="module-heading">{title}</h1>
         <p>{description}</p>
       </header>

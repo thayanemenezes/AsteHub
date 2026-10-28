@@ -1,6 +1,16 @@
 "use client";
 
 import { useVehiclesContainer } from "./container";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
+import { AiTwotoneEdit } from "react-icons/ai";
+import { AiTwotoneDelete } from "react-icons/ai";
+import { ToastContainer } from "react-toastify";
+import {
+  EmptyState,
+  TableLoadingState,
+} from "../../../components/dashboard/table-feedback";
+import { PageHeading } from "../../../components/dashboard/page-heading";
+import styles from "./vehicles.module.css";
 
 function VehicleActionIcon({ name }: { name: "edit" | "delete" }) {
   return (
@@ -33,7 +43,6 @@ export default function VehiclesPage() {
     closeDialog,
     confirmDelete,
     currentVehicles,
-    feedback,
     form,
     goToNextPage,
     goToPreviousPage,
@@ -62,31 +71,19 @@ export default function VehiclesPage() {
 
   return (
     <section
-      className="dashboard-page vehicle-page"
+      className={`dashboard-page ${styles.page}`}
       aria-labelledby="vehicles-heading"
     >
-      <header className="dashboard-page-heading vehicle-page-heading">
-        <div>
-          <p className="dashboard-eyebrow">CATÁLOGO</p>
-          <h1 id="vehicles-heading">Veículos</h1>
-          <p>Gerencie os veículos disponíveis no catálogo da sua organização.</p>
-        </div>
-        <button
-          className="dashboard-primary-button vehicle-create-button"
-          disabled={!organizationId}
-          onClick={openCreateDialog}
-          type="button"
-        >
-          <span aria-hidden="true">+</span>
-          Novo veículo
-        </button>
-      </header>
-
-      {feedback && (
-        <p className="vehicle-feedback" role="status">
-          {feedback}
-        </p>
-      )}
+      <ToastContainer autoClose={4000} position="bottom-right" />
+      <PageHeading
+        actionDisabled={!organizationId}
+        actionIcon={<AiOutlinePlus aria-hidden="true" size={14} />}
+        actionLabel="Novo veículo"
+        description="Gerencie os veículos disponíveis no catálogo da sua organização."
+        headingId="vehicles-heading"
+        onAction={openCreateDialog}
+        title="Veículos"
+      />
 
       {loadError && (
         <div className="vehicle-error" role="alert">
@@ -104,17 +101,14 @@ export default function VehiclesPage() {
       )}
 
       {isLoading && (
-        <div className="vehicle-loading" role="status">
-          <span className="vehicle-spinner" aria-hidden="true" />
-          Carregando veículos...
-        </div>
+        <TableLoadingState columns={5} label="Carregando veículos..." />
       )}
 
       {!isLoading && !organizationId && (
-        <div className="vehicle-empty-state">
-          <h2>Organização indisponível</h2>
-          <p>Associe uma organização ativa à sua conta para gerenciar veículos.</p>
-        </div>
+        <EmptyState
+          description="Associe uma organização ativa à sua conta para gerenciar veículos."
+          title="Organização indisponível"
+        />
       )}
 
       {!isLoading &&
@@ -122,27 +116,10 @@ export default function VehiclesPage() {
         !loadError &&
         vehiclePage &&
         currentVehicles.length === 0 && (
-          <div className="vehicle-empty-state">
-            <span className="vehicle-empty-icon" aria-hidden="true">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-              >
-                <path d="m5 11 1.5-4h11l1.5 4M4 11h16v7H4zM7 18v2m10-2v2M4 14h2m12 0h2" />
-              </svg>
-            </span>
-            <h2>Nenhum veículo cadastrado.</h2>
-            <p>Cadastre o primeiro veículo para começar a organizar seu catálogo.</p>
-            <button
-              className="dashboard-primary-button"
-              onClick={openCreateDialog}
-              type="button"
-            >
-              Novo veículo
-            </button>
-          </div>
+          <EmptyState
+            description="Cadastre o primeiro veículo para começar a organizar seu catálogo."
+            title="Nenhum veículo cadastrado."
+          />
         )}
 
       {vehiclePage && currentVehicles.length > 0 && (
@@ -227,7 +204,7 @@ export default function VehiclesPage() {
                         onClick={() => openEditDialog(vehicle)}
                         type="button"
                       >
-                        <VehicleActionIcon name="edit" />
+                        <AiOutlineEdit size={14} />
                       </button>
                       <button
                         aria-label={`Excluir ${vehicle.make} ${vehicle.model}`}
@@ -235,7 +212,7 @@ export default function VehiclesPage() {
                         onClick={() => openDeleteDialog(vehicle)}
                         type="button"
                       >
-                        <VehicleActionIcon name="delete" />
+                        <AiOutlineDelete size={14} />
                       </button>
                     </td>
                   </tr>

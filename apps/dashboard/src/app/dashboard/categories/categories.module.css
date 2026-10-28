@@ -1,0 +1,346 @@
+.error {
+  padding: 13px 15px;
+  margin: 0;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.error p {
+  margin: 0;
+}
+
+.retryButton {
+  padding: 0;
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.toolbar {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.toolbar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bulkDeleteButton {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bulkDeleteButton:hover {
+  background: var(--surface-subtle);
+}
+
+.refreshStatus {
+  padding: 9px 18px 0;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  height: 43px;
+  background: var(--surface-subtle);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  height: 60px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.table th,
+.table td {
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.selectionColumn {
+  width: 42px;
+}
+
+.selectionColumn input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.categoryName {
+  font-weight: 600;
+}
+
+.descriptionCell {
+  max-width: 380px;
+  overflow: hidden;
+  color: var(--muted) !important;
+  text-overflow: ellipsis;
+}
+
+.actionsHeading,
+.actions {
+  text-align: right;
+}
+
+.iconButton {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  margin-left: 5px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--accent-dark);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+}
+
+.dangerButton {
+  color: var(--danger);
+}
+
+.pagination {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 7px;
+}
+
+.paginationControls button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.paginationControls button:hover:not(:disabled) {
+  border-color: var(--line);
+}
+
+.paginationControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.dialogBackdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--overlay);
+}
+
+.dialog {
+  width: min(100%, 480px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 25px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  box-shadow: var(--shadow-dialog);
+}
+
+.dialogHeading {
+  margin-bottom: 20px;
+}
+
+.dialogHeading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dialogHeading p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.form {
+  display: grid;
+  gap: 13px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.form textarea {
+  resize: vertical;
+}
+
+.dialogError {
+  margin: 0;
+  color: var(--danger);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+.dialogActions button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.secondaryButton {
+  border-color: var(--border) !important;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.confirmButton {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+.dangerConfirmButton {
+  background: var(--danger);
+  color: var(--surface);
+}
+
+.dialogActions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.createButton:focus-visible,
+.retryButton:focus-visible,
+.bulkDeleteButton:focus-visible,
+.iconButton:focus-visible,
+.paginationControls button:focus-visible,
+.form input:focus-visible,
+.form textarea:focus-visible,
+.dialogActions button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.form input:focus,
+.form textarea:focus {
+  border-color: var(--accent);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+@media (max-width: 600px) {
+  .toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .descriptionCell {
+    max-width: 220px;
+  }
+
+  .dialog {
+    padding: 20px;
+  }
+}
