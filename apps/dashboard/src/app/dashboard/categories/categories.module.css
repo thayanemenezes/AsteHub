@@ -1,3 +1,9 @@
+.page {
+  display: grid;
+  gap: 20px;
+}
+  
+
 .error {
   padding: 13px 15px;
   margin: 0;
@@ -256,6 +262,14 @@
   background: var(--surface);
   color: var(--ink);
   font-size: 12px;
+}
+
+.form [aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.form [aria-invalid="true"]:focus {
+  outline-color: var(--danger);
 }
 
 .form textarea {

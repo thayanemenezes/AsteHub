@@ -124,6 +124,30 @@ beforeEach(() => {
 });
 
 describe("vehicle categories page", () => {
+  it("shows field-level validation and does not submit a too-short category name", async () => {
+    const user = userEvent.setup();
+    renderCategoriesPage();
+    await user.click(screen.getByRole("button", { name: "Nova categoria" }));
+    const dialog = screen.getByRole("dialog", { name: "Nova categoria" });
+    const name = within(dialog).getByLabelText("Nome");
+    await user.type(name, "A");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Salvar categoria" }),
+    );
+
+    expect(
+      await within(dialog).findByText("Informe ao menos 2 caracteres."),
+    ).toBeVisible();
+    expect(name).toHaveAttribute("aria-invalid", "true");
+    expect(
+      vi.mocked(fetch).mock.calls.some(
+        ([input, init]) =>
+          new URL(String(input)).pathname === "/vehicle-categories" &&
+          init?.method === "POST",
+      ),
+    ).toBe(false);
+  });
+
   it("deletes a category individually", async () => {
     const user = userEvent.setup();
     renderCategoriesPage();

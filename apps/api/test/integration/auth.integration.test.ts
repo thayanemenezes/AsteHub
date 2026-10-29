@@ -622,4 +622,478 @@ describe("authentication API", () => {
     });
     assert.equal(invalidInput.status, 400);
   });
+
+  it("manages locations with pagination and enforces organization isolation", async () => {
+    const firstUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "location-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Location Rental A",
+      });
+    const secondUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "another-location-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Location Rental B",
+      });
+    const firstCookie = cookieValue(firstUser);
+    const secondCookie = cookieValue(secondUser);
+    const firstOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Location Rental A" },
+    });
+    const secondOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Location Rental B" },
+    });
+    const createLocation = (
+      cookie: string,
+      organizationId: string,
+      body: object,
+    ) =>
+      request(app.getHttpServer())
+        .post(`/locations?organizationId=${organizationId}`)
+        .set("Cookie", cookie)
+        .send(body);
+    const firstLocation = await createLocation(firstCookie, firstOrg.id, {
+      name: "Unidade Centro",
+      address: "Rua das Flores, 123",
+      city: "São Paulo",
+      state: "SP",
+      phone: "+55 11 3333-4444",
+      description: "Atendimento no centro",
+      managerName: "Maria Silva",
+    });
+    assert.equal(firstLocation.status, 201, JSON.stringify(firstLocation.body));
+    assert.deepEqual(
+      {
+        name: firstLocation.body.name,
+        address: firstLocation.body.address,
+        city: firstLocation.body.city,
+        state: firstLocation.body.state,
+        phone: firstLocation.body.phone,
+        description: firstLocation.body.description,
+        managerName: firstLocation.body.managerName,
+      },
+      {
+        name: "Unidade Centro",
+        address: "Rua das Flores, 123",
+        city: "São Paulo",
+        state: "SP",
+        phone: "+55 11 3333-4444",
+        description: "Atendimento no centro",
+        managerName: "Maria Silva",
+      },
+    );
+    assert.equal(firstLocation.body.organizationId, undefined);
+    assert.equal(
+      (
+        await createLocation(secondCookie, firstOrg.id, {
+          name: "Unidade inválida",
+          address: "Rua A, 1",
+          city: "São Paulo",
+          state: "SP",
+        })
+      ).status,
+      403,
+    );
+
+    const secondLocation = await createLocation(firstCookie, firstOrg.id, {
+      name: "Unidade Sul",
+      address: "Avenida Brasil, 50",
+      city: "Curitiba",
+      state: "PR",
+    });
+    assert.equal(secondLocation.status, 201);
+
+    const firstPage = await request(app.getHttpServer())
+      .get(`/locations?organizationId=${firstOrg.id}&page=1&limit=1`)
+      .set("Cookie", firstCookie);
+    assert.equal(firstPage.status, 200);
+    assert.equal(firstPage.body.total, 2);
+    assert.equal(firstPage.body.totalPages, 2);
+    assert.equal(firstPage.body.data.length, 1);
+
+    const crossTenantLocationRead = await request(app.getHttpServer())
+      .get(
+        `/locations/${firstLocation.body.id}?organizationId=${secondOrg.id}`,
+      )
+      .set("Cookie", secondCookie);
+    assert.equal(crossTenantLocationRead.status, 404);
+
+    const crossTenantBulkDelete = await request(app.getHttpServer())
+      .delete(`/locations/bulk?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ ids: [firstLocation.body.id, secondLocation.body.id] });
+    assert.equal(crossTenantBulkDelete.status, 200);
+    assert.equal(crossTenantBulkDelete.body.deletedCount, 2);
+
+    const secondTenantLocation = await createLocation(
+      secondCookie,
+      secondOrg.id,
+      {
+        name: "Unidade Norte",
+        address: "Rua B, 2",
+        city: "Manaus",
+        state: "AM",
+      },
+    );
+    assert.equal(secondTenantLocation.status, 201);
+    const crossTenantDelete = await request(app.getHttpServer())
+      .delete(
+        `/locations/${secondTenantLocation.body.id}?organizationId=${firstOrg.id}`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(crossTenantDelete.status, 404);
+    assert.equal(
+      await prisma.location.count({
+        where: {
+          id: secondTenantLocation.body.id,
+          organizationId: secondOrg.id,
+        },
+      }),
+      1,
+    );
+    const crossTenantRead = await request(app.getHttpServer())
+      .get(
+        `/locations/${secondTenantLocation.body.id}?organizationId=${firstOrg.id}`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(crossTenantRead.status, 404);
+
+    const fetched = await request(app.getHttpServer())
+      .get(
+        `/locations/${secondTenantLocation.body.id}?organizationId=${secondOrg.id}`,
+      )
+      .set("Cookie", secondCookie);
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.name, "Unidade Norte");
+
+    const updated = await request(app.getHttpServer())
+      .patch(
+        `/locations/${secondTenantLocation.body.id}?organizationId=${secondOrg.id}`,
+      )
+      .set("Cookie", secondCookie)
+      .send({ name: "Unidade Norte II", managerName: "João Santos" });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.body.name, "Unidade Norte II");
+    assert.equal(updated.body.managerName, "João Santos");
+
+    const singleDeleted = await request(app.getHttpServer())
+      .delete(
+        `/locations/${secondTenantLocation.body.id}?organizationId=${secondOrg.id}`,
+      )
+      .set("Cookie", secondCookie);
+    assert.equal(singleDeleted.status, 204);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .get(
+            `/locations/${secondTenantLocation.body.id}?organizationId=${secondOrg.id}`,
+          )
+          .set("Cookie", secondCookie)
+      ).status,
+      404,
+    );
+
+    const invalidInput = await createLocation(firstCookie, firstOrg.id, {
+      name: " ",
+      address: "",
+      city: "City",
+      state: "ST",
+      unexpected: "field",
+    });
+    assert.equal(invalidInput.status, 400);
+    const list = await request(app.getHttpServer())
+      .get(`/locations?organizationId=${secondOrg.id}&page=1&limit=10`)
+      .set("Cookie", secondCookie);
+    assert.equal(list.status, 200);
+    assert.equal(list.body.total, 0);
+    assert.deepEqual(list.body.data, []);
+  });
+
+  it("manages one site configuration per organization and enforces isolation", async () => {
+    const firstUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "site-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Site Rental A",
+      });
+    const secondUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "another-site-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Site Rental B",
+      });
+    const firstCookie = cookieValue(firstUser);
+    const secondCookie = cookieValue(secondUser);
+    const firstOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Site Rental A" },
+    });
+    const secondOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Site Rental B" },
+    });
+    const siteUrl = (organizationId: string) =>
+      `/sites?organizationId=${organizationId}`;
+
+    const emptyConfiguration = await request(app.getHttpServer())
+      .get(siteUrl(firstOrg.id))
+      .set("Cookie", firstCookie);
+    assert.equal(emptyConfiguration.status, 404);
+
+    const payload = {
+      publicName: "Locadora Central",
+      slug: "locadora-central",
+      domain: "www.locadoracentral.com.br",
+      phone: "+55 11 3333-4444",
+      description: "Aluguel de veículos com atendimento próximo.",
+      primaryColor: "#282B74",
+      secondaryColor: "#F2F2F8",
+      logoUrl: "https://cdn.example.com/logo.png",
+    };
+    const created = await request(app.getHttpServer())
+      .post(siteUrl(firstOrg.id))
+      .set("Cookie", firstCookie)
+      .send(payload);
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.keys(payload).map((field) => [field, created.body[field]]),
+      ),
+      payload,
+    );
+    assert.equal(created.body.organizationId, undefined);
+
+    const duplicateForOrganization = await request(app.getHttpServer())
+      .post(siteUrl(firstOrg.id))
+      .set("Cookie", firstCookie)
+      .send({ ...payload, slug: "another-site" });
+    assert.equal(duplicateForOrganization.status, 409);
+
+    const duplicateSlug = await request(app.getHttpServer())
+      .post(siteUrl(secondOrg.id))
+      .set("Cookie", secondCookie)
+      .send({ ...payload, publicName: "Outra locadora" });
+    assert.equal(duplicateSlug.status, 409);
+
+    const duplicateDomain = await request(app.getHttpServer())
+      .post(siteUrl(secondOrg.id))
+      .set("Cookie", secondCookie)
+      .send({
+        ...payload,
+        slug: "outra-locadora",
+        publicName: "Outra locadora",
+      });
+    assert.equal(duplicateDomain.status, 409);
+
+    const fetched = await request(app.getHttpServer())
+      .get(`/sites/${created.body.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie);
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.slug, payload.slug);
+
+    const crossTenantRead = await request(app.getHttpServer())
+      .get(`/sites/${created.body.id}?organizationId=${secondOrg.id}`)
+      .set("Cookie", secondCookie);
+    assert.equal(crossTenantRead.status, 404);
+    const crossTenantUpdate = await request(app.getHttpServer())
+      .patch(`/sites/${created.body.id}?organizationId=${secondOrg.id}`)
+      .set("Cookie", secondCookie)
+      .send({ publicName: "Acesso inválido" });
+    assert.equal(crossTenantUpdate.status, 404);
+
+    const updated = await request(app.getHttpServer())
+      .patch(`/sites/${created.body.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({
+        publicName: "Locadora Central Atualizada",
+        phone: null,
+        logoUrl: null,
+      });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.body.publicName, "Locadora Central Atualizada");
+    assert.equal(updated.body.phone, null);
+    assert.equal(updated.body.logoUrl, null);
+
+    const invalidPayload = await request(app.getHttpServer())
+      .post(siteUrl(secondOrg.id))
+      .set("Cookie", secondCookie)
+      .send({
+        publicName: "Outra locadora",
+        slug: "Slug com espaço",
+        primaryColor: "blue",
+        logoUrl: "javascript:alert(1)",
+      });
+    assert.equal(invalidPayload.status, 400);
+
+    const unauthorizedOrganization = await request(app.getHttpServer())
+      .get(siteUrl(firstOrg.id))
+      .set("Cookie", secondCookie);
+    assert.equal(unauthorizedOrganization.status, 403);
+
+    const deleted = await request(app.getHttpServer())
+      .delete(`/sites/${created.body.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie);
+    assert.equal(deleted.status, 204);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .get(siteUrl(firstOrg.id))
+          .set("Cookie", firstCookie)
+      ).status,
+      404,
+    );
+  });
+
+  it("manages leads, validates contacts, and enforces organization isolation", async () => {
+    const firstUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "lead-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Lead Rental A",
+      });
+    const secondUser = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "another-lead-owner@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Lead Rental B",
+      });
+    const firstCookie = cookieValue(firstUser);
+    const secondCookie = cookieValue(secondUser);
+    const firstOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Lead Rental A" },
+    });
+    const secondOrg = await prisma.organization.findFirstOrThrow({
+      where: { name: "Lead Rental B" },
+    });
+    const firstVehicle = await prisma.vehicle.create({
+      data: {
+        organizationId: firstOrg.id,
+        make: "Honda",
+        model: "Civic",
+        year: 2025,
+      },
+    });
+    const secondVehicle = await prisma.vehicle.create({
+      data: {
+        organizationId: secondOrg.id,
+        make: "Toyota",
+        model: "Corolla",
+        year: 2025,
+      },
+    });
+    const firstLocation = await prisma.location.create({
+      data: {
+        organizationId: firstOrg.id,
+        name: "Unidade Centro",
+        address: "Rua das Flores, 123",
+        city: "São Paulo",
+        state: "SP",
+      },
+    });
+    const leadUrl = (organizationId: string) =>
+      `/leads?organizationId=${organizationId}`;
+    const payload = {
+      contactName: "Ana Souza",
+      email: "ana@example.com",
+      phone: "11987654321",
+      message: "Gostaria de uma cotação para um SUV.",
+      vehicleId: firstVehicle.id,
+      locationId: firstLocation.id,
+    };
+
+    const created = await request(app.getHttpServer())
+      .post(leadUrl(firstOrg.id))
+      .set("Cookie", firstCookie)
+      .send(payload);
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    assert.deepEqual(
+      {
+        contactName: created.body.contactName,
+        email: created.body.email,
+        phone: created.body.phone,
+        message: created.body.message,
+        status: created.body.status,
+        vehicle: created.body.vehicle,
+        location: created.body.location,
+        organizationId: created.body.organizationId,
+      },
+      {
+        contactName: "Ana Souza",
+        email: "ana@example.com",
+        phone: "11987654321",
+        message: payload.message,
+        status: "NEW",
+        vehicle: {
+          id: firstVehicle.id,
+          make: "Honda",
+          model: "Civic",
+          year: 2025,
+        },
+        location: { id: firstLocation.id, name: "Unidade Centro" },
+        organizationId: undefined,
+      },
+    );
+
+    const invalidLead = await request(app.getHttpServer())
+      .post(leadUrl(firstOrg.id))
+      .set("Cookie", firstCookie)
+      .send({ ...payload, phone: "11abc", message: "curta" });
+    assert.equal(invalidLead.status, 400);
+
+    const foreignVehicle = await request(app.getHttpServer())
+      .post(leadUrl(firstOrg.id))
+      .set("Cookie", firstCookie)
+      .send({ ...payload, vehicleId: secondVehicle.id });
+    assert.equal(foreignVehicle.status, 400);
+
+    const list = await request(app.getHttpServer())
+      .get(`${leadUrl(firstOrg.id)}&page=1&limit=1`)
+      .set("Cookie", firstCookie);
+    assert.equal(list.status, 200);
+    assert.equal(list.body.total, 1);
+    assert.equal(list.body.data[0].id, created.body.id);
+
+    const fetched = await request(app.getHttpServer())
+      .get(`/leads/${created.body.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie);
+    assert.equal(fetched.status, 200);
+    assert.equal(fetched.body.contactName, "Ana Souza");
+
+    const crossTenantRead = await request(app.getHttpServer())
+      .get(`/leads/${created.body.id}?organizationId=${secondOrg.id}`)
+      .set("Cookie", secondCookie);
+    assert.equal(crossTenantRead.status, 404);
+    const unauthorizedOrganization = await request(app.getHttpServer())
+      .get(leadUrl(firstOrg.id))
+      .set("Cookie", secondCookie);
+    assert.equal(unauthorizedOrganization.status, 403);
+
+    const updated = await request(app.getHttpServer())
+      .patch(`/leads/${created.body.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ status: "CONTACTED", vehicleId: null });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.body.status, "CONTACTED");
+    assert.equal(updated.body.vehicle, null);
+
+    const bulkDelete = await request(app.getHttpServer())
+      .delete(`/leads/bulk?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ ids: [created.body.id] });
+    assert.equal(bulkDelete.status, 200);
+    assert.equal(bulkDelete.body.deletedCount, 1);
+    assert.equal(
+      (
+        await request(app.getHttpServer())
+          .get(`/leads/${created.body.id}?organizationId=${firstOrg.id}`)
+          .set("Cookie", firstCookie)
+      ).status,
+      404,
+    );
+  });
 });

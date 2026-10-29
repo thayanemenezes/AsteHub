@@ -12,6 +12,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { FieldError } from "../../../components/forms/field-error";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import { useVehicleCategoriesContainer } from "./container";
 import styles from "./categories.module.css";
@@ -25,6 +26,7 @@ export default function CategoriesPage() {
     confirmDelete,
     currentCategories,
     form,
+    fieldErrors,
     goToNextPage,
     goToPreviousPage,
     isLoading,
@@ -243,10 +245,18 @@ export default function CategoriesPage() {
                   </h2>
                   <p>Informe o nome e uma descrição opcional para a categoria.</p>
                 </header>
-                <form className={styles.form} onSubmit={submitCategory}>
+                <form
+                  className={styles.form}
+                  noValidate
+                  onSubmit={submitCategory}
+                >
                   <label>
                     Nome
                     <input
+                      aria-describedby={
+                        fieldErrors.name ? "category-name-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.name)}
                       autoFocus
                       maxLength={80}
                       onChange={(event) =>
@@ -255,16 +265,30 @@ export default function CategoriesPage() {
                       required
                       value={form.name}
                     />
+                    <FieldError
+                      id="category-name-error"
+                      message={fieldErrors.name}
+                    />
                   </label>
                   <label>
                     Descrição
                     <textarea
+                      aria-describedby={
+                        fieldErrors.description
+                          ? "category-description-error"
+                          : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.description)}
                       maxLength={500}
                       onChange={(event) =>
                         updateFormField("description", event.target.value)
                       }
                       rows={3}
                       value={form.description}
+                    />
+                    <FieldError
+                      id="category-description-error"
+                      message={fieldErrors.description}
                     />
                   </label>
                   {mutationError && (

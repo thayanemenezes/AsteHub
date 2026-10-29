@@ -353,6 +353,14 @@
   line-height: 1.5;
 }
 
+.page :global(.vehicle-form [aria-invalid="true"]) {
+  border-color: var(--danger);
+}
+
+.page :global(.vehicle-form [aria-invalid="true"]:focus) {
+  outline-color: var(--danger);
+}
+
 @media (max-width: 600px) {
   .page :global(.vehicle-list-toolbar) {
     align-items: flex-start;

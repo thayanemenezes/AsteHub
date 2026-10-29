@@ -10,12 +10,16 @@ import { configureApp } from "../../../api/dist/configure-app.js";
 import { AuthApi } from "../../src/auth/auth-api.js";
 import { VehicleApi } from "../../src/vehicles/vehicle-api.js";
 import { VehicleCategoryApi } from "../../src/vehicle-categories/vehicle-category-api.js";
+import { LocationApi } from "../../src/locations/location-api.js";
+import { SiteApi } from "../../src/sites/site-api.js";
 
 describe("dashboard API clients with the real API and PostgreSQL", () => {
   let app: INestApplication;
   let api: AuthApi;
   let vehicleApi: VehicleApi;
   let vehicleCategoryApi: VehicleCategoryApi;
+  let locationApi: LocationApi;
+  let siteApi: SiteApi;
   let cookie: string | undefined;
 
   beforeAll(async () => {
@@ -58,6 +62,8 @@ describe("dashboard API clients with the real API and PostgreSQL", () => {
     api = new AuthApi(baseUrl, fetchWithSession);
     vehicleApi = new VehicleApi(baseUrl, fetchWithSession);
     vehicleCategoryApi = new VehicleCategoryApi(baseUrl, fetchWithSession);
+    locationApi = new LocationApi(baseUrl, fetchWithSession);
+    siteApi = new SiteApi(baseUrl, fetchWithSession);
   });
 
   afterAll(async () => {
@@ -167,6 +173,91 @@ describe("dashboard API clients with the real API and PostgreSQL", () => {
     expect((await vehicleCategoryApi.list(organizationId, 1, 10)).total).toBe(
       0,
     );
+
+    const location = await locationApi.create(organizationId, {
+      name: "Unidade Centro",
+      address: "Rua das Flores, 123",
+      city: "São Paulo",
+      state: "SP",
+      phone: "+55 11 3333-4444",
+      description: "Atendimento no centro",
+      managerName: "Maria Silva",
+    });
+    expect(location).toMatchObject({
+      name: "Unidade Centro",
+      address: "Rua das Flores, 123",
+      city: "São Paulo",
+      state: "SP",
+      managerName: "Maria Silva",
+    });
+    expect(await locationApi.getById(organizationId, location.id)).toMatchObject(
+      { id: location.id, name: "Unidade Centro" },
+    );
+    expect(await locationApi.list(organizationId, 1, 10)).toMatchObject({
+      total: 1,
+      data: [expect.objectContaining({ id: location.id })],
+    });
+    const singleDeleteLocation = await locationApi.create(organizationId, {
+      name: "Unidade Sul",
+      address: "Avenida Brasil, 50",
+      city: "Curitiba",
+      state: "PR",
+    });
+    await locationApi.delete(organizationId, singleDeleteLocation.id);
+    expect(
+      await locationApi.update(organizationId, location.id, {
+        name: "Unidade Centro Atualizada",
+        address: "Rua das Flores, 123",
+        city: "São Paulo",
+        state: "SP",
+      }),
+    ).toMatchObject({ name: "Unidade Centro Atualizada" });
+    expect(await locationApi.deleteMany(organizationId, [location.id])).toEqual(
+      { deletedCount: 1 },
+    );
+    expect((await locationApi.list(organizationId, 1, 10)).total).toBe(0);
+
+    expect(await siteApi.getByOrganization(organizationId)).toBeNull();
+    const site = await siteApi.create(organizationId, {
+      publicName: "Locadora Central",
+      slug: `locadora-${email.split("@")[0]}`,
+      domain: null,
+      phone: "+55 11 3333-4444",
+      description: "Aluguel de veículos",
+      primaryColor: "#282B74",
+      secondaryColor: "#F2F2F8",
+      logoUrl: null,
+    });
+    expect(site).toMatchObject({
+      publicName: "Locadora Central",
+      phone: "+55 11 3333-4444",
+      primaryColor: "#282B74",
+    });
+    expect(await siteApi.getByOrganization(organizationId)).toMatchObject({
+      id: site.id,
+      slug: site.slug,
+    });
+    expect(await siteApi.getById(organizationId, site.id)).toMatchObject({
+      id: site.id,
+    });
+    expect(
+      await siteApi.update(organizationId, site.id, {
+        publicName: "Locadora Central atualizada",
+        slug: site.slug,
+        domain: "www.example.com",
+        phone: null,
+        description: null,
+        primaryColor: null,
+        secondaryColor: null,
+        logoUrl: null,
+      }),
+    ).toMatchObject({
+      publicName: "Locadora Central atualizada",
+      domain: "www.example.com",
+      phone: null,
+    });
+    await siteApi.delete(organizationId, site.id);
+    expect(await siteApi.getByOrganization(organizationId)).toBeNull();
 
     await api.logout();
     expect(await api.getCurrentUser()).toBeNull();

@@ -119,6 +119,38 @@ beforeEach(() => {
 });
 
 describe("vehicle management page", () => {
+  it("shows field-level validation errors and blocks invalid vehicle requests", async () => {
+    const user = userEvent.setup();
+    renderVehiclesPage();
+    await user.click(screen.getByRole("button", { name: "Novo veículo" }));
+    const dialog = screen.getByRole("dialog", { name: "Novo veículo" });
+    const make = within(dialog).getByLabelText("Marca");
+    const model = within(dialog).getByLabelText("Modelo");
+    const year = within(dialog).getByLabelText("Ano");
+    await user.clear(make);
+    await user.type(make, "A");
+    await user.clear(model);
+    await user.clear(year);
+    await user.click(
+      within(dialog).getByRole("button", { name: "Salvar veículo" }),
+    );
+
+    expect(
+      within(dialog).getByText("Informe ao menos 2 caracteres.", {
+        selector: "#vehicle-make-error",
+      }),
+    ).toBeVisible();
+    expect(within(dialog).getByText("O ano deve conter 4 dígitos.")).toBeVisible();
+    expect(make).toHaveAttribute("aria-invalid", "true");
+    expect(
+      vi.mocked(fetch).mock.calls.some(
+        ([input, init]) =>
+          new URL(String(input)).pathname === "/vehicles" &&
+          init?.method === "POST",
+      ),
+    ).toBe(false);
+  });
+
   it("loads the tenant vehicle list and integrates create, edit, and bulk delete", async () => {
     const user = userEvent.setup();
     renderVehiclesPage();

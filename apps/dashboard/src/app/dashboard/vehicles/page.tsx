@@ -9,6 +9,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { FieldError } from "../../../components/forms/field-error";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import styles from "./vehicles.module.css";
 
@@ -44,6 +45,7 @@ export default function VehiclesPage() {
     confirmDelete,
     currentVehicles,
     form,
+    fieldErrors,
     goToNextPage,
     goToPreviousPage,
     isLoading,
@@ -266,10 +268,18 @@ export default function VehiclesPage() {
                   </h2>
                   <p>Preencha os dados principais do veículo.</p>
                 </header>
-                <form className="vehicle-form" onSubmit={submitVehicle}>
+                <form
+                  className="vehicle-form"
+                  noValidate
+                  onSubmit={submitVehicle}
+                >
                   <label>
                     Marca
                     <input
+                      aria-describedby={
+                        fieldErrors.make ? "vehicle-make-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.make)}
                       autoFocus
                       maxLength={80}
                       onChange={(event) =>
@@ -278,10 +288,18 @@ export default function VehiclesPage() {
                       required
                       value={form.make}
                     />
+                    <FieldError
+                      id="vehicle-make-error"
+                      message={fieldErrors.make}
+                    />
                   </label>
                   <label>
                     Modelo
                     <input
+                      aria-describedby={
+                        fieldErrors.model ? "vehicle-model-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.model)}
                       maxLength={100}
                       onChange={(event) =>
                         updateFormField("model", event.target.value)
@@ -289,29 +307,53 @@ export default function VehiclesPage() {
                       required
                       value={form.model}
                     />
+                    <FieldError
+                      id="vehicle-model-error"
+                      message={fieldErrors.model}
+                    />
                   </label>
                   <label>
                     Ano
                     <input
+                      aria-describedby={
+                        fieldErrors.year ? "vehicle-year-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.year)}
                       max={2100}
                       min={1886}
+                      inputMode="numeric"
                       onChange={(event) =>
                         updateFormField("year", event.target.value)
                       }
+                      pattern="[0-9]*"
                       required
-                      type="number"
+                      type="text"
                       value={form.year}
+                    />
+                    <FieldError
+                      id="vehicle-year-error"
+                      message={fieldErrors.year}
                     />
                   </label>
                   <label>
                     Descrição
                     <textarea
+                      aria-describedby={
+                        fieldErrors.description
+                          ? "vehicle-description-error"
+                          : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.description)}
                       maxLength={1000}
                       onChange={(event) =>
                         updateFormField("description", event.target.value)
                       }
                       rows={3}
                       value={form.description}
+                    />
+                    <FieldError
+                      id="vehicle-description-error"
+                      message={fieldErrors.description}
                     />
                   </label>
                   {mutationError && (

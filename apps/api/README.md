@@ -56,9 +56,47 @@ All vehicle category endpoints require an authenticated session and an `organiza
 
 Category names must be unique within an organization. Duplicate names return `409 Conflict`. Category identifiers belonging to another organization are returned as not found; requests for an organization without an active membership are forbidden.
 
+## Location endpoints
+
+All location endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
+
+- `GET /locations?organizationId=<id>&page=1&limit=10` returns a paginated location list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /locations/:id?organizationId=<id>` returns one location in that organization.
+- `POST /locations?organizationId=<id>` creates a location with required `name`, `address`, `city`, and `state`; `phone`, `description`, and `managerName` are optional.
+- `PATCH /locations/:id?organizationId=<id>` updates one or more location fields.
+- `DELETE /locations/:id?organizationId=<id>` deletes one location.
+- `DELETE /locations/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and atomically deletes all requested locations.
+
+Location identifiers belonging to another organization are returned as not found. Requests for an organization without an active membership are forbidden. The manager is stored as a name and is not linked to an AsteHub user.
+
+## Site configuration endpoints
+
+Site configuration is limited to one record per organization. All endpoints require an authenticated session and an `organizationId` query parameter; the API verifies active organization membership before accessing configuration.
+
+- `GET /sites?organizationId=<id>` returns the organization's site configuration. It returns `404 Not Found` when no configuration has been created.
+- `GET /sites/:id?organizationId=<id>` returns one site configuration belonging to that organization.
+- `POST /sites?organizationId=<id>` creates the configuration with required `publicName` and a lowercase hyphen-separated `slug`. Optional fields are `domain`, `phone`, `description`, `primaryColor`, `secondaryColor`, and an HTTPS `logoUrl`.
+- `PATCH /sites/:id?organizationId=<id>` updates one or more configuration fields. Optional fields can be set to `null` or an empty string to clear them.
+- `DELETE /sites/:id?organizationId=<id>` removes the organization's site configuration.
+
+Slugs and configured domains must be unique across organizations; duplicate organization configurations, slugs, or domains return `409 Conflict`. Colors must use six-digit hex notation. Site configuration does not create public pages or publish a site.
+
+## Lead endpoints
+
+All lead endpoints require an authenticated session and an `organizationId` query parameter. The API checks for an active membership before accessing lead records and verifies that linked vehicles and locations belong to the same organization.
+
+- `GET /leads?organizationId=<id>&page=1&limit=10` returns a paginated lead list with contact details, status, and optional vehicle/location summaries.
+- `GET /leads/:id?organizationId=<id>` returns one lead in that organization.
+- `POST /leads?organizationId=<id>` creates a lead from `contactName`, `phone`, and `message`; `email`, `vehicleId`, and `locationId` are optional. New leads start with status `NEW`.
+- `PATCH /leads/:id?organizationId=<id>` updates lead fields and/or status. Contact name, phone, message, email, and related vehicle/location can be edited; nullable email and relationship IDs can be cleared.
+- `DELETE /leads/:id?organizationId=<id>` deletes one lead.
+- `DELETE /leads/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and atomically deletes all requested leads.
+
+Phone numbers must contain 8–15 digits. Lead statuses are `NEW`, `CONTACTED`, and `CLOSED`. Identifiers from another organization are not exposed; an invalid cross-organization vehicle or location reference is rejected.
+
 ## Database and checks
 
-Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
+Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. After changing `schema.prisma`, regenerate Prisma Client before compiling or starting the API with `npm run db:generate --workspace @astehub/api`. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
 For integration tests, point `DATABASE_URL` at the dedicated test database, apply migrations there, and keep that environment variable set while running the tests:
 
 ```powershell

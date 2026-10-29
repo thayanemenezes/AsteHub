@@ -11,6 +11,11 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
 import {
+  formErrors,
+  type FormErrors,
+  vehicleCategoryFormSchema,
+} from "../../../validation/form-validation";
+import {
   VehicleCategoryApi,
   VehicleCategoryApiError,
   type VehicleCategory,
@@ -66,6 +71,9 @@ export function useVehicleCategoriesContainer() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    FormErrors<VehicleCategoryFormValues>
+  >({});
 
   const loadCategories = useCallback(
     (signal: AbortSignal): Promise<VehicleCategoryPage> => {
@@ -101,6 +109,7 @@ export function useVehicleCategoriesContainer() {
   function openCreateDialog() {
     setForm(emptyForm);
     setMutationError("");
+    setFieldErrors({});
     setCategoryDialog({ type: "create" });
   }
 
@@ -110,6 +119,7 @@ export function useVehicleCategoriesContainer() {
       description: category.description ?? "",
     });
     setMutationError("");
+    setFieldErrors({});
     setCategoryDialog({ type: "edit", category });
   }
 
@@ -125,6 +135,7 @@ export function useVehicleCategoriesContainer() {
 
   function closeDialog() {
     setCategoryDialog(null);
+    setFieldErrors({});
   }
 
   function updateFormField(
@@ -132,6 +143,14 @@ export function useVehicleCategoriesContainer() {
     value: string,
   ) {
     setForm((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   function goToPreviousPage() {
@@ -153,12 +172,21 @@ export function useVehicleCategoriesContainer() {
       return;
     }
 
+    const parsedForm = vehicleCategoryFormSchema.safeParse(form);
+    if (!parsedForm.success) {
+      setFieldErrors(
+        formErrors<VehicleCategoryFormValues>(parsedForm.error.issues),
+      );
+      return;
+    }
+
     const input: VehicleCategoryInput = {
-      name: form.name.trim(),
-      description: form.description.trim(),
+      name: parsedForm.data.name,
+      description: parsedForm.data.description,
     };
     setIsSubmitting(true);
     setMutationError("");
+    setFieldErrors({});
     try {
       if (categoryDialog.type === "create") {
         await api.create(organizationId, input);
@@ -238,6 +266,7 @@ export function useVehicleCategoriesContainer() {
     confirmDelete,
     currentCategories,
     form,
+    fieldErrors,
     goToNextPage,
     goToPreviousPage,
     isLoading: resource.isLoading,

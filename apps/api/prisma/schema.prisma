@@ -18,6 +18,12 @@ enum MembershipStatus {
   SUSPENDED
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
 model User {
   id                       String              @id @default(cuid()) @db.VarChar(30)
   email                    String              @unique @db.VarChar(320)
@@ -31,13 +37,16 @@ model User {
 }
 
 model Organization {
-  id          String       @id @default(cuid()) @db.VarChar(30)
-  name        String       @db.VarChar(120)
-  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime     @updatedAt @db.Timestamptz(3)
-  memberships Membership[]
-  vehicles    Vehicle[]
+  id                String            @id @default(cuid()) @db.VarChar(30)
+  name              String            @db.VarChar(120)
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
+  memberships       Membership[]
+  vehicles          Vehicle[]
   vehicleCategories VehicleCategory[]
+  locations         Location[]
+  site              Site?
+  leads             Lead[]
 }
 
 model Vehicle {
@@ -50,6 +59,7 @@ model Vehicle {
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leads          Lead[]
 
   @@index([organizationId, createdAt])
 }
@@ -65,6 +75,60 @@ model VehicleCategory {
 
   @@unique([organizationId, name])
   @@index([organizationId, createdAt])
+}
+
+model Location {
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  organizationId String       @db.VarChar(30)
+  name           String       @db.VarChar(120)
+  address        String       @db.VarChar(250)
+  city           String       @db.VarChar(100)
+  state          String       @db.VarChar(100)
+  phone          String?      @db.VarChar(40)
+  description    String?      @db.VarChar(500)
+  managerName    String?      @db.VarChar(120)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leads          Lead[]
+
+  @@index([organizationId, createdAt])
+}
+
+model Lead {
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  organizationId String       @db.VarChar(30)
+  contactName    String       @db.VarChar(120)
+  email          String?      @db.VarChar(320)
+  phone          String       @db.VarChar(15)
+  message        String       @db.VarChar(1000)
+  status         LeadStatus   @default(NEW)
+  vehicleId      String?      @db.VarChar(30)
+  locationId     String?      @db.VarChar(30)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  location       Location?    @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status, createdAt])
+}
+
+model Site {
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  organizationId String       @unique @db.VarChar(30)
+  publicName     String       @db.VarChar(120)
+  slug           String       @unique @db.VarChar(60)
+  domain         String?      @unique @db.VarChar(253)
+  phone          String?      @db.VarChar(40)
+  description    String?      @db.VarChar(1000)
+  primaryColor   String?      @db.Char(7)
+  secondaryColor String?      @db.Char(7)
+  logoUrl        String?      @db.VarChar(2048)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Membership {

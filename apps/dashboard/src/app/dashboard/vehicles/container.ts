@@ -11,6 +11,12 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
 import {
+  digitsOnly,
+  formErrors,
+  type FormErrors,
+  vehicleFormSchema,
+} from "../../../validation/form-validation";
+import {
   VehicleApi,
   VehicleApiError,
   type Vehicle,
@@ -60,6 +66,9 @@ export function useVehiclesContainer() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    FormErrors<VehicleFormValues>
+  >({});
 
   const loadVehicles = useCallback(
     (signal: AbortSignal): Promise<VehiclePage> => {
@@ -95,6 +104,7 @@ export function useVehiclesContainer() {
   function openCreateDialog() {
     setForm(emptyForm);
     setMutationError("");
+    setFieldErrors({});
     setVehicleDialog({ type: "create" });
   }
 
@@ -106,6 +116,7 @@ export function useVehiclesContainer() {
       description: vehicle.description ?? "",
     });
     setMutationError("");
+    setFieldErrors({});
     setVehicleDialog({ type: "edit", vehicle });
   }
 
@@ -121,10 +132,20 @@ export function useVehiclesContainer() {
 
   function closeDialog() {
     setVehicleDialog(null);
+    setFieldErrors({});
   }
 
   function updateFormField(field: keyof VehicleFormValues, value: string) {
-    setForm((current) => ({ ...current, [field]: value }));
+    const nextValue = field === "year" ? digitsOnly(value) : value;
+    setForm((current) => ({ ...current, [field]: nextValue }));
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   }
 
   function goToPreviousPage() {
@@ -146,14 +167,21 @@ export function useVehiclesContainer() {
       return;
     }
 
+    const parsedForm = vehicleFormSchema.safeParse(form);
+    if (!parsedForm.success) {
+      setFieldErrors(formErrors<VehicleFormValues>(parsedForm.error.issues));
+      return;
+    }
+
     const input: VehicleInput = {
-      make: form.make.trim(),
-      model: form.model.trim(),
-      year: Number(form.year),
-      description: form.description.trim(),
+      make: parsedForm.data.make,
+      model: parsedForm.data.model,
+      year: Number(parsedForm.data.year),
+      description: parsedForm.data.description,
     };
     setIsSubmitting(true);
     setMutationError("");
+    setFieldErrors({});
     try {
       if (vehicleDialog.type === "create") {
         await api.create(organizationId, input);
@@ -232,6 +260,7 @@ export function useVehiclesContainer() {
     currentVehicles,
     closeDialog,
     form,
+    fieldErrors,
     goToNextPage,
     goToPreviousPage,
     isLoading: resource.isLoading,
