@@ -11,6 +11,15 @@ npm run db:migrate --workspace @astehub/api
 npm run dev
 ```
 
+For production, the dashboard is exported as a static site and deployed to
+GitHub Pages by `.github/workflows/ci.yml` after CI succeeds on `main`. Configure
+the repository variable `NEXT_PUBLIC_API_URL` with the HTTPS URL of the
+separately hosted API. Project Pages paths are inferred from the repository
+name; set `PAGES_BASE_PATH` to override the prefix, or `/` for a domain-root
+site. GitHub Pages does not host the API. Since authentication uses
+`SameSite=Lax` cookies, configure the dashboard and API on HTTPS origins under
+the same site (for example, sibling subdomains of a custom domain).
+
 The dashboard uses the existing session provider and `/auth/me` response to show the signed-in email and first active organization. The API continues to manage the HttpOnly session cookie; the dashboard does not store session tokens in browser storage.
 
 The vehicle catalog is served by the authenticated `/vehicles` API endpoints. It lists vehicles for the active organization with pagination and supports creating, editing, individual deletion, and selecting multiple vehicles for atomic deletion. Apply the API migration before using the module.

@@ -1,54 +1,150 @@
-name: CI Monorepo (Turborepo)
+name: CI and GitHub Pages
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Validar e Buildar
+  validate:
+    name: Validate monorepo
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: astehub_test
+          POSTGRES_USER: astehub_test
+          POSTGRES_PASSWORD: astehub_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U astehub_test -d astehub_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://astehub_test:astehub_test@localhost:5434/astehub_test?schema=public
+      NEXT_PUBLIC_API_URL: https://api.example.invalid
 
     steps:
-      - name: Checkout do código
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Instalar o pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Configurar Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: 24
+          cache: npm
 
-      - name: Instalar dependências
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Configurar Cache do Turborepo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
-
-      - name: Executar Lint
-        run: pnpm turbo run lint --cache-dir=".turbo"
-
-      - name: Executar Testes
-        run: pnpm turbo run test --cache-dir=".turbo"
-
-      - name: Executar Build do Projeto
+      - name: Lint
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            pnpm turbo run build --filter=[origin/main] --cache-dir=".turbo"
-          else
-            pnpm turbo run build --cache-dir=".turbo"
+          npm run lint --workspace @astehub/api
+          npm run lint --workspace @astehub/dashboard
+
+      - name: Check types
+        run: |
+          npm run check-types --workspace @repo/contracts
+          npm run check-types --workspace @repo/ui
+          npm run check-types --workspace @astehub/api
+          npm run check-types --workspace @astehub/dashboard
+
+      - name: Run unit tests
+        run: |
+          npm run test:unit --workspace @astehub/api
+          npm run test:unit --workspace @astehub/dashboard
+
+      - name: Apply test database migrations
+        run: npm run db:migrate --workspace @astehub/api
+
+      - name: Run integration tests
+        run: |
+          npm run test:integration --workspace @astehub/api
+          npm run test:integration --workspace @astehub/dashboard
+
+      - name: Build API
+        run: npm run build --workspace @astehub/api
+
+      - name: Build dashboard
+        run: npm run build --workspace @astehub/dashboard
+
+  deploy-dashboard:
+    name: Deploy dashboard to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+      PAGES_BASE_PATH: ${{ vars.PAGES_BASE_PATH }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate production API URL
+        shell: bash
+        run: |
+          if [[ -z "$NEXT_PUBLIC_API_URL" ]]; then
+            echo "::error::Configure the NEXT_PUBLIC_API_URL repository variable with the production API URL."
+            exit 1
           fi
+          if [[ "$NEXT_PUBLIC_API_URL" != https://* ]]; then
+            echo "::error::NEXT_PUBLIC_API_URL must use HTTPS."
+            exit 1
+          fi
+
+      - name: Configure Pages base path
+        shell: bash
+        run: |
+          if [[ "$PAGES_BASE_PATH" == "/" ]]; then
+            echo "GITHUB_PAGES_BASE_PATH=" >> "$GITHUB_ENV"
+          elif [[ -n "$PAGES_BASE_PATH" ]]; then
+            echo "GITHUB_PAGES_BASE_PATH=$PAGES_BASE_PATH" >> "$GITHUB_ENV"
+          elif [[ "${{ github.event.repository.name }}" == "${{ github.repository_owner }}.github.io" ]]; then
+            echo "GITHUB_PAGES_BASE_PATH=" >> "$GITHUB_ENV"
+          else
+            echo "GITHUB_PAGES_BASE_PATH=/${{ github.event.repository.name }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build static dashboard
+        run: npm run build --workspace @astehub/dashboard
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/dashboard/out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

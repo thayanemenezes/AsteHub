@@ -1,159 +1,58 @@
-# Turborepo starter
+# AsteHub
 
-This Turborepo starter is maintained by the Turborepo core team.
+Monorepo for AsteHub, a multi-tenant SaaS platform for vehicle rental companies.
 
-## Using this example
+## Applications
 
-Run the following command:
+- `apps/api`: NestJS API, PostgreSQL, and Prisma.
+- `apps/dashboard`: Next.js dashboard, exported as a static site for GitHub Pages.
+- `packages/`: shared contracts, UI, and configuration.
 
-```sh
-npx create-turbo@latest
+## Local development
+
+Requirements: Node.js 24 or newer, npm, and Docker.
+
+```powershell
+npm ci
+Copy-Item apps\api\.env.example apps\api\.env
+docker compose -f infra\docker-compose.yml up -d --wait
+npm run db:migrate --workspace @astehub/api
+npm run dev
 ```
 
-## What's inside?
+Set `NEXT_PUBLIC_API_URL=http://localhost:3001` in
+`apps\dashboard\.env.local`. The API uses `DATABASE_URL` from
+`apps\api\.env`.
 
-This Turborepo includes the following packages/apps:
+## GitHub Actions and GitHub Pages
 
-### Apps and Packages
+The workflow in `.github/workflows/ci.yml` runs lint, type checks, unit and
+PostgreSQL integration tests, and builds both applications. After successful
+validation on `main`, it publishes the static dashboard to GitHub Pages.
+Pull requests run validation but do not deploy.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+In the repository's **Settings → Secrets and variables → Actions → Variables**,
+add:
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- `NEXT_PUBLIC_API_URL`: HTTPS URL of the deployed production API.
+- `PAGES_BASE_PATH` (optional): path prefix such as `/AsteHub` for a project
+  site. The workflow derives this from the repository name by default. Set it
+  to `/` for a site served from the domain root.
 
-### Utilities
+Enable **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+The first Pages deployment may require repository or organization permission
+to create the `github-pages` environment.
 
-This Turborepo has some additional tools already setup for you:
+GitHub Pages only serves static files; it cannot run the NestJS API or
+PostgreSQL. Deploy `apps/api` and its database to a separate Node.js hosting
+provider. Configure the API's production `DATABASE_URL`, `CORS_ORIGINS` (the
+exact dashboard origin), and, if password reset emails are enabled,
+`DASHBOARD_URL`, `RESEND_API_KEY`, and `EMAIL_FROM` in that hosting provider.
+Apply Prisma migrations there with
+`npm run db:migrate --workspace @astehub/api` before serving traffic.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-npm exec turbo build
-npm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+The API uses `SameSite=Lax` session cookies. For browser authentication to work,
+the dashboard and API must use HTTPS origins on the same site, for example
+`dashboard.example.com` and `api.example.com`. The default `github.io` Pages
+domain and an unrelated API domain are cross-site; use a custom Pages domain
+under the same registrable domain as the API.
