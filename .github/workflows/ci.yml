@@ -1,0 +1,54 @@
+name: CI Monorepo (Turborepo)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Validar e Buildar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar o pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Configurar Cache do Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Executar Lint
+        run: pnpm turbo run lint --cache-dir=".turbo"
+
+      - name: Executar Testes
+        run: pnpm turbo run test --cache-dir=".turbo"
+
+      - name: Executar Build do Projeto
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm turbo run build --filter=[origin/main] --cache-dir=".turbo"
+          else
+            pnpm turbo run build --cache-dir=".turbo"
+          fi
