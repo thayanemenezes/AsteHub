@@ -51,7 +51,11 @@ jobs:
           pnpm turbo run test --cache-dir=".turbo"
 
       - name: Executar Build do App Web (React)
+        # Injeta a URL da API do Render como variável de ambiente para o Vite compilar junto com o código
+        env:
+          VITE_API_URL: https://astehub.onrender.com # <-- Substitua pela URL gerada pelo Render para a sua API
         run: pnpm turbo run build --filter=web... --cache-dir=".turbo"
+
 
       - name: Deploy Frontend para o GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
