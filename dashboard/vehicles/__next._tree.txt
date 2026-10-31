@@ -1,4 +1,4 @@
 :HL["/AsteHub/_next/static/chunks/0s0jbrd1ciy-8.css","style"]
 :HL["/AsteHub/_next/static/chunks/1kepwjac63_yx.css","style"]
 :HL["/AsteHub/_next/static/chunks/1rxyf__s60zai.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"dashboard","param":null,"prefetchHints":4192,"slots":{"children":{"name":"vehicles","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"12mOtrPnZnl8IT3ZY5LiF"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"dashboard","param":null,"prefetchHints":4192,"slots":{"children":{"name":"vehicles","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"rXluD0gT-k13FpuZ3lsK2"}
