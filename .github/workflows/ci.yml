@@ -53,7 +53,7 @@ jobs:
       - name: Executar Build do App Web (React)
         # Injeta a URL da API do Render como variável de ambiente para o Vite compilar junto com o código
         env:
-          VITE_API_URL: https://astehub.onrender.com # <-- Substitua pela URL gerada pelo Render para a sua API
+          NEXT_PUBLIC_API_URL: https://astehub.onrender.com # <-- Substitua pela URL gerada pelo Render para a sua API
         run: pnpm turbo run build --filter=web... --cache-dir=".turbo"
 
 
