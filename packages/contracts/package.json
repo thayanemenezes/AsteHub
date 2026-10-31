@@ -10,7 +10,7 @@
       "default": "./src/index.ts"
     },
     "./leads": {
-      "types": "./src/src/leads.ts",
+      "types": "./src/leads.ts",
       "default": "./src/leads.ts"
     }
   },
