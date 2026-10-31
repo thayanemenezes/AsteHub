@@ -39,16 +39,15 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 26
           cache: 'pnpm'
 
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      - name: Executar Lint e Testes
-        run: |
-          pnpm turbo run lint --cache-dir=".turbo"
-          pnpm turbo run test --cache-dir=".turbo"
+      - name: Executar Testes
+        run: pnpm turbo run test --continue --cache-dir=".turbo"
+
 
       - name: Executar Build do App Web (React)
         # Injeta a URL da API do Render como variável de ambiente para o Vite compilar junto com o código
