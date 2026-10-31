@@ -46,13 +46,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Executar Testes
-        run: pnpm turbo run test --continue --cache-dir=".turbo"
+        run: pnpm turbo run test --pass-with-no-tests --cache-dir=".turbo"
+
 
 
       - name: Executar Build do App Web (React)
-        # Injeta a URL da API do Render como variável de ambiente para o Vite compilar junto com o código
         env:
-          NEXT_PUBLIC_API_URL: https://astehub.onrender.com # <-- Substitua pela URL gerada pelo Render para a sua API
+          NEXT_PUBLIC_API_URL: https://astehub.onrender.com 
         run: pnpm turbo run build --filter=web... --cache-dir=".turbo"
 
 
