@@ -1,0 +1,90 @@
+
+> @astehub/api@0.0.0 build C:\Users\User\Workspace\astehub\apps\api
+> tsc -p tsconfig.build.json
+
+src/auth/auth-session.ts(1,36): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/auth/auth.controller.ts(12,40): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/auth/auth.guard.ts(7,30): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/auth/auth.guard.ts(23,36): error TS2339: Property 'cookies' does not exist on type 'AuthenticatedRequest'.
+src/auth/auth.guard.ts(31,39): error TS2339: Property 'session' does not exist on type 'PrismaService'.
+src/auth/auth.guard.ts(37,25): error TS2339: Property 'session' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(8,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/auth/auth.service.ts(9,31): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/auth/auth.service.ts(52,38): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(52,58): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/auth/auth.service.ts(86,9): error TS18046: 'error' is of type 'unknown'.
+src/auth/auth.service.ts(98,36): error TS2339: Property 'user' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(113,23): error TS2339: Property 'session' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(127,36): error TS2339: Property 'user' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(138,43): error TS2339: Property 'user' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(154,23): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(154,43): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/auth/auth.service.ts(187,23): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(187,43): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/auth/auth.service.ts(224,25): error TS2339: Property 'session' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(233,39): error TS2339: Property 'user' does not exist on type 'PrismaService'.
+src/auth/auth.service.ts(254,47): error TS7006: Parameter 'membership' implicitly has an 'any' type.
+src/leads/leads.service.ts(7,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/leads/leads.service.ts(41,37): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(44,36): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(57,36): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(70,24): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(89,32): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(97,9): error TS18046: 'error' is of type 'unknown'.
+src/leads/leads.service.ts(107,39): error TS2339: Property 'lead' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(117,24): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(117,44): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/leads/leads.service.ts(141,41): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(150,42): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/leads/leads.service.ts(161,42): error TS2339: Property 'membership' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(7,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/locations/locations.service.ts(35,37): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(38,36): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(51,40): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(63,24): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(81,32): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(89,9): error TS18046: 'error' is of type 'unknown'.
+src/locations/locations.service.ts(99,39): error TS2339: Property 'location' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(109,24): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/locations/locations.service.ts(109,44): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/locations/locations.service.ts(126,42): error TS2339: Property 'membership' does not exist on type 'PrismaService'.
+src/prisma/prisma.service.ts(2,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+src/prisma/prisma.service.ts(10,16): error TS2339: Property '$connect' does not exist on type 'PrismaService'.
+src/prisma/prisma.service.ts(14,16): error TS2339: Property '$disconnect' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(8,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/sites/sites.service.ts(32,36): error TS2339: Property 'site' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(44,36): error TS2339: Property 'site' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(57,32): error TS2339: Property 'site' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(64,9): error TS18046: 'error' is of type 'unknown'.
+src/sites/sites.service.ts(88,32): error TS2339: Property 'site' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(96,9): error TS18046: 'error' is of type 'unknown'.
+src/sites/sites.service.ts(102,9): error TS18046: 'error' is of type 'unknown'.
+src/sites/sites.service.ts(114,39): error TS2339: Property 'site' does not exist on type 'PrismaService'.
+src/sites/sites.service.ts(123,42): error TS2339: Property 'membership' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(8,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/vehicle-categories/vehicle-categories.service.ts(31,37): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(34,36): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(47,40): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(64,32): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(71,9): error TS18046: 'error' is of type 'unknown'.
+src/vehicle-categories/vehicle-categories.service.ts(95,32): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(103,9): error TS18046: 'error' is of type 'unknown'.
+src/vehicle-categories/vehicle-categories.service.ts(109,9): error TS18046: 'error' is of type 'unknown'.
+src/vehicle-categories/vehicle-categories.service.ts(121,39): error TS2339: Property 'vehicleCategory' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(131,24): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/vehicle-categories/vehicle-categories.service.ts(131,44): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/vehicle-categories/vehicle-categories.service.ts(150,42): error TS2339: Property 'membership' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(7,10): error TS2305: Module '"@prisma/client"' has no exported member 'Prisma'.
+src/vehicles/vehicles.service.ts(32,37): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(35,36): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(54,39): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(70,24): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(88,32): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(96,9): error TS18046: 'error' is of type 'unknown'.
+src/vehicles/vehicles.service.ts(106,39): error TS2339: Property 'vehicle' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(116,24): error TS2339: Property '$transaction' does not exist on type 'PrismaService'.
+src/vehicles/vehicles.service.ts(116,44): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+src/vehicles/vehicles.service.ts(133,42): error TS2339: Property 'membership' does not exist on type 'PrismaService'.
+C:\Users\User\Workspace\astehub\apps\api:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @astehub/api@0.0.0 build: `tsc -p tsconfig.build.json`
+Exit status 2

@@ -14,8 +14,8 @@
     "test:integration": "npm run build --workspace @astehub/api && vitest run --config vitest.integration.config.ts test/integration"
   },
   "dependencies": {
-    "@repo/contracts": "*",
-    "@repo/ui": "*",
+    "@repo/contracts": "workspace:*",
+    "@repo/ui": "workspace:*",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@repo/contracts": "workspace:*",
-    "@repo/eslint-config": "*",
+    "@repo/eslint-config": "workspace:*",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
