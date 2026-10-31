@@ -31,8 +31,9 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@babel/plugin-syntax-decorators": "^8.0.1",
-    "@repo/eslint-config": "*",
     "@types/cookie-parser": "^1.4.10",
     "@types/node": "^26.4.1",
     "@types/supertest": "^6.0.3",
