@@ -54,13 +54,16 @@ jobs:
           NEXT_PUBLIC_API_URL: https://astehub.onrender.com 
         run: pnpm turbo run build --filter=@astehub/dashboard... --cache-dir=".turbo"
 
+      - name: Preparar diretório de Deploy
+        run: touch apps/dashboard/out/.nojekyll
+
+
       - name: Deploy Frontend para o GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: apps/dashboard/out
           branch: gh-pages
-
 
 
   deploy-api:
