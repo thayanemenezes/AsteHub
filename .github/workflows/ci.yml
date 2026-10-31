@@ -67,10 +67,10 @@ jobs:
   deploy-api:
     name: Deploy da API
     needs: validate-and-build
-    # Só roda se for um push na main E houver alterações na pasta da API
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs:validate-and-build.outputs.api_changed == 'true'
+    # CORREÇÃO: Substituído 'needs:validate-and-build' por 'needs.validate-and-build'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.validate-and-build.outputs.api_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Disparar Deploy no Render
-        # O Render fornece uma URL de webhook para deploy automático
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_WEBHOOK_URL }}"
+
