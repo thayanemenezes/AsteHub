@@ -52,8 +52,7 @@ jobs:
       - name: Executar Build do App Web (React)
         env:
           NEXT_PUBLIC_API_URL: https://astehub.onrender.com 
-        run: pnpm turbo run build --filter=web... --cache-dir=".turbo"
-
+        run: pnpm turbo run build --filter=@astehub/dashboard... --cache-dir=".turbo"
 
       - name: Deploy Frontend para o GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
