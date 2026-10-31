@@ -18,8 +18,8 @@
   },
   "devEngines": {
     "packageManager": {
-      "name": "npm",
-      "version": "^11.19.1",
+      "name": "pnpm",
+      "version": "9.15.9",
       "onFail": "warn"
     }
   },
