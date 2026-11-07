@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
-    "dev": "nodemon --watch src --ext ts --exec \"tsc -p tsconfig.build.json && node dist/main.js\"",
+    "dev": "prisma generate && nodemon --watch src --ext ts --exec \"tsc -p tsconfig.build.json && node dist/main.js\"",
     "lint": "eslint src test --max-warnings 0",
     "check-types": "tsc --noEmit -p tsconfig.json",
     "test": "npm run test:unit && npm run test:integration",
@@ -16,6 +16,8 @@
     "db:migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1162.0",
+    "@aws-sdk/s3-presigned-post": "^3.1162.0",
     "@nestjs/common": "^11.1.16",
     "@nestjs/core": "^11.1.16",
     "@nestjs/platform-express": "^11.1.16",

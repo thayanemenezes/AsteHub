@@ -58,12 +58,16 @@ export class LocationApi {
     page: number,
     limit = 10,
     signal?: AbortSignal,
+    search?: string,
   ): Promise<LocationPage> {
     const query = new URLSearchParams({
       organizationId,
       page: String(page),
       limit: String(limit),
     });
+    if (search?.trim()) {
+      query.set("search", search.trim());
+    }
     return this.request(`/locations?${query}`, { signal });
   }
 

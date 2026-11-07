@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import type { LeadStatus } from "@repo/contracts";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service.js";
 import type {
@@ -37,7 +38,44 @@ export class LeadsService {
 
   async list(userId: string, query: LeadListQueryDto) {
     await this.requireMembership(userId, query.organizationId);
-    const where = { organizationId: query.organizationId };
+    const search = query.search?.trim();
+    const statusSearch: Record<string, LeadStatus> = {
+      novo: "NEW",
+      contatado: "CONTACTED",
+      encerrado: "CLOSED",
+    };
+    const searchStatus = statusSearch[search?.toLocaleLowerCase() ?? ""];
+    const where: Prisma.LeadWhereInput = {
+      organizationId: query.organizationId,
+      ...(search
+        ? {
+            OR: [
+              { contactName: { contains: search, mode: "insensitive" } },
+              { email: { contains: search, mode: "insensitive" } },
+              { phone: { contains: search, mode: "insensitive" } },
+              { message: { contains: search, mode: "insensitive" } },
+              ...(searchStatus ? [{ status: searchStatus }] : []),
+              {
+                vehicle: {
+                  is: {
+                    OR: [
+                      { make: { contains: search, mode: "insensitive" } },
+                      { model: { contains: search, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              },
+              {
+                location: {
+                  is: {
+                    name: { contains: search, mode: "insensitive" },
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
     const total = await this.prisma.lead.count({ where });
     const totalPages = Math.ceil(total / query.limit);
     const page = Math.min(query.page, Math.max(totalPages, 1));
@@ -143,7 +181,9 @@ export class LeadsService {
         select: { id: true },
       });
       if (!vehicle) {
-        throw new BadRequestException("Vehicle must belong to this organization.");
+        throw new BadRequestException(
+          "Vehicle must belong to this organization.",
+        );
       }
     }
     if (input.locationId) {
@@ -152,7 +192,9 @@ export class LeadsService {
         select: { id: true },
       });
       if (!location) {
-        throw new BadRequestException("Location must belong to this organization.");
+        throw new BadRequestException(
+          "Location must belong to this organization.",
+        );
       }
     }
   }

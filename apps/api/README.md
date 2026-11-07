@@ -19,6 +19,24 @@ The root `npm run dev` starts both the API and web app. The sample environments 
 
 Password reset email delivery is handled by the API through Resend. Configure `RESEND_API_KEY`, `EMAIL_FROM` (a verified sender), and `DASHBOARD_URL` (the dashboard origin) in the API environment. `DASHBOARD_URL` must use HTTPS in production. Never expose the Resend key to the dashboard.
 
+Vehicle image uploads use short-lived S3 presigned POSTs. Configure `AWS_REGION`, `AWS_S3_BUCKET`, and `AWS_S3_PUBLIC_BASE_URL` in the API environment. The API uses the AWS SDK credential provider chain; use the hosting provider's IAM role where available, or configure `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as secrets locally and in production. The IAM principal needs `s3:PutObject` for `organizations/*/vehicles/*`. `AWS_S3_PUBLIC_BASE_URL` should be an HTTPS CloudFront URL serving the bucket's public vehicle images. Never expose AWS credentials to the dashboard.
+
+Configure S3 bucket CORS to allow `POST` from the exact dashboard origin(s), including `http://localhost:3000` for local development. Example (replace the production origin with the deployed dashboard origin):
+
+```json
+[
+  {
+    "AllowedOrigins": ["http://localhost:3000", "https://<dashboard-origin>"],
+    "AllowedMethods": ["POST"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
+
+The browser uploads directly to S3; each presigned request expires after five minutes and restricts uploads to JPEG, PNG, WebP, or AVIF up to 10 MB. Do not enable public bucket listing. Configure CloudFront/bucket access for reading images and consider an S3 lifecycle rule for incomplete vehicle uploads that are never saved.
+
 ## Authentication endpoints
 
 - `POST /auth/register` accepts `email`, `password` (12–128 characters), and `organizationName`; it creates a user, initial organization, active `OWNER` membership, and session atomically.
@@ -34,20 +52,22 @@ Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a
 
 All vehicle endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
 
-- `GET /vehicles?organizationId=<id>&page=1&limit=10` returns a paginated vehicle list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /vehicles?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated vehicle list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100. Optional `search` filters by make, model, series, description, or exact year.
 - `GET /vehicles/:id?organizationId=<id>` returns a vehicle in that organization.
-- `POST /vehicles?organizationId=<id>` creates a vehicle from `make`, `model`, `year`, and optional `description`.
-- `PATCH /vehicles/:id?organizationId=<id>` updates one or more of those fields.
+- `POST /vehicles?organizationId=<id>` creates a vehicle from `make`, `model`, and `year`; optional fields are `categoryId` (a category in the same organization), `description`, `series`, `isElectric`, `images` (up to 20 HTTP(S) URLs), and `customFields` (up to 30 unique `{ "name", "value" }` text pairs). Deleting a category clears it from its vehicles.
+- `PATCH /vehicles/:id?organizationId=<id>` updates one or more vehicle fields. `categoryId` must identify a category in the same organization; send `null` to remove it. Sending an empty `images` or `customFields` array clears that collection.
 - `DELETE /vehicles/:id?organizationId=<id>` deletes one vehicle.
 - `DELETE /vehicles/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and deletes all requested vehicles atomically.
 
 Vehicle identifiers belonging to another organization are returned as not found. Requests for an organization without an active membership are forbidden.
 
+- `POST /vehicles/images/upload?organizationId=<id>` accepts `{ "contentType": "image/png", "size": 12345 }` and returns a short-lived S3 form (`url`, `fields`) plus the public `imageUrl`. The authenticated user must have active membership in the organization. Upload the file to the returned URL as multipart form data, including all returned fields and the file under `file`, then save `imageUrl` in the vehicle's `images` array.
+
 ## Vehicle category endpoints
 
 All vehicle category endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
 
-- `GET /vehicle-categories?organizationId=<id>&page=1&limit=10` returns a paginated category list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /vehicle-categories?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated category list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100. Optional `search` filters by name or description.
 - `GET /vehicle-categories/:id?organizationId=<id>` returns one category in that organization.
 - `POST /vehicle-categories?organizationId=<id>` creates a category from a required `name` (up to 80 characters) and optional `description` (up to 500 characters).
 - `PATCH /vehicle-categories/:id?organizationId=<id>` updates the category name and/or description.
@@ -60,7 +80,7 @@ Category names must be unique within an organization. Duplicate names return `40
 
 All location endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
 
-- `GET /locations?organizationId=<id>&page=1&limit=10` returns a paginated location list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100.
+- `GET /locations?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated location list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100. Optional `search` filters by name, address, city, state, phone, or manager.
 - `GET /locations/:id?organizationId=<id>` returns one location in that organization.
 - `POST /locations?organizationId=<id>` creates a location with required `name`, `address`, `city`, and `state`; `phone`, `description`, and `managerName` are optional.
 - `PATCH /locations/:id?organizationId=<id>` updates one or more location fields.
@@ -85,7 +105,7 @@ Slugs and configured domains must be unique across organizations; duplicate orga
 
 All lead endpoints require an authenticated session and an `organizationId` query parameter. The API checks for an active membership before accessing lead records and verifies that linked vehicles and locations belong to the same organization.
 
-- `GET /leads?organizationId=<id>&page=1&limit=10` returns a paginated lead list with contact details, status, and optional vehicle/location summaries.
+- `GET /leads?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated lead list with contact details, status, and optional vehicle/location summaries. Optional `search` filters by contact details, message, status, vehicle make/model, or location name.
 - `GET /leads/:id?organizationId=<id>` returns one lead in that organization.
 - `POST /leads?organizationId=<id>` creates a lead from `contactName`, `phone`, and `message`; `email`, `vehicleId`, and `locationId` are optional. New leads start with status `NEW`.
 - `PATCH /leads/:id?organizationId=<id>` updates lead fields and/or status. Contact name, phone, message, email, and related vehicle/location can be edited; nullable email and relationship IDs can be cleared.
@@ -96,7 +116,7 @@ Phone numbers must contain 8–15 digits. Lead statuses are `NEW`, `CONTACTED`, 
 
 ## Database and checks
 
-Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. After changing `schema.prisma`, regenerate Prisma Client before compiling or starting the API with `npm run db:generate --workspace @astehub/api`. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
+Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. The API build and development commands generate Prisma Client before compiling or starting; run `npm run db:generate --workspace @astehub/api` to regenerate it explicitly. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
 For integration tests, point `DATABASE_URL` at the dedicated test database, apply migrations there, and keep that environment variable set while running the tests:
 
 ```powershell

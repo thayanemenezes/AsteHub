@@ -50,15 +50,21 @@ model Organization {
 }
 
 model Vehicle {
-  id             String       @id @default(cuid()) @db.VarChar(30)
-  organizationId String       @db.VarChar(30)
-  make           String       @db.VarChar(80)
-  model          String       @db.VarChar(100)
+  id             String           @id @default(cuid()) @db.VarChar(30)
+  organizationId String           @db.VarChar(30)
+  make           String           @db.VarChar(80)
+  model          String           @db.VarChar(100)
   year           Int
-  description    String?      @db.VarChar(1000)
-  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  description    String?          @db.VarChar(1000)
+  series         String?          @db.VarChar(100)
+  isElectric     Boolean          @default(false)
+  images         String[]         @default([])
+  customFields   Json             @default("[]")
+  categoryId     String?          @db.VarChar(30)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category       VehicleCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   leads          Lead[]
 
   @@index([organizationId, createdAt])
@@ -72,6 +78,7 @@ model VehicleCategory {
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicles       Vehicle[]
 
   @@unique([organizationId, name])
   @@index([organizationId, createdAt])

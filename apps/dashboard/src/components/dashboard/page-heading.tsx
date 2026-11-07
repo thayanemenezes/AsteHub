@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
+import { AiOutlineSearch } from "react-icons/ai";
 import styles from "./page-heading.module.css";
+
+interface PageHeadingSearch {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}
 
 interface PageHeadingProps {
   headingId: string;
@@ -9,6 +17,7 @@ interface PageHeadingProps {
   actionIcon: ReactNode;
   onAction: () => void;
   actionDisabled?: boolean;
+  search?: PageHeadingSearch;
 }
 
 export function PageHeading({
@@ -19,6 +28,7 @@ export function PageHeading({
   actionIcon,
   onAction,
   actionDisabled = false,
+  search,
 }: PageHeadingProps) {
   return (
     <header className={styles.heading}>
@@ -26,15 +36,30 @@ export function PageHeading({
         <h1 id={headingId}>{title}</h1>
         <p>{description}</p>
       </div>
-      <button
-        className={styles.actionButton}
-        disabled={actionDisabled}
-        onClick={onAction}
-        type="button"
-      >
-        {actionIcon}
-        {actionLabel}
-      </button>
+      <div className={styles.actions}>
+        {search && (
+          <label className={styles.search}>
+            <AiOutlineSearch aria-hidden="true" size={16} />
+            <input
+              aria-label={search.label}
+              maxLength={100}
+              onChange={(event) => search.onChange(event.currentTarget.value)}
+              placeholder={search.placeholder}
+              type="search"
+              value={search.value}
+            />
+          </label>
+        )}
+        <button
+          className={styles.actionButton}
+          disabled={actionDisabled}
+          onClick={onAction}
+          type="button"
+        >
+          {actionIcon}
+          {actionLabel}
+        </button>
+      </div>
     </header>
   );
 }

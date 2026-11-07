@@ -10,6 +10,7 @@ import {
 import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
+import { useDebouncedValue } from "../../../hooks/use-debounced-value";
 import {
   digitsOnly,
   formErrors,
@@ -81,6 +82,8 @@ export function useLocationsContainer() {
   )?.id;
   const api = useMemo(() => new LocationApi(), []);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [locationDialog, setLocationDialog] = useState<LocationDialog>(null);
   const [form, setForm] = useState<LocationFormValues>(emptyForm);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -95,18 +98,26 @@ export function useLocationsContainer() {
       if (!organizationId) {
         return Promise.reject(new Error("An active organization is required."));
       }
-      return api.list(organizationId, page, PAGE_SIZE, signal);
+      return api.list(
+        organizationId,
+        page,
+        PAGE_SIZE,
+        signal,
+        debouncedSearchQuery,
+      );
     },
-    [api, organizationId, page],
+    [api, debouncedSearchQuery, organizationId, page],
   );
-  const resourceKey = organizationId ? `${organizationId}:${page}` : null;
+  const resourceKey = organizationId
+    ? `${organizationId}:${page}:${debouncedSearchQuery}`
+    : null;
   const resource = useAsyncResource(resourceKey, loadLocations);
   const locationPage = resource.data ?? null;
   const currentLocations = locationPage?.data ?? [];
 
   useEffect(() => {
     setSelectedIds([]);
-  }, [organizationId, page]);
+  }, [debouncedSearchQuery, organizationId, page]);
 
   const allVisibleSelected =
     currentLocations.length > 0 &&
@@ -177,6 +188,11 @@ export function useLocationsContainer() {
 
   function goToNextPage() {
     setPage((current) => current + 1);
+  }
+
+  function updateSearchQuery(value: string) {
+    setSearchQuery(value);
+    setPage(1);
   }
 
   async function submitLocation(event: FormEvent<HTMLFormElement>) {
@@ -303,6 +319,8 @@ export function useLocationsContainer() {
     page,
     pageCount,
     retryLoading: resource.retry,
+    searchQuery,
+    updateSearchQuery,
     selectedIds,
     someVisibleSelected,
     submitLocation,

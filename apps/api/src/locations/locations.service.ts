@@ -31,7 +31,22 @@ export class LocationsService {
 
   async list(userId: string, query: LocationListQueryDto) {
     await this.requireMembership(userId, query.organizationId);
-    const where = { organizationId: query.organizationId };
+    const search = query.search?.trim();
+    const where: Prisma.LocationWhereInput = {
+      organizationId: query.organizationId,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { address: { contains: search, mode: "insensitive" } },
+              { city: { contains: search, mode: "insensitive" } },
+              { state: { contains: search, mode: "insensitive" } },
+              { phone: { contains: search, mode: "insensitive" } },
+              { managerName: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
     const total = await this.prisma.location.count({ where });
     const totalPages = Math.ceil(total / query.limit);
     const page = Math.min(query.page, Math.max(totalPages, 1));
@@ -58,7 +73,11 @@ export class LocationsService {
     return location;
   }
 
-  async create(userId: string, organizationId: string, input: CreateLocationDto) {
+  async create(
+    userId: string,
+    organizationId: string,
+    input: CreateLocationDto,
+  ) {
     await this.requireMembership(userId, organizationId);
     return this.prisma.location.create({
       data: { ...input, organizationId },

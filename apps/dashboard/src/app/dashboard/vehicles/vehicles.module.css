@@ -89,6 +89,13 @@
   font-size: 12px;
 }
 
+.page :global(.vehicle-meta) {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .page :global(.vehicle-table th),
 .page :global(.vehicle-table td) {
   padding: 0 14px;
@@ -285,6 +292,7 @@
 }
 
 .page :global(.vehicle-form input),
+.page :global(.vehicle-form select),
 .page :global(.vehicle-form textarea) {
   width: 100%;
   min-height: 40px;
@@ -298,6 +306,89 @@
 
 .page :global(.vehicle-form textarea) {
   resize: vertical;
+}
+
+.page :global(.vehicle-form .vehicle-electric-field) {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 9px;
+}
+
+.page :global(.vehicle-electric-field input) {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.page :global(.vehicle-custom-fields) {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.page :global(.vehicle-upload-hint) {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.page :global(.vehicle-image-file-list) {
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  margin: -4px 0 0;
+  list-style: none;
+}
+
+.page :global(.vehicle-image-file-list li) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.page :global(.vehicle-image-file-list li span) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page :global(.vehicle-custom-fields legend) {
+  padding: 0 5px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.page :global(.vehicle-custom-field-row) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.page :global(.vehicle-add-field),
+.page :global(.vehicle-remove-field) {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.page :global(.vehicle-add-field:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .page :global(.vehicle-form input:focus),
@@ -373,5 +464,13 @@
 
   .page :global(.vehicle-dialog) {
     padding: 20px;
+  }
+
+  .page :global(.vehicle-custom-field-row) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page :global(.vehicle-remove-field) {
+    justify-self: start;
   }
 }

@@ -48,6 +48,18 @@ function optionalPhone() {
     );
 }
 
+function validImageUrl(value: string): boolean {
+  if (value.length > 2048) return false;
+  try {
+    const url = new URL(value);
+    return (
+      ["http:", "https:"].includes(url.protocol) && url.hostname.length > 0
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const vehicleFormSchema = z.object({
   make: requiredText(2, 80),
   model: requiredText(2, 100),
@@ -58,6 +70,82 @@ export const vehicleFormSchema = z.object({
       message: "Informe um ano entre 1886 e 2100.",
     }),
   description: optionalText(10, 1000),
+  series: z.string().trim().max(100, "Use no máximo 100 caracteres."),
+  categoryId: z.string().max(30, "Categoria inválida."),
+  isElectric: z.boolean(),
+  images: z
+    .string()
+    .superRefine((value, context) => {
+      const urls = value
+        .split(/\r?\n/)
+        .map((url) => url.trim())
+        .filter(Boolean);
+      if (urls.length > 20) {
+        context.addIssue({
+          code: "custom",
+          message: "Informe no máximo 20 imagens.",
+        });
+      }
+      for (const url of urls) {
+        if (!validImageUrl(url)) {
+          context.addIssue({
+            code: "custom",
+            message: "Informe URLs HTTP ou HTTPS válidas, uma por linha.",
+          });
+          break;
+        }
+      }
+    })
+    .transform((value) =>
+      value
+        .split(/\r?\n/)
+        .map((url) => url.trim())
+        .filter(Boolean),
+    ),
+  customFields: z
+    .array(
+      z.object({
+        name: z.string().trim().max(60, "Use no máximo 60 caracteres."),
+        value: z.string().trim().max(250, "Use no máximo 250 caracteres."),
+      }),
+    )
+    .max(30, "Informe no máximo 30 campos personalizados.")
+    .superRefine((fields, context) => {
+      const names = new Set<string>();
+      fields.forEach((field, index) => {
+        if (!field.name && !field.value) return;
+        if (!field.name) {
+          context.addIssue({
+            code: "custom",
+            path: [index, "name"],
+            message: "Informe o nome do campo.",
+          });
+          return;
+        }
+        if (!field.value) {
+          context.addIssue({
+            code: "custom",
+            path: [index, "value"],
+            message: "Informe o valor do campo.",
+          });
+          return;
+        }
+        const normalizedName = field.name.toLocaleLowerCase();
+        if (names.has(normalizedName)) {
+          context.addIssue({
+            code: "custom",
+            path: [index, "name"],
+            message: "Os nomes dos campos devem ser únicos.",
+          });
+        }
+        names.add(normalizedName);
+      });
+    })
+    .transform((fields) =>
+      fields
+        .filter((field) => field.name && field.value)
+        .map(({ name, value }) => ({ name, value })),
+    ),
 });
 
 export const vehicleCategoryFormSchema = z.object({
@@ -79,10 +167,12 @@ const domainPattern =
   /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 
 function optionalDomain() {
-  return z.string().refine(
-    (value) => value.length === 0 || domainPattern.test(value.toLowerCase()),
-    "Informe um domínio válido.",
-  );
+  return z
+    .string()
+    .refine(
+      (value) => value.length === 0 || domainPattern.test(value.toLowerCase()),
+      "Informe um domínio válido.",
+    );
 }
 
 function optionalColor() {

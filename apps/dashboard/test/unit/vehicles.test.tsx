@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "react-toastify";
 import VehiclesPage from "../../src/app/dashboard/vehicles/page";
 import { AuthProvider } from "../../src/auth/auth-provider";
+import type { Vehicle } from "../../src/vehicles/vehicle-api";
 
 vi.mock("react-toastify", () => ({
   toast: {
@@ -29,17 +30,41 @@ const currentUser = {
   ],
 };
 
-const vehicle = {
+const vehicle: Vehicle = {
   id: "vehicle-1",
   make: "Toyota",
   model: "Corolla",
   year: 2024,
   description: "Sedan automático",
+  series: null,
+  isElectric: false,
+  images: [],
+  customFields: [],
+  categoryId: null,
+  category: null,
   createdAt: "2026-10-20T12:00:00.000Z",
   updatedAt: "2026-10-20T12:00:00.000Z",
 };
 
-let vehicles: typeof vehicle[];
+const categories = [
+  {
+    id: "category-suv",
+    name: "SUV",
+    description: "Utilitários esportivos",
+    createdAt: "2026-10-20T12:00:00.000Z",
+    updatedAt: "2026-10-20T12:00:00.000Z",
+  },
+  {
+    id: "category-economy",
+    name: "Econômico",
+    description: "Carros econômicos",
+    createdAt: "2026-10-20T12:00:00.000Z",
+    updatedAt: "2026-10-20T12:00:00.000Z",
+  },
+];
+
+let vehicles: Vehicle[];
+let availableCategories = [...categories];
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(status === 204 ? null : JSON.stringify(body), {
@@ -59,6 +84,7 @@ function renderVehiclesPage() {
 beforeEach(() => {
   vi.mocked(toast.success).mockClear();
   vehicles = [{ ...vehicle }];
+  availableCategories = [...categories];
   vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:3001");
   vi.stubGlobal(
     "fetch",
@@ -67,37 +93,80 @@ beforeEach(() => {
       if (url.pathname === "/auth/me") {
         return jsonResponse(currentUser);
       }
+      if (
+        url.pathname === "/vehicle-categories" &&
+        (init?.method ?? "GET") === "GET"
+      ) {
+        const page = Number(url.searchParams.get("page"));
+        const limit = Number(url.searchParams.get("limit"));
+        return jsonResponse({
+          data: availableCategories.slice((page - 1) * limit, page * limit),
+          page,
+          limit,
+          total: availableCategories.length,
+          totalPages: Math.ceil(availableCategories.length / limit),
+        });
+      }
+      if (url.pathname === "/vehicles/images/upload") {
+        return jsonResponse({
+          url: "https://s3.example.com/astehub",
+          fields: {
+            key: "organizations/organization-1/vehicles/civic.png",
+            "Content-Type": "image/png",
+          },
+          imageUrl:
+            "https://cdn.example.com/organizations/organization-1/vehicles/civic.png",
+        });
+      }
+      if (url.origin === "https://s3.example.com") {
+        return new Response(null, { status: 204 });
+      }
       if (url.pathname === "/vehicles" && init?.method === "POST") {
+        const input = JSON.parse(String(init.body)) as Partial<Vehicle>;
+        const category = availableCategories.find(
+          (item) => item.id === input.categoryId,
+        );
         const created = {
           ...vehicle,
           id: "vehicle-2",
-          ...(JSON.parse(String(init.body)) as object),
+          ...input,
+          categoryId: input.categoryId ?? null,
+          category: category ? { id: category.id, name: category.name } : null,
         };
         vehicles = [created, ...vehicles];
         return jsonResponse(created, 201);
       }
       if (url.pathname === "/vehicles" && (init?.method ?? "GET") === "GET") {
+        const search = url.searchParams.get("search")?.toLowerCase();
+        const results = search
+          ? vehicles.filter((item) =>
+              `${item.make} ${item.model} ${item.year} ${item.series ?? ""} ${item.description ?? ""}`
+                .toLowerCase()
+                .includes(search),
+            )
+          : vehicles;
         return jsonResponse({
-          data: vehicles,
+          data: results,
           page: Number(url.searchParams.get("page")),
           limit: Number(url.searchParams.get("limit")),
-          total: vehicles.length,
-          totalPages: Math.ceil(vehicles.length / 10),
+          total: results.length,
+          totalPages: Math.ceil(results.length / 10),
         });
       }
-      if (
-        url.pathname.startsWith("/vehicles/") &&
-        init?.method === "PATCH"
-      ) {
+      if (url.pathname.startsWith("/vehicles/") && init?.method === "PATCH") {
         const id = url.pathname.split("/").at(-1) ?? "";
+        const input = JSON.parse(String(init.body)) as Partial<Vehicle>;
+        const category = availableCategories.find(
+          (item) => item.id === input.categoryId,
+        );
         const updated = {
           ...vehicle,
-          ...(JSON.parse(String(init.body)) as object),
+          ...input,
+          categoryId: input.categoryId ?? null,
+          category: category ? { id: category.id, name: category.name } : null,
           id,
         };
-        vehicles = vehicles.map((item) =>
-          item.id === id ? updated : item,
-        );
+        vehicles = vehicles.map((item) => (item.id === id ? updated : item));
         return jsonResponse(updated);
       }
       if (url.pathname === "/vehicles/bulk" && init?.method === "DELETE") {
@@ -105,10 +174,7 @@ beforeEach(() => {
         vehicles = vehicles.filter((item) => !ids.includes(item.id));
         return jsonResponse({ deletedCount: ids.length });
       }
-      if (
-        url.pathname.startsWith("/vehicles/") &&
-        init?.method === "DELETE"
-      ) {
+      if (url.pathname.startsWith("/vehicles/") && init?.method === "DELETE") {
         const id = url.pathname.split("/").at(-1) ?? "";
         vehicles = vehicles.filter((item) => item.id !== id);
         return jsonResponse(null, 204);
@@ -119,6 +185,87 @@ beforeEach(() => {
 });
 
 describe("vehicle management page", () => {
+  it("only offers a category select when the organization has categories", async () => {
+    const user = userEvent.setup();
+    availableCategories = [];
+    renderVehiclesPage();
+
+    await screen.findByRole("table", {
+      name: "Veículos da organização",
+    });
+    await user.click(screen.getByRole("button", { name: "Novo veículo" }));
+
+    expect(
+      within(
+        screen.getByRole("dialog", { name: "Novo veículo" }),
+      ).queryByLabelText("Categoria"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("loads category options from every category page", async () => {
+    const user = userEvent.setup();
+    availableCategories = Array.from({ length: 101 }, (_, index) => ({
+      ...categories[0]!,
+      id: `category-${index + 1}`,
+      name: `Categoria ${index + 1}`,
+    }));
+    renderVehiclesPage();
+
+    await screen.findByRole("table", {
+      name: "Veículos da organização",
+    });
+    await user.click(screen.getByRole("button", { name: "Novo veículo" }));
+
+    const categorySelect = await within(
+      screen.getByRole("dialog", { name: "Novo veículo" }),
+    ).findByLabelText("Categoria");
+    expect(
+      within(categorySelect).getByRole("option", { name: "Categoria 101" }),
+    ).toBeInTheDocument();
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input]) =>
+            String(input).includes("/vehicle-categories?") &&
+            String(input).includes("page=2"),
+        ),
+    ).toBe(true);
+  });
+
+  it("filters the vehicle table from the page heading search", async () => {
+    const user = userEvent.setup();
+    vehicles = [
+      { ...vehicle },
+      { ...vehicle, id: "vehicle-2", make: "Honda", model: "Civic" },
+    ];
+    renderVehiclesPage();
+
+    await screen.findByRole("table", {
+      name: "Veículos da organização",
+    });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Pesquisar veículos" }),
+      "honda civic",
+    );
+    await waitFor(() => {
+      const table = screen.getByRole("table", {
+        name: "Veículos da organização",
+      });
+      expect(within(table).getByText(/Honda\s+Civic/)).toBeVisible();
+      expect(
+        within(table).queryByText(/Toyota\s+Corolla/),
+      ).not.toBeInTheDocument();
+    });
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes("search=honda+civic"),
+        ),
+    ).toBe(true);
+  });
+
   it("shows field-level validation errors and blocks invalid vehicle requests", async () => {
     const user = userEvent.setup();
     renderVehiclesPage();
@@ -140,14 +287,18 @@ describe("vehicle management page", () => {
         selector: "#vehicle-make-error",
       }),
     ).toBeVisible();
-    expect(within(dialog).getByText("O ano deve conter 4 dígitos.")).toBeVisible();
+    expect(
+      within(dialog).getByText("O ano deve conter 4 dígitos."),
+    ).toBeVisible();
     expect(make).toHaveAttribute("aria-invalid", "true");
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          new URL(String(input)).pathname === "/vehicles" &&
-          init?.method === "POST",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            new URL(String(input)).pathname === "/vehicles" &&
+            init?.method === "POST",
+        ),
     ).toBe(false);
   });
 
@@ -164,18 +315,53 @@ describe("vehicle management page", () => {
       name: "Veículos da organização",
     });
     expect(within(table).getByText(/Toyota\s+Corolla/)).toBeVisible();
-    expect(vi.mocked(fetch).mock.calls.some(([input]) =>
-      String(input).includes(
-        "/vehicles?organizationId=organization-1&page=1&limit=10",
-      ),
-    )).toBe(true);
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/vehicles?organizationId=organization-1&page=1&limit=10",
+          ),
+        ),
+    ).toBe(true);
 
     await user.click(screen.getByRole("button", { name: "Novo veículo" }));
     const createDialog = screen.getByRole("dialog", { name: "Novo veículo" });
+    const categorySelect =
+      await within(createDialog).findByLabelText("Categoria");
+    expect(
+      within(categorySelect).getByRole("option", { name: "SUV" }),
+    ).toBeInTheDocument();
+    expect(
+      within(categorySelect).getByRole("option", { name: "Econômico" }),
+    ).toBeInTheDocument();
+    await user.selectOptions(categorySelect, "category-suv");
     await user.type(within(createDialog).getByLabelText("Marca"), "Honda");
     await user.type(within(createDialog).getByLabelText("Modelo"), "Civic");
     await user.clear(within(createDialog).getByLabelText("Ano"));
     await user.type(within(createDialog).getByLabelText("Ano"), "2025");
+    await user.type(
+      within(createDialog).getByLabelText("Série/versão"),
+      "Touring",
+    );
+    await user.click(within(createDialog).getByLabelText("Veículo elétrico"));
+    await user.type(
+      within(createDialog).getByLabelText("URLs das imagens"),
+      "https://images.example.com/civic-front.jpg\nhttps://images.example.com/civic-side.jpg",
+    );
+    await user.click(
+      within(createDialog).getByRole("button", {
+        name: "Adicionar campo personalizado",
+      }),
+    );
+    await user.type(
+      within(createDialog).getByLabelText("Nome do campo"),
+      "Cor",
+    );
+    await user.type(
+      within(createDialog).getByLabelText("Valor do campo"),
+      "Azul",
+    );
     await user.click(
       within(createDialog).getByRole("button", { name: "Salvar veículo" }),
     );
@@ -185,20 +371,54 @@ describe("vehicle management page", () => {
     );
 
     const createdRow = await screen.findByRole("row", {
-      name: /Honda Civic 2025/,
+      name: /Honda Civic.*2025/,
     });
     expect(createdRow).toBeVisible();
+    const createRequest = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input, init]) =>
+          new URL(String(input)).pathname === "/vehicles" &&
+          init?.method === "POST",
+      );
+    expect(JSON.parse(String(createRequest?.[1]?.body))).toMatchObject({
+      series: "Touring",
+      isElectric: true,
+      images: [
+        "https://images.example.com/civic-front.jpg",
+        "https://images.example.com/civic-side.jpg",
+      ],
+      customFields: [{ name: "Cor", value: "Azul" }],
+      categoryId: "category-suv",
+    });
 
     await user.click(
       within(createdRow).getByRole("button", { name: "Editar Honda Civic" }),
     );
     const editDialog = screen.getByRole("dialog", { name: "Editar veículo" });
+    expect(within(editDialog).getByLabelText("Categoria")).toHaveValue(
+      "category-suv",
+    );
+    await user.selectOptions(
+      within(editDialog).getByLabelText("Categoria"),
+      "category-economy",
+    );
     const modelInput = within(editDialog).getByLabelText("Modelo");
     await user.clear(modelInput);
     await user.type(modelInput, "Civic Touring");
     await user.click(
       within(editDialog).getByRole("button", { name: "Salvar alterações" }),
     );
+    const updateRequest = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input, init]) =>
+          new URL(String(input)).pathname === "/vehicles/vehicle-2" &&
+          init?.method === "PATCH",
+      );
+    expect(JSON.parse(String(updateRequest?.[1]?.body))).toMatchObject({
+      categoryId: "category-economy",
+    });
     expect(toast.success).toHaveBeenNthCalledWith(
       2,
       "Veículo atualizado com sucesso.",
@@ -209,7 +429,9 @@ describe("vehicle management page", () => {
       name: "Selecionar todos os veículos desta página",
     });
     await user.click(selection);
-    await user.click(screen.getByRole("button", { name: "Excluir selecionados (2)" }));
+    await user.click(
+      screen.getByRole("button", { name: "Excluir selecionados (2)" }),
+    );
     const confirmation = screen.getByRole("dialog", {
       name: "Excluir veículos selecionados?",
     });
@@ -261,13 +483,70 @@ describe("vehicle management page", () => {
     const confirmation = screen.getByRole("dialog", {
       name: "Excluir veículo?",
     });
+
     await user.click(
       within(confirmation).getByRole("button", { name: "Excluir veículo" }),
     );
 
-    expect(toast.success).toHaveBeenCalledWith(
-      "Veículo excluído com sucesso.",
+    expect(toast.success).toHaveBeenCalledWith("Veículo excluído com sucesso.");
+  });
+
+  it("uploads selected image files to S3 before saving the vehicle", async () => {
+    const user = userEvent.setup();
+    renderVehiclesPage();
+
+    await user.click(screen.getByRole("button", { name: "Novo veículo" }));
+    const dialog = screen.getByRole("dialog", { name: "Novo veículo" });
+    await user.type(within(dialog).getByLabelText("Marca"), "Honda");
+    await user.type(within(dialog).getByLabelText("Modelo"), "Civic");
+    await user.clear(within(dialog).getByLabelText("Ano"));
+    await user.type(within(dialog).getByLabelText("Ano"), "2025");
+    await user.upload(
+      within(dialog).getByLabelText(/Enviar imagens/),
+      new File(["image bytes"], "civic.png", { type: "image/png" }),
     );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Salvar veículo" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Honda Civic.*2025/ }),
+    ).toBeVisible();
+    const uploadRequest = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input]) =>
+          new URL(String(input)).pathname === "/vehicles/images/upload",
+      );
+    expect(JSON.parse(String(uploadRequest?.[1]?.body))).toEqual({
+      contentType: "image/png",
+      size: 11,
+    });
+
+    const s3Request = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input]) => new URL(String(input)).origin === "https://s3.example.com",
+      );
+    expect(s3Request?.[1]?.method).toBe("POST");
+    expect(s3Request?.[1]?.body).toBeInstanceOf(FormData);
+    expect((s3Request?.[1]?.body as FormData).get("key")).toBe(
+      "organizations/organization-1/vehicles/civic.png",
+    );
+    expect((s3Request?.[1]?.body as FormData).get("file")).toBeInstanceOf(File);
+
+    const createRequest = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input, init]) =>
+          new URL(String(input)).pathname === "/vehicles" &&
+          init?.method === "POST",
+      );
+    expect(JSON.parse(String(createRequest?.[1]?.body))).toMatchObject({
+      images: [
+        "https://cdn.example.com/organizations/organization-1/vehicles/civic.png",
+      ],
+    });
   });
 
   it("navigates between pages without hiding the current list while refreshing", async () => {
@@ -283,7 +562,14 @@ describe("vehicle management page", () => {
           data:
             page === 1
               ? [vehicle]
-              : [{ ...vehicle, id: "vehicle-2", make: "Honda", model: "Civic" }],
+              : [
+                  {
+                    ...vehicle,
+                    id: "vehicle-2",
+                    make: "Honda",
+                    model: "Civic",
+                  },
+                ],
           page,
           limit: 10,
           total: 11,
@@ -303,11 +589,13 @@ describe("vehicle management page", () => {
     expect(await screen.findByText(/Honda\s+Civic/)).toBeVisible();
     expect(screen.getByText("Página 2 de 2")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(([input]) =>
-        String(input).includes(
-          "/vehicles?organizationId=organization-1&page=2&limit=10",
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/vehicles?organizationId=organization-1&page=2&limit=10",
+          ),
         ),
-      ),
     ).toBe(true);
 
     await user.click(screen.getByRole("button", { name: "Página anterior" }));
@@ -330,11 +618,15 @@ describe("vehicle management page", () => {
     expect(
       await screen.findByText("Não foi possível carregar os veículos."),
     ).toBeVisible();
-    expect(screen.queryByText("Nenhum veículo cadastrado.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Nenhum veículo cadastrado."),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Tentar novamente" }));
     await waitFor(() =>
-      expect(screen.getByRole("table", { name: "Veículos da organização" })).toBeVisible(),
+      expect(
+        screen.getByRole("table", { name: "Veículos da organização" }),
+      ).toBeVisible(),
     );
   });
 });

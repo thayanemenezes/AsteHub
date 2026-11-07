@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  redirect(`${process.env.GITHUB_PAGES_BASE_PATH ?? ""}/login`);
+  const pagesBasePath = process.env.PAGES_BASE_PATH?.trim().replace(
+    /^\/+|\/+$/g,
+    "",
+  );
+  redirect(`${pagesBasePath ? `/${pagesBasePath}` : ""}/login`);
 }

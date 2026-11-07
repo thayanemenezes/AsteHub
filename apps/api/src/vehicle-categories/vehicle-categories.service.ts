@@ -27,7 +27,18 @@ export class VehicleCategoriesService {
 
   async list(userId: string, query: VehicleCategoryListQueryDto) {
     await this.requireMembership(userId, query.organizationId);
-    const where = { organizationId: query.organizationId };
+    const search = query.search?.trim();
+    const where: Prisma.VehicleCategoryWhereInput = {
+      organizationId: query.organizationId,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
     const total = await this.prisma.vehicleCategory.count({ where });
     const totalPages = Math.ceil(total / query.limit);
     const page = Math.min(query.page, Math.max(totalPages, 1));

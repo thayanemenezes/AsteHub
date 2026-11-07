@@ -38,10 +38,7 @@ export class VehicleCategoryApi {
   private readonly baseUrl: string;
   private readonly fetcher: typeof fetch;
 
-  constructor(
-    baseUrl = apiBaseUrl(),
-    fetcher: typeof fetch = fetch,
-  ) {
+  constructor(baseUrl = apiBaseUrl(), fetcher: typeof fetch = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
     this.fetcher = fetcher.bind(globalThis);
   }
@@ -51,13 +48,34 @@ export class VehicleCategoryApi {
     page: number,
     limit = 10,
     signal?: AbortSignal,
+    search?: string,
   ): Promise<VehicleCategoryPage> {
     const query = new URLSearchParams({
       organizationId,
       page: String(page),
       limit: String(limit),
     });
+    if (search?.trim()) {
+      query.set("search", search.trim());
+    }
     return this.request(`/vehicle-categories?${query}`, { signal });
+  }
+
+  async listAll(
+    organizationId: string,
+    signal?: AbortSignal,
+  ): Promise<VehicleCategory[]> {
+    const firstPage = await this.list(organizationId, 1, 100, signal);
+    if (firstPage.totalPages <= 1) {
+      return firstPage.data;
+    }
+
+    const remainingPages = await Promise.all(
+      Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
+        this.list(organizationId, index + 2, 100, signal),
+      ),
+    );
+    return [...firstPage.data, ...remainingPages.flatMap((page) => page.data)];
   }
 
   getById(organizationId: string, id: string): Promise<VehicleCategory> {

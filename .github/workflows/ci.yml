@@ -52,6 +52,7 @@ jobs:
       - name: Executar Build do App Web (React)
         env:
           NEXT_PUBLIC_API_URL: https://astehub.onrender.com 
+          PAGES_BASE_PATH: ${{ vars.PAGES_BASE_PATH || format('/{0}', github.event.repository.name) }}
         run: pnpm turbo run build --filter=@astehub/dashboard... --cache-dir=".turbo"
 
       - name: Preparar diretório de Deploy
@@ -75,4 +76,3 @@ jobs:
     steps:
       - name: Disparar Deploy no Render
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_WEBHOOK_URL }}"
-

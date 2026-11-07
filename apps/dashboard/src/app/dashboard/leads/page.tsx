@@ -2,7 +2,10 @@
 
 import { AiOutlineDelete, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
-import { EmptyState, TableLoadingState } from "../../../components/dashboard/table-feedback";
+import {
+  EmptyState,
+  TableLoadingState,
+} from "../../../components/dashboard/table-feedback";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import { FieldError } from "../../../components/forms/field-error";
 import type { LeadStatus } from "@repo/contracts";
@@ -48,12 +51,14 @@ export default function LeadsPage() {
     page,
     pageCount,
     retryLoading,
+    searchQuery,
     selectedIds,
     someVisibleSelected,
     submitLead,
     togglePageSelection,
     toggleSelection,
     updateFormField,
+    updateSearchQuery,
     vehicles,
   } = useLeadsContainer();
 
@@ -70,6 +75,12 @@ export default function LeadsPage() {
         description="Acompanhe e organize os contatos comerciais da sua organização."
         headingId="leads-heading"
         onAction={openCreateDialog}
+        search={{
+          label: "Pesquisar leads",
+          placeholder: "Pesquisar leads...",
+          value: searchQuery,
+          onChange: updateSearchQuery,
+        }}
         title="Leads"
       />
 
@@ -88,7 +99,9 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {isLoading && <TableLoadingState columns={7} label="Carregando leads..." />}
+      {isLoading && (
+        <TableLoadingState columns={7} label="Carregando leads..." />
+      )}
 
       {!isLoading && !organizationId && (
         <EmptyState
@@ -103,8 +116,16 @@ export default function LeadsPage() {
         leadPage &&
         currentLeads.length === 0 && (
           <EmptyState
-            description="Cadastre um contato recebido para começar a acompanhar os leads da sua organização."
-            title="Nenhum lead cadastrado."
+            description={
+              searchQuery
+                ? "Tente alterar os termos pesquisados."
+                : "Cadastre um contato recebido para começar a acompanhar os leads da sua organização."
+            }
+            title={
+              searchQuery
+                ? "Nenhum lead encontrado."
+                : "Nenhum lead cadastrado."
+            }
           />
         )}
 
@@ -180,7 +201,9 @@ export default function LeadsPage() {
                     <td>
                       <span>{lead.phone}</span>
                       {lead.email && (
-                        <span className={styles.contactEmail}>{lead.email}</span>
+                        <span className={styles.contactEmail}>
+                          {lead.email}
+                        </span>
                       )}
                     </td>
                     <td className={styles.interest}>

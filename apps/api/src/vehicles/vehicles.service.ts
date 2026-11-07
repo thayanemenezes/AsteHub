@@ -18,6 +18,12 @@ const vehicleSelection = {
   model: true,
   year: true,
   description: true,
+  series: true,
+  isElectric: true,
+  images: true,
+  customFields: true,
+  categoryId: true,
+  category: { select: { id: true, name: true } },
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.VehicleSelect;
@@ -28,7 +34,21 @@ export class VehiclesService {
 
   async list(userId: string, query: VehicleListQueryDto) {
     await this.requireMembership(userId, query.organizationId);
-    const where = { organizationId: query.organizationId };
+    const search = query.search?.trim();
+    const where: Prisma.VehicleWhereInput = {
+      organizationId: query.organizationId,
+      ...(search
+        ? {
+            OR: [
+              { make: { contains: search, mode: "insensitive" } },
+              { model: { contains: search, mode: "insensitive" } },
+              { series: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+              ...(/^\d{4}$/.test(search) ? [{ year: Number(search) }] : []),
+            ],
+          }
+        : {}),
+    };
     const total = await this.prisma.vehicle.count({ where });
     const totalPages = Math.ceil(total / query.limit);
     const page = Math.min(query.page, Math.max(totalPages, 1));
@@ -67,8 +87,21 @@ export class VehiclesService {
     input: CreateVehicleDto,
   ) {
     await this.requireMembership(userId, organizationId);
+    await this.requireCategory(organizationId, input.categoryId);
+    const { customFields, ...vehicleInput } = input;
     return this.prisma.vehicle.create({
-      data: { ...input, organizationId },
+      data: {
+        ...vehicleInput,
+        ...(customFields
+          ? {
+              customFields: customFields.map(({ name, value }) => ({
+                name,
+                value,
+              })),
+            }
+          : {}),
+        organizationId,
+      },
       select: vehicleSelection,
     });
   }
@@ -80,14 +113,26 @@ export class VehiclesService {
     input: UpdateVehicleDto,
   ) {
     await this.requireMembership(userId, organizationId);
+    await this.requireCategory(organizationId, input.categoryId);
     if (Object.keys(input).length === 0) {
       throw new BadRequestException("At least one vehicle field is required.");
     }
 
     try {
+      const { customFields, ...vehicleInput } = input;
       return await this.prisma.vehicle.update({
         where: { id, organizationId },
-        data: input,
+        data: {
+          ...vehicleInput,
+          ...(customFields
+            ? {
+                customFields: customFields.map(({ name, value }) => ({
+                  name,
+                  value,
+                })),
+              }
+            : {}),
+        },
         select: vehicleSelection,
       });
     } catch (error) {
@@ -136,6 +181,25 @@ export class VehiclesService {
     });
     if (!membership) {
       throw new ForbiddenException("Active organization membership required.");
+    }
+  }
+
+  private async requireCategory(
+    organizationId: string,
+    categoryId: string | null | undefined,
+  ) {
+    if (!categoryId) {
+      return;
+    }
+
+    const category = await this.prisma.vehicleCategory.findFirst({
+      where: { id: categoryId, organizationId },
+      select: { id: true },
+    });
+    if (!category) {
+      throw new BadRequestException(
+        "Vehicle category must belong to the organization.",
+      );
     }
   }
 }

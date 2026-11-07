@@ -220,9 +220,13 @@ describe("authentication API", () => {
       assert.ok(resetToken);
 
       const storedToken = await prisma.passwordResetToken.findUniqueOrThrow({
-        where: { userId: (await prisma.user.findUniqueOrThrow({
-          where: { email: "owner@example.com" },
-        })).id },
+        where: {
+          userId: (
+            await prisma.user.findUniqueOrThrow({
+              where: { email: "owner@example.com" },
+            })
+          ).id,
+        },
       });
       assert.notEqual(storedToken.tokenHash, resetToken);
       assert.equal(storedToken.tokenHash.length, 64);
@@ -271,23 +275,19 @@ describe("authentication API", () => {
       );
       assert.equal(
         (
-          await request(app.getHttpServer())
-            .post("/auth/login")
-            .send({
-              email: "owner@example.com",
-              password: "correct-horse-battery-staple",
-            })
+          await request(app.getHttpServer()).post("/auth/login").send({
+            email: "owner@example.com",
+            password: "correct-horse-battery-staple",
+          })
         ).status,
         401,
       );
       assert.equal(
         (
-          await request(app.getHttpServer())
-            .post("/auth/login")
-            .send({
-              email: "owner@example.com",
-              password: "a-new-secure-password",
-            })
+          await request(app.getHttpServer()).post("/auth/login").send({
+            email: "owner@example.com",
+            password: "a-new-secure-password",
+          })
         ).status,
         201,
       );
@@ -392,7 +392,21 @@ describe("authentication API", () => {
     const secondOrg = await prisma.organization.findFirstOrThrow({
       where: { name: "Vehicle Rental B" },
     });
-    const makeVehicle = (cookie: string, organizationId: string, body: object) =>
+    const category = await prisma.vehicleCategory.create({
+      data: {
+        organizationId: firstOrg.id,
+        name: "SUV",
+        description: "Utilitário esportivo",
+      },
+    });
+    const foreignCategory = await prisma.vehicleCategory.create({
+      data: { organizationId: secondOrg.id, name: "SUV" },
+    });
+    const makeVehicle = (
+      cookie: string,
+      organizationId: string,
+      body: object,
+    ) =>
       request(app.getHttpServer())
         .post(`/vehicles?organizationId=${organizationId}`)
         .set("Cookie", cookie)
@@ -403,9 +417,15 @@ describe("authentication API", () => {
       model: "Corolla",
       year: 2024,
       description: "Sedan automático",
+      categoryId: category.id,
     });
     assert.equal(firstVehicle.status, 201, JSON.stringify(firstVehicle.body));
     assert.equal(firstVehicle.body.make, "Toyota");
+    assert.equal(firstVehicle.body.categoryId, category.id);
+    assert.deepEqual(firstVehicle.body.category, {
+      id: category.id,
+      name: "SUV",
+    });
     assert.equal(firstVehicle.body.organizationId, undefined);
     assert.equal(
       (
@@ -423,6 +443,13 @@ describe("authentication API", () => {
       year: 2023,
     });
     assert.equal(secondVehicle.status, 201);
+    const crossTenantCategory = await makeVehicle(firstCookie, firstOrg.id, {
+      make: "Honda",
+      model: "HR-V",
+      year: 2023,
+      categoryId: foreignCategory.id,
+    });
+    assert.equal(crossTenantCategory.status, 400);
     const crossTenantBulkDelete = await request(app.getHttpServer())
       .delete(`/vehicles/bulk?organizationId=${firstOrg.id}`)
       .set("Cookie", firstCookie)
@@ -456,6 +483,19 @@ describe("authentication API", () => {
     assert.equal(list.body.limit, 1);
     assert.equal(list.body.data.length, 1);
 
+    const searchedVehicles = await request(app.getHttpServer())
+      .get(`/vehicles?organizationId=${firstOrg.id}&search=toyota`)
+      .set("Cookie", firstCookie);
+    assert.equal(searchedVehicles.status, 200);
+    assert.equal(searchedVehicles.body.total, 1);
+    assert.equal(searchedVehicles.body.data[0].make, "Toyota");
+
+    const invalidCategoryUpdate = await request(app.getHttpServer())
+      .patch(`/vehicles/${createdVehicle.id}?organizationId=${firstOrg.id}`)
+      .set("Cookie", firstCookie)
+      .send({ categoryId: foreignCategory.id });
+    assert.equal(invalidCategoryUpdate.status, 400);
+
     const updated = await request(app.getHttpServer())
       .patch(`/vehicles/${createdVehicle.id}?organizationId=${firstOrg.id}`)
       .set("Cookie", firstCookie)
@@ -488,7 +528,9 @@ describe("authentication API", () => {
     assert.equal(
       (
         await request(app.getHttpServer())
-          .delete(`/vehicles/${secondVehicle.body.id}?organizationId=${firstOrg.id}`)
+          .delete(
+            `/vehicles/${secondVehicle.body.id}?organizationId=${firstOrg.id}`,
+          )
           .set("Cookie", firstCookie)
       ).status,
       404,
@@ -581,13 +623,20 @@ describe("authentication API", () => {
     assert.equal(duplicateName.status, 409);
 
     const list = await request(app.getHttpServer())
-      .get(
-        `/vehicle-categories?organizationId=${firstOrg.id}&page=1&limit=1`,
-      )
+      .get(`/vehicle-categories?organizationId=${firstOrg.id}&page=1&limit=1`)
       .set("Cookie", firstCookie);
     assert.equal(list.status, 200);
     assert.equal(list.body.total, 1);
     assert.equal(list.body.data[0].name, "SUV");
+
+    const searchedCategories = await request(app.getHttpServer())
+      .get(
+        `/vehicle-categories?organizationId=${firstOrg.id}&search=esportivos`,
+      )
+      .set("Cookie", firstCookie);
+    assert.equal(searchedCategories.status, 200);
+    assert.equal(searchedCategories.body.total, 1);
+    assert.equal(searchedCategories.body.data[0].name, "SUV");
 
     const updated = await request(app.getHttpServer())
       .patch(
@@ -599,12 +648,30 @@ describe("authentication API", () => {
     assert.equal(updated.body.name, "SUV compacto");
     assert.equal(updated.body.description, null);
 
+    const categorizedVehicle = await prisma.vehicle.create({
+      data: {
+        organizationId: firstOrg.id,
+        make: "Honda",
+        model: "HR-V",
+        year: 2025,
+        categoryId: firstCategory.body.id,
+      },
+    });
     const deleted = await request(app.getHttpServer())
       .delete(
         `/vehicle-categories/${firstCategory.body.id}?organizationId=${firstOrg.id}`,
       )
       .set("Cookie", firstCookie);
     assert.equal(deleted.status, 204);
+    assert.equal(
+      (
+        await prisma.vehicle.findUniqueOrThrow({
+          where: { id: categorizedVehicle.id },
+          select: { categoryId: true },
+        })
+      ).categoryId,
+      null,
+    );
     assert.equal(
       (
         await request(app.getHttpServer())
@@ -714,10 +781,15 @@ describe("authentication API", () => {
     assert.equal(firstPage.body.totalPages, 2);
     assert.equal(firstPage.body.data.length, 1);
 
+    const searchedLocations = await request(app.getHttpServer())
+      .get(`/locations?organizationId=${firstOrg.id}&search=curitiba`)
+      .set("Cookie", firstCookie);
+    assert.equal(searchedLocations.status, 200);
+    assert.equal(searchedLocations.body.total, 1);
+    assert.equal(searchedLocations.body.data[0].city, "Curitiba");
+
     const crossTenantLocationRead = await request(app.getHttpServer())
-      .get(
-        `/locations/${firstLocation.body.id}?organizationId=${secondOrg.id}`,
-      )
+      .get(`/locations/${firstLocation.body.id}?organizationId=${secondOrg.id}`)
       .set("Cookie", secondCookie);
     assert.equal(crossTenantLocationRead.status, 404);
 
@@ -1057,6 +1129,13 @@ describe("authentication API", () => {
     assert.equal(list.status, 200);
     assert.equal(list.body.total, 1);
     assert.equal(list.body.data[0].id, created.body.id);
+
+    const searchedLeads = await request(app.getHttpServer())
+      .get(`${leadUrl(firstOrg.id)}&search=honda`)
+      .set("Cookie", firstCookie);
+    assert.equal(searchedLeads.status, 200);
+    assert.equal(searchedLeads.body.total, 1);
+    assert.equal(searchedLeads.body.data[0].id, created.body.id);
 
     const fetched = await request(app.getHttpServer())
       .get(`/leads/${created.body.id}?organizationId=${firstOrg.id}`)

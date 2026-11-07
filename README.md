@@ -22,7 +22,8 @@ npm run dev
 
 Set `NEXT_PUBLIC_API_URL=http://localhost:3001` in
 `apps\dashboard\.env.local`. The API uses `DATABASE_URL` from
-`apps\api\.env`.
+`apps\api\.env`. Local dashboard development serves routes from `/`; the
+GitHub Pages path prefix is only configured during the deployment build.
 
 ## GitHub Actions and GitHub Pages
 

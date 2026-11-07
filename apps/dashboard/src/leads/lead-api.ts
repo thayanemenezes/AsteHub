@@ -6,13 +6,7 @@ import type {
   UpdateLeadInput,
 } from "@repo/contracts";
 
-export type {
-  CreateLeadInput,
-  Lead,
-  LeadPage,
-  LeadStatus,
-  UpdateLeadInput,
-};
+export type { CreateLeadInput, Lead, LeadPage, LeadStatus, UpdateLeadInput };
 
 export class LeadApiError extends Error {
   constructor(readonly status: number) {
@@ -43,12 +37,16 @@ export class LeadApi {
     page: number,
     limit = 10,
     signal?: AbortSignal,
+    search?: string,
   ): Promise<LeadPage> {
     const query = new URLSearchParams({
       organizationId,
       page: String(page),
       limit: String(limit),
     });
+    if (search?.trim()) {
+      query.set("search", search.trim());
+    }
     return this.request(`/leads?${query}`, { signal });
   }
 

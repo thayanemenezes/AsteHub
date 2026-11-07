@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "react-toastify";
@@ -35,7 +35,7 @@ const category = {
   updatedAt: "2026-10-20T12:00:00.000Z",
 };
 
-let categories: typeof category[];
+let categories: (typeof category)[];
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(status === 204 ? null : JSON.stringify(body), {
@@ -67,18 +67,23 @@ beforeEach(() => {
         url.pathname === "/vehicle-categories" &&
         (init?.method ?? "GET") === "GET"
       ) {
+        const search = url.searchParams.get("search")?.toLowerCase();
+        const results = search
+          ? categories.filter((item) =>
+              `${item.name} ${item.description ?? ""}`
+                .toLowerCase()
+                .includes(search),
+            )
+          : categories;
         return jsonResponse({
-          data: categories,
+          data: results,
           page: Number(url.searchParams.get("page")),
           limit: Number(url.searchParams.get("limit")),
-          total: categories.length,
-          totalPages: Math.ceil(categories.length / 10),
+          total: results.length,
+          totalPages: Math.ceil(results.length / 10),
         });
       }
-      if (
-        url.pathname === "/vehicle-categories" &&
-        init?.method === "POST"
-      ) {
+      if (url.pathname === "/vehicle-categories" && init?.method === "POST") {
         const created = {
           ...category,
           id: "category-2",
@@ -124,6 +129,50 @@ beforeEach(() => {
 });
 
 describe("vehicle categories page", () => {
+  it("filters the category table from the page heading search", async () => {
+    const user = userEvent.setup();
+    categories = [
+      { ...category },
+      {
+        ...category,
+        id: "category-2",
+        name: "Compacto",
+        description: "Carros urbanos",
+      },
+    ];
+    renderCategoriesPage();
+
+    await screen.findByRole("table", {
+      name: "Categorias de veículos da organização",
+    });
+    const searchInput = screen.getByRole("searchbox", {
+      name: "Pesquisar categorias",
+    });
+    await user.type(searchInput, "urbanos");
+    expect(searchInput).toHaveValue("urbanos");
+    await waitFor(() => {
+      const table = screen.getByRole("table", {
+        name: "Categorias de veículos da organização",
+      });
+      expect(within(table).getByText("Compacto")).toBeVisible();
+      expect(within(table).queryByText("SUV")).not.toBeInTheDocument();
+    });
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) => String(input).includes("search=urbanos")),
+    ).toBe(true);
+
+    const search = screen.getByRole("searchbox", {
+      name: "Pesquisar categorias",
+    });
+    await user.clear(search);
+    await user.type(search, "categoria inexistente");
+    expect(
+      await screen.findByText("Nenhuma categoria encontrada."),
+    ).toBeVisible();
+  });
+
   it("shows field-level validation and does not submit a too-short category name", async () => {
     const user = userEvent.setup();
     renderCategoriesPage();
@@ -140,11 +189,13 @@ describe("vehicle categories page", () => {
     ).toBeVisible();
     expect(name).toHaveAttribute("aria-invalid", "true");
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          new URL(String(input)).pathname === "/vehicle-categories" &&
-          init?.method === "POST",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            new URL(String(input)).pathname === "/vehicle-categories" &&
+            init?.method === "POST",
+        ),
     ).toBe(false);
   });
 
@@ -153,9 +204,7 @@ describe("vehicle categories page", () => {
     renderCategoriesPage();
 
     const row = await screen.findByRole("row", { name: /SUV/ });
-    await user.click(
-      within(row).getByRole("button", { name: "Excluir SUV" }),
-    );
+    await user.click(within(row).getByRole("button", { name: "Excluir SUV" }));
     const dialog = screen.getByRole("dialog", { name: "Excluir categoria?" });
     await user.click(
       within(dialog).getByRole("button", { name: "Excluir categoria" }),
@@ -168,12 +217,14 @@ describe("vehicle categories page", () => {
       await screen.findByText("Nenhuma categoria cadastrada."),
     ).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          String(input).includes(
-            "/vehicle-categories/category-1?organizationId=organization-1",
-          ) && init?.method === "DELETE",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            String(input).includes(
+              "/vehicle-categories/category-1?organizationId=organization-1",
+            ) && init?.method === "DELETE",
+        ),
     ).toBe(true);
   });
 
@@ -186,11 +237,13 @@ describe("vehicle categories page", () => {
     });
     expect(within(table).getByText("SUV")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(([input]) =>
-        String(input).includes(
-          "/vehicle-categories?organizationId=organization-1&page=1&limit=10",
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/vehicle-categories?organizationId=organization-1&page=1&limit=10",
+          ),
         ),
-      ),
     ).toBe(true);
 
     await user.click(screen.getByRole("button", { name: "Nova categoria" }));
@@ -276,8 +329,7 @@ describe("vehicle categories page", () => {
             "/vehicle-categories/bulk?organizationId=organization-1",
           ) &&
           init?.method === "DELETE" &&
-          init.body ===
-            JSON.stringify({ ids: ["category-2", "category-1"] }),
+          init.body === JSON.stringify({ ids: ["category-2", "category-1"] }),
       ),
     ).toBe(true);
   });

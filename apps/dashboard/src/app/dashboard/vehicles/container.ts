@@ -10,6 +10,8 @@ import {
 import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
+import { useDebouncedValue } from "../../../hooks/use-debounced-value";
+import { VehicleCategoryApi } from "../../../vehicle-categories/vehicle-category-api";
 import {
   digitsOnly,
   formErrors,
@@ -25,6 +27,14 @@ import {
 } from "../../../vehicles/vehicle-api";
 
 const PAGE_SIZE = 10;
+const MAX_VEHICLE_IMAGES = 20;
+const MAX_VEHICLE_IMAGE_SIZE = 10 * 1024 * 1024;
+const VEHICLE_IMAGE_CONTENT_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
 
 export type VehicleDialog =
   | { type: "create" }
@@ -38,6 +48,11 @@ export interface VehicleFormValues {
   model: string;
   year: string;
   description: string;
+  series: string;
+  isElectric: boolean;
+  images: string;
+  customFields: { name: string; value: string }[];
+  categoryId: string;
 }
 
 const emptyForm: VehicleFormValues = {
@@ -45,6 +60,11 @@ const emptyForm: VehicleFormValues = {
   model: "",
   year: String(new Date().getFullYear()),
   description: "",
+  series: "",
+  isElectric: false,
+  images: "",
+  customFields: [],
+  categoryId: "",
 };
 
 function vehicleErrorMessage(error: unknown): string {
@@ -60,33 +80,63 @@ export function useVehiclesContainer() {
     (organization) => organization.status === "ACTIVE",
   )?.id;
   const api = useMemo(() => new VehicleApi(), []);
+  const categoryApi = useMemo(() => new VehicleCategoryApi(), []);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [vehicleDialog, setVehicleDialog] = useState<VehicleDialog>(null);
   const [form, setForm] = useState<VehicleFormValues>(emptyForm);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageUploadError, setImageUploadError] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<
-    FormErrors<VehicleFormValues>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<FormErrors<VehicleFormValues>>(
+    {},
+  );
 
   const loadVehicles = useCallback(
     (signal: AbortSignal): Promise<VehiclePage> => {
       if (!organizationId) {
         return Promise.reject(new Error("An active organization is required."));
       }
-      return api.list(organizationId, page, PAGE_SIZE, signal);
+      return api.list(
+        organizationId,
+        page,
+        PAGE_SIZE,
+        signal,
+        debouncedSearchQuery,
+      );
     },
-    [api, organizationId, page],
+    [api, debouncedSearchQuery, organizationId, page],
   );
-  const resourceKey = organizationId ? `${organizationId}:${page}` : null;
+  const resourceKey = organizationId
+    ? `${organizationId}:${page}:${debouncedSearchQuery}`
+    : null;
   const resource = useAsyncResource(resourceKey, loadVehicles);
   const vehiclePage = resource.data ?? null;
   const currentVehicles = vehiclePage?.data ?? [];
+  const loadCategories = useCallback(
+    (signal: AbortSignal) => {
+      if (!organizationId) {
+        return Promise.reject(new Error("An active organization is required."));
+      }
+      return categoryApi.listAll(organizationId, signal);
+    },
+    [categoryApi, organizationId],
+  );
+  const categoryResource = useAsyncResource(
+    organizationId ? `vehicle-categories:${organizationId}` : null,
+    loadCategories,
+  );
+  const vehicleCategories = categoryResource.data ?? [];
+  const categoryLoadError = categoryResource.error
+    ? "Não foi possível carregar as categorias. Tente novamente."
+    : "";
 
   useEffect(() => {
     setSelectedIds([]);
-  }, [organizationId, page]);
+  }, [debouncedSearchQuery, organizationId, page]);
 
   const allVisibleSelected =
     currentVehicles.length > 0 &&
@@ -103,6 +153,8 @@ export function useVehiclesContainer() {
 
   function openCreateDialog() {
     setForm(emptyForm);
+    setImageFiles([]);
+    setImageUploadError("");
     setMutationError("");
     setFieldErrors({});
     setVehicleDialog({ type: "create" });
@@ -114,7 +166,14 @@ export function useVehiclesContainer() {
       model: vehicle.model,
       year: String(vehicle.year),
       description: vehicle.description ?? "",
+      series: vehicle.series ?? "",
+      isElectric: vehicle.isElectric,
+      images: vehicle.images.join("\n"),
+      customFields: vehicle.customFields.map((field) => ({ ...field })),
+      categoryId: vehicle.categoryId ?? "",
     });
+    setImageFiles([]);
+    setImageUploadError("");
     setMutationError("");
     setFieldErrors({});
     setVehicleDialog({ type: "edit", vehicle });
@@ -132,12 +191,25 @@ export function useVehiclesContainer() {
 
   function closeDialog() {
     setVehicleDialog(null);
+    setImageFiles([]);
+    setImageUploadError("");
     setFieldErrors({});
   }
 
-  function updateFormField(field: keyof VehicleFormValues, value: string) {
+  function updateFormField(
+    field:
+      | "make"
+      | "model"
+      | "year"
+      | "description"
+      | "series"
+      | "images"
+      | "categoryId",
+    value: string,
+  ) {
     const nextValue = field === "year" ? digitsOnly(value) : value;
     setForm((current) => ({ ...current, [field]: nextValue }));
+    if (field === "images") setImageUploadError("");
     setFieldErrors((current) => {
       if (!current[field]) {
         return current;
@@ -148,12 +220,101 @@ export function useVehiclesContainer() {
     });
   }
 
+  function updateElectric(value: boolean) {
+    setForm((current) => ({ ...current, isElectric: value }));
+  }
+
+  function selectImageFiles(files: FileList | null) {
+    const selected = Array.from(files ?? []);
+    if (selected.length === 0) return;
+
+    const currentUrlCount = form.images
+      .split(/\r?\n/)
+      .filter((url) => url.trim()).length;
+    if (
+      currentUrlCount + imageFiles.length + selected.length >
+      MAX_VEHICLE_IMAGES
+    ) {
+      setImageUploadError(
+        "Você pode adicionar no máximo 20 imagens por veículo.",
+      );
+      return;
+    }
+    const unsupported = selected.find(
+      (file) => !VEHICLE_IMAGE_CONTENT_TYPES.has(file.type),
+    );
+    if (unsupported) {
+      setImageUploadError(
+        "Use arquivos JPEG, PNG, WebP ou AVIF. SVG não é aceito.",
+      );
+      return;
+    }
+    const oversized = selected.find(
+      (file) => file.size === 0 || file.size > MAX_VEHICLE_IMAGE_SIZE,
+    );
+    if (oversized) {
+      setImageUploadError("Cada imagem deve ter até 10 MB.");
+      return;
+    }
+
+    setImageFiles((current) => [...current, ...selected]);
+    setImageUploadError("");
+  }
+
+  function removeImageFile(index: number) {
+    setImageFiles((current) =>
+      current.filter((_, fileIndex) => fileIndex !== index),
+    );
+  }
+
+  function addCustomField() {
+    setForm((current) => ({
+      ...current,
+      customFields: [...current.customFields, { name: "", value: "" }],
+    }));
+  }
+
+  function updateCustomField(
+    index: number,
+    field: "name" | "value",
+    value: string,
+  ) {
+    setForm((current) => ({
+      ...current,
+      customFields: current.customFields.map((customField, currentIndex) =>
+        currentIndex === index
+          ? { ...customField, [field]: value }
+          : customField,
+      ),
+    }));
+    setFieldErrors((current) => {
+      if (!current.customFields) return current;
+      const next = { ...current };
+      delete next.customFields;
+      return next;
+    });
+  }
+
+  function removeCustomField(index: number) {
+    setForm((current) => ({
+      ...current,
+      customFields: current.customFields.filter(
+        (_, currentIndex) => currentIndex !== index,
+      ),
+    }));
+  }
+
   function goToPreviousPage() {
     setPage((current) => Math.max(1, current - 1));
   }
 
   function goToNextPage() {
     setPage((current) => current + 1);
+  }
+
+  function updateSearchQuery(value: string) {
+    setSearchQuery(value);
+    setPage(1);
   }
 
   async function submitVehicle(event: FormEvent<HTMLFormElement>) {
@@ -172,17 +333,55 @@ export function useVehiclesContainer() {
       setFieldErrors(formErrors<VehicleFormValues>(parsedForm.error.issues));
       return;
     }
+    if (imageUploadError) return;
+    if (
+      parsedForm.data.images.length + imageFiles.length >
+      MAX_VEHICLE_IMAGES
+    ) {
+      setFieldErrors({
+        images: "Você pode adicionar no máximo 20 imagens por veículo.",
+      });
+      return;
+    }
 
     const input: VehicleInput = {
       make: parsedForm.data.make,
       model: parsedForm.data.model,
       year: Number(parsedForm.data.year),
       description: parsedForm.data.description,
+      series: parsedForm.data.series || null,
+      isElectric: parsedForm.data.isElectric,
+      images: [...parsedForm.data.images],
+      customFields: parsedForm.data.customFields,
+      categoryId: parsedForm.data.categoryId || null,
     };
     setIsSubmitting(true);
     setMutationError("");
     setFieldErrors({});
     try {
+      for (let index = 0; index < imageFiles.length; index += 1) {
+        try {
+          const imageUrl = await api.uploadImage(
+            organizationId,
+            imageFiles[index]!,
+          );
+          input.images?.push(imageUrl);
+          setForm((current) => ({
+            ...current,
+            images: [
+              ...current.images.split(/\r?\n/).filter(Boolean),
+              imageUrl,
+            ].join("\n"),
+          }));
+        } catch {
+          setImageFiles(imageFiles.slice(index));
+          setMutationError(
+            "Não foi possível enviar uma das imagens. Verifique a conexão e tente novamente.",
+          );
+          return;
+        }
+      }
+      setImageFiles([]);
       if (vehicleDialog.type === "create") {
         await api.create(organizationId, input);
         toast.success("Veículo cadastrado com sucesso.");
@@ -276,11 +475,25 @@ export function useVehiclesContainer() {
     page,
     pageCount,
     retryLoading: resource.retry,
+    retryCategories: categoryResource.retry,
+    categoryLoadError,
+    isLoadingCategories: categoryResource.isLoading,
+    vehicleCategories,
+    searchQuery,
+    updateSearchQuery,
     selectedIds,
     someVisibleSelected,
     submitVehicle,
     togglePageSelection,
     toggleSelection,
+    removeImageFile,
+    selectImageFiles,
+    addCustomField,
+    removeCustomField,
+    imageFiles,
+    imageUploadError,
+    updateCustomField,
+    updateElectric,
     updateFormField,
     vehicleDialog,
     vehiclePage,

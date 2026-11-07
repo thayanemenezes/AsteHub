@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "react-toastify";
@@ -74,12 +74,20 @@ beforeEach(() => {
         return jsonResponse(currentUser);
       }
       if (url.pathname === "/leads" && method === "GET") {
+        const search = url.searchParams.get("search")?.toLowerCase();
+        const results = search
+          ? leads.filter((item) =>
+              `${item.contactName} ${item.email ?? ""} ${item.phone} ${item.message}`
+                .toLowerCase()
+                .includes(search),
+            )
+          : leads;
         return jsonResponse({
-          data: leads,
+          data: results,
           page: Number(url.searchParams.get("page")),
           limit: Number(url.searchParams.get("limit")),
-          total: leads.length,
-          totalPages: Math.ceil(leads.length / 10),
+          total: results.length,
+          totalPages: Math.ceil(results.length / 10),
         });
       }
       if (url.pathname === "/vehicles" || url.pathname === "/locations") {
@@ -130,6 +138,40 @@ beforeEach(() => {
 });
 
 describe("leads page", () => {
+  it("filters the lead table from the page heading search", async () => {
+    const user = userEvent.setup();
+    leads = [
+      { ...lead },
+      {
+        ...lead,
+        id: "lead-2",
+        contactName: "Carlos Lima",
+        phone: "11912345678",
+      },
+    ];
+    renderLeadsPage();
+
+    await screen.findByRole("table", {
+      name: "Leads da organização",
+    });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Pesquisar leads" }),
+      "carlos",
+    );
+    await waitFor(() => {
+      const table = screen.getByRole("table", {
+        name: "Leads da organização",
+      });
+      expect(within(table).getByText("Carlos Lima")).toBeVisible();
+      expect(within(table).queryByText("Ana Souza")).not.toBeInTheDocument();
+    });
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) => String(input).includes("search=carlos")),
+    ).toBe(true);
+  });
+
   it("lists leads for the active organization", async () => {
     renderLeadsPage();
 
@@ -141,11 +183,13 @@ describe("leads page", () => {
     expect(within(table).getByText("Ana Souza")).toBeVisible();
     expect(within(table).getByText("Novo")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(([input]) =>
-        String(input).includes(
-          "/leads?organizationId=organization-1&page=1&limit=10",
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/leads?organizationId=organization-1&page=1&limit=10",
+          ),
         ),
-      ),
     ).toBe(true);
   });
 
@@ -171,11 +215,13 @@ describe("leads page", () => {
     ).toBeVisible();
     expect(phone).toHaveValue("11");
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          new URL(String(input)).pathname === "/leads" &&
-          init?.method === "POST",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            new URL(String(input)).pathname === "/leads" &&
+            init?.method === "POST",
+        ),
     ).toBe(false);
   });
 
@@ -200,12 +246,14 @@ describe("leads page", () => {
     expect(toast.success).toHaveBeenCalledWith("Lead cadastrado com sucesso.");
     expect(await screen.findByText("Carlos Lima")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          new URL(String(input)).pathname === "/leads" &&
-          init?.method === "POST" &&
-          JSON.parse(String(init.body)).phone === "11912345678",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            new URL(String(input)).pathname === "/leads" &&
+            init?.method === "POST" &&
+            JSON.parse(String(init.body)).phone === "11912345678",
+        ),
     ).toBe(true);
   });
 
@@ -222,7 +270,10 @@ describe("leads page", () => {
       within(row).getByRole("button", { name: "Editar lead de Ana Souza" }),
     );
     const editDialog = screen.getByRole("dialog", { name: "Editar lead" });
-    await user.selectOptions(within(editDialog).getByLabelText("Status"), "CONTACTED");
+    await user.selectOptions(
+      within(editDialog).getByLabelText("Status"),
+      "CONTACTED",
+    );
     await user.click(
       within(editDialog).getByRole("button", { name: "Salvar alterações" }),
     );

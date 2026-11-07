@@ -4,8 +4,19 @@ export interface Vehicle {
   model: string;
   year: number;
   description: string | null;
+  series: string | null;
+  isElectric: boolean;
+  images: string[];
+  customFields: VehicleCustomField[];
+  categoryId: string | null;
+  category: { id: string; name: string } | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface VehicleCustomField {
+  name: string;
+  value: string;
 }
 
 export interface VehiclePage {
@@ -21,6 +32,17 @@ export interface VehicleInput {
   model: string;
   year: number;
   description?: string;
+  series?: string | null;
+  isElectric?: boolean;
+  images?: string[];
+  customFields?: VehicleCustomField[];
+  categoryId?: string | null;
+}
+
+interface VehicleImageUploadRequest {
+  url: string;
+  fields: Record<string, string>;
+  imageUrl: string;
 }
 
 export class VehicleApiError extends Error {
@@ -42,10 +64,7 @@ export class VehicleApi {
   private readonly baseUrl: string;
   private readonly fetcher: typeof fetch;
 
-  constructor(
-    baseUrl = apiBaseUrl(),
-    fetcher: typeof fetch = fetch,
-  ) {
+  constructor(baseUrl = apiBaseUrl(), fetcher: typeof fetch = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
     this.fetcher = fetcher.bind(globalThis);
   }
@@ -55,12 +74,16 @@ export class VehicleApi {
     page: number,
     limit = 10,
     signal?: AbortSignal,
+    search?: string,
   ): Promise<VehiclePage> {
     const query = new URLSearchParams({
       organizationId,
       page: String(page),
       limit: String(limit),
     });
+    if (search?.trim()) {
+      query.set("search", search.trim());
+    }
     return this.request<VehiclePage>(`/vehicles?${query}`, { signal });
   }
 
@@ -86,6 +109,31 @@ export class VehicleApi {
       `/vehicles/${encodeURIComponent(id)}?organizationId=${encodeURIComponent(organizationId)}`,
       { method: "PATCH", body: JSON.stringify(input) },
     );
+  }
+
+  async uploadImage(organizationId: string, file: File): Promise<string> {
+    const query = new URLSearchParams({ organizationId });
+    const upload = await this.request<VehicleImageUploadRequest>(
+      `/vehicles/images/upload?${query}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ contentType: file.type, size: file.size }),
+      },
+    );
+    const formData = new FormData();
+    for (const [name, value] of Object.entries(upload.fields)) {
+      formData.append(name, value);
+    }
+    formData.append("file", file);
+
+    const response = await this.fetcher(upload.url, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new VehicleApiError(response.status);
+    }
+    return upload.imageUrl;
   }
 
   async delete(organizationId: string, id: string): Promise<void> {

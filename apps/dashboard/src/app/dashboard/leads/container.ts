@@ -11,7 +11,11 @@ import { toast } from "react-toastify";
 import type { LeadStatus } from "@repo/contracts";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
-import { LocationApi, type OrganizationLocation } from "../../../locations/location-api";
+import { useDebouncedValue } from "../../../hooks/use-debounced-value";
+import {
+  LocationApi,
+  type OrganizationLocation,
+} from "../../../locations/location-api";
 import { VehicleApi, type Vehicle } from "../../../vehicles/vehicle-api";
 import {
   digitsOnly,
@@ -93,12 +97,16 @@ export function useLeadsContainer() {
   const vehicleApi = useMemo(() => new VehicleApi(), []);
   const locationApi = useMemo(() => new LocationApi(), []);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [leadDialog, setLeadDialog] = useState<LeadDialog>(null);
   const [form, setForm] = useState<LeadFormValues>(emptyForm);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FormErrors<LeadFormValues>>({});
+  const [fieldErrors, setFieldErrors] = useState<FormErrors<LeadFormValues>>(
+    {},
+  );
 
   const loadLeads = useCallback(
     async (signal: AbortSignal): Promise<LeadResources> => {
@@ -106,7 +114,7 @@ export function useLeadsContainer() {
         throw new Error("An active organization is required.");
       }
       const [leadPage, vehiclePage, locationPage] = await Promise.all([
-        api.list(organizationId, page, PAGE_SIZE, signal),
+        api.list(organizationId, page, PAGE_SIZE, signal, debouncedSearchQuery),
         vehicleApi.list(organizationId, 1, 100, signal),
         locationApi.list(organizationId, 1, 100, signal),
       ]);
@@ -116,9 +124,11 @@ export function useLeadsContainer() {
         locations: locationPage.data,
       };
     },
-    [api, locationApi, organizationId, page, vehicleApi],
+    [api, debouncedSearchQuery, locationApi, organizationId, page, vehicleApi],
   );
-  const resourceKey = organizationId ? `${organizationId}:${page}` : null;
+  const resourceKey = organizationId
+    ? `${organizationId}:${page}:${debouncedSearchQuery}`
+    : null;
   const resource = useAsyncResource(resourceKey, loadLeads);
   const leadResources = resource.data;
   const leadPage = leadResources?.page ?? null;
@@ -128,7 +138,7 @@ export function useLeadsContainer() {
 
   useEffect(() => {
     setSelectedIds([]);
-  }, [organizationId, page]);
+  }, [debouncedSearchQuery, organizationId, page]);
 
   const allVisibleSelected =
     currentLeads.length > 0 &&
@@ -199,6 +209,11 @@ export function useLeadsContainer() {
 
   function goToNextPage() {
     setPage((current) => current + 1);
+  }
+
+  function updateSearchQuery(value: string) {
+    setSearchQuery(value);
+    setPage(1);
   }
 
   async function submitLead(event: FormEvent<HTMLFormElement>) {
@@ -329,6 +344,8 @@ export function useLeadsContainer() {
     page,
     pageCount,
     retryLoading: resource.retry,
+    searchQuery,
+    updateSearchQuery,
     selectedIds,
     someVisibleSelected,
     submitLead,

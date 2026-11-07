@@ -19,14 +19,19 @@ import {
   CreateVehicleDto,
   OrganizationQueryDto,
   UpdateVehicleDto,
+  VehicleImageUploadDto,
   VehicleListQueryDto,
 } from "./vehicle.dto.js";
 import { VehiclesService } from "./vehicles.service.js";
+import { VehicleImageUploadService } from "./vehicle-image-upload.service.js";
 
 @Controller("vehicles")
 @UseGuards(AuthGuard)
 export class VehiclesController {
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly vehicleImageUploadService: VehicleImageUploadService,
+  ) {}
 
   @Get()
   list(
@@ -43,6 +48,19 @@ export class VehiclesController {
     @Body() input: CreateVehicleDto,
   ) {
     return this.vehiclesService.create(user.id, query.organizationId, input);
+  }
+
+  @Post("images/upload")
+  createImageUpload(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: OrganizationQueryDto,
+    @Body() input: VehicleImageUploadDto,
+  ) {
+    return this.vehicleImageUploadService.createUploadRequest(
+      user.id,
+      query.organizationId,
+      input,
+    );
   }
 
   @Delete("bulk")

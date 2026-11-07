@@ -19,6 +19,12 @@ export class VehicleCategoryOrganizationQueryDto {
 }
 
 export class VehicleCategoryListQueryDto extends VehicleCategoryOrganizationQueryDto {
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  @MaxLength(100)
+  search?: string;
+
   @Type(() => Number)
   @IsInt()
   @Min(1)

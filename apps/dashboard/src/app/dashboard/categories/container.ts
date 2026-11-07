@@ -10,6 +10,7 @@ import {
 import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
+import { useDebouncedValue } from "../../../hooks/use-debounced-value";
 import {
   formErrors,
   type FormErrors,
@@ -65,6 +66,8 @@ export function useVehicleCategoriesContainer() {
   )?.id;
   const api = useMemo(() => new VehicleCategoryApi(), []);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [categoryDialog, setCategoryDialog] =
     useState<VehicleCategoryDialog>(null);
   const [form, setForm] = useState<VehicleCategoryFormValues>(emptyForm);
@@ -80,18 +83,26 @@ export function useVehicleCategoriesContainer() {
       if (!organizationId) {
         return Promise.reject(new Error("An active organization is required."));
       }
-      return api.list(organizationId, page, PAGE_SIZE, signal);
+      return api.list(
+        organizationId,
+        page,
+        PAGE_SIZE,
+        signal,
+        debouncedSearchQuery,
+      );
     },
-    [api, organizationId, page],
+    [api, debouncedSearchQuery, organizationId, page],
   );
-  const resourceKey = organizationId ? `${organizationId}:${page}` : null;
+  const resourceKey = organizationId
+    ? `${organizationId}:${page}:${debouncedSearchQuery}`
+    : null;
   const resource = useAsyncResource(resourceKey, loadCategories);
   const categoryPage = resource.data ?? null;
   const currentCategories = categoryPage?.data ?? [];
 
   useEffect(() => {
     setSelectedIds([]);
-  }, [organizationId, page]);
+  }, [debouncedSearchQuery, organizationId, page]);
 
   const allVisibleSelected =
     currentCategories.length > 0 &&
@@ -159,6 +170,11 @@ export function useVehicleCategoriesContainer() {
 
   function goToNextPage() {
     setPage((current) => current + 1);
+  }
+
+  function updateSearchQuery(value: string) {
+    setSearchQuery(value);
+    setPage(1);
   }
 
   async function submitCategory(event: FormEvent<HTMLFormElement>) {
@@ -282,6 +298,8 @@ export function useVehicleCategoriesContainer() {
     page,
     pageCount,
     retryLoading: resource.retry,
+    searchQuery,
+    updateSearchQuery,
     selectedIds,
     someVisibleSelected,
     submitCategory,

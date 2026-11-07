@@ -41,11 +41,14 @@ function VehicleActionIcon({ name }: { name: "edit" | "delete" }) {
 export default function VehiclesPage() {
   const {
     allVisibleSelected,
+    addCustomField,
     closeDialog,
     confirmDelete,
     currentVehicles,
     form,
     fieldErrors,
+    imageFiles,
+    imageUploadError,
     goToNextPage,
     goToPreviousPage,
     isLoading,
@@ -61,12 +64,23 @@ export default function VehiclesPage() {
     page,
     pageCount,
     retryLoading,
+    retryCategories,
+    categoryLoadError,
+    isLoadingCategories,
+    searchQuery,
+    removeCustomField,
+    removeImageFile,
     selectedIds,
     someVisibleSelected,
     submitVehicle,
     togglePageSelection,
     toggleSelection,
+    updateCustomField,
+    updateElectric,
     updateFormField,
+    updateSearchQuery,
+    selectImageFiles,
+    vehicleCategories,
     vehicleDialog,
     vehiclePage,
   } = useVehiclesContainer();
@@ -84,6 +98,12 @@ export default function VehiclesPage() {
         description="Gerencie os veículos disponíveis no catálogo da sua organização."
         headingId="vehicles-heading"
         onAction={openCreateDialog}
+        search={{
+          label: "Pesquisar veículos",
+          placeholder: "Pesquisar veículos...",
+          value: searchQuery,
+          onChange: updateSearchQuery,
+        }}
         title="Veículos"
       />
 
@@ -119,8 +139,16 @@ export default function VehiclesPage() {
         vehiclePage &&
         currentVehicles.length === 0 && (
           <EmptyState
-            description="Cadastre o primeiro veículo para começar a organizar seu catálogo."
-            title="Nenhum veículo cadastrado."
+            description={
+              searchQuery
+                ? "Tente alterar os termos pesquisados."
+                : "Cadastre o primeiro veículo para começar a organizar seu catálogo."
+            }
+            title={
+              searchQuery
+                ? "Nenhum veículo encontrado."
+                : "Nenhum veículo cadastrado."
+            }
           />
         )}
 
@@ -194,6 +222,13 @@ export default function VehiclesPage() {
                       <span className="vehicle-name">
                         {vehicle.make} {vehicle.model}
                       </span>
+                      {(vehicle.series || vehicle.isElectric) && (
+                        <span className="vehicle-meta">
+                          {vehicle.series}
+                          {vehicle.series && vehicle.isElectric ? " · " : ""}
+                          {vehicle.isElectric ? "Elétrico" : ""}
+                        </span>
+                      )}
                     </td>
                     <td>{vehicle.year}</td>
                     <td className="vehicle-description-cell">
@@ -238,7 +273,9 @@ export default function VehiclesPage() {
               </button>
               <button
                 aria-label="Próxima página"
-                disabled={(vehiclePage?.page ?? page) >= pageCount || isRefreshing}
+                disabled={
+                  (vehiclePage?.page ?? page) >= pageCount || isRefreshing
+                }
                 onClick={goToNextPage}
                 type="button"
               >
@@ -356,6 +393,187 @@ export default function VehiclesPage() {
                       message={fieldErrors.description}
                     />
                   </label>
+                  <label>
+                    Série/versão
+                    <input
+                      aria-describedby={
+                        fieldErrors.series ? "vehicle-series-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.series)}
+                      maxLength={100}
+                      onChange={(event) =>
+                        updateFormField("series", event.target.value)
+                      }
+                      value={form.series}
+                    />
+                    <FieldError
+                      id="vehicle-series-error"
+                      message={fieldErrors.series}
+                    />
+                  </label>
+                  {vehicleCategories.length > 0 && (
+                    <label>
+                      Categoria
+                      <select
+                        disabled={isLoadingCategories || isSubmitting}
+                        onChange={(event) =>
+                          updateFormField(
+                            "categoryId",
+                            event.currentTarget.value,
+                          )
+                        }
+                        value={form.categoryId}
+                      >
+                        <option value="">Sem categoria</option>
+                        {vehicleCategories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  {categoryLoadError && (
+                    <p className="vehicle-error-message" role="alert">
+                      {categoryLoadError}{" "}
+                      <button
+                        className="vehicle-text-button"
+                        onClick={retryCategories}
+                        type="button"
+                      >
+                        Tentar novamente
+                      </button>
+                    </p>
+                  )}
+                  {isLoadingCategories && (
+                    <p className="vehicle-refresh-status" role="status">
+                      Carregando categorias...
+                    </p>
+                  )}
+                  <label className="vehicle-electric-field">
+                    <input
+                      checked={form.isElectric}
+                      onChange={(event) => updateElectric(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Veículo elétrico
+                  </label>
+                  <label>
+                    URLs das imagens
+                    <textarea
+                      aria-describedby={
+                        fieldErrors.images ? "vehicle-images-error" : undefined
+                      }
+                      aria-invalid={Boolean(fieldErrors.images)}
+                      onChange={(event) =>
+                        updateFormField("images", event.target.value)
+                      }
+                      placeholder="Uma URL HTTP ou HTTPS por linha"
+                      rows={3}
+                      value={form.images}
+                    />
+                    <FieldError
+                      id="vehicle-images-error"
+                      message={fieldErrors.images}
+                    />
+                  </label>
+                  <label>
+                    Enviar imagens
+                    <input
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      disabled={isSubmitting}
+                      multiple
+                      onChange={(event) => {
+                        selectImageFiles(event.currentTarget.files);
+                        event.currentTarget.value = "";
+                      }}
+                      type="file"
+                    />
+                    <span className="vehicle-upload-hint">
+                      JPEG, PNG, WebP ou AVIF; até 10 MB por arquivo.
+                    </span>
+                  </label>
+                  {imageUploadError && (
+                    <p className="vehicle-error-message" role="alert">
+                      {imageUploadError}
+                    </p>
+                  )}
+                  {imageFiles.length > 0 && (
+                    <ul
+                      aria-label="Arquivos de imagem selecionados"
+                      className="vehicle-image-file-list"
+                    >
+                      {imageFiles.map((file, index) => (
+                        <li key={`${file.name}-${file.lastModified}-${index}`}>
+                          <span>{file.name}</span>
+                          <button
+                            aria-label={`Remover imagem ${file.name}`}
+                            className="vehicle-remove-field"
+                            disabled={isSubmitting}
+                            onClick={() => removeImageFile(index)}
+                            type="button"
+                          >
+                            Remover
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <fieldset className="vehicle-custom-fields">
+                    <legend>Campos personalizados</legend>
+                    {form.customFields.map((field, index) => (
+                      <div className="vehicle-custom-field-row" key={index}>
+                        <label>
+                          Nome do campo
+                          <input
+                            maxLength={60}
+                            onChange={(event) =>
+                              updateCustomField(
+                                index,
+                                "name",
+                                event.target.value,
+                              )
+                            }
+                            value={field.name}
+                          />
+                        </label>
+                        <label>
+                          Valor do campo
+                          <input
+                            maxLength={250}
+                            onChange={(event) =>
+                              updateCustomField(
+                                index,
+                                "value",
+                                event.target.value,
+                              )
+                            }
+                            value={field.value}
+                          />
+                        </label>
+                        <button
+                          aria-label={`Remover campo personalizado ${index + 1}`}
+                          className="vehicle-remove-field"
+                          onClick={() => removeCustomField(index)}
+                          type="button"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    ))}
+                    <FieldError
+                      id="vehicle-custom-fields-error"
+                      message={fieldErrors.customFields}
+                    />
+                    <button
+                      className="vehicle-add-field"
+                      disabled={form.customFields.length >= 30}
+                      onClick={addCustomField}
+                      type="button"
+                    >
+                      Adicionar campo personalizado
+                    </button>
+                  </fieldset>
                   {mutationError && (
                     <p className="vehicle-error-message" role="alert">
                       {mutationError}
@@ -372,11 +590,13 @@ export default function VehiclesPage() {
                     </button>
                     <button
                       className="dashboard-primary-button"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isLoadingCategories}
                       type="submit"
                     >
                       {isSubmitting
-                        ? "Salvando..."
+                        ? imageFiles.length > 0
+                          ? "Enviando imagens..."
+                          : "Salvando..."
                         : vehicleDialog.type === "create"
                           ? "Salvar veículo"
                           : "Salvar alterações"}

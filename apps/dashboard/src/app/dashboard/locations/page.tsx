@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  AiOutlineDelete,
-  AiOutlineEdit,
-} from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { AiOutlinePlus } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
 import {
@@ -40,12 +37,14 @@ export default function LocationsPage() {
     page,
     pageCount,
     retryLoading,
+    searchQuery,
     selectedIds,
     someVisibleSelected,
     submitLocation,
     togglePageSelection,
     toggleSelection,
     updateFormField,
+    updateSearchQuery,
   } = useLocationsContainer();
 
   return (
@@ -61,6 +60,12 @@ export default function LocationsPage() {
         description="Gerencie as unidades e filiais da sua organização."
         headingId="locations-heading"
         onAction={openCreateDialog}
+        search={{
+          label: "Pesquisar unidades",
+          placeholder: "Pesquisar unidades...",
+          value: searchQuery,
+          onChange: updateSearchQuery,
+        }}
         title="Unidades"
       />
 
@@ -96,8 +101,16 @@ export default function LocationsPage() {
         locationPage &&
         currentLocations.length === 0 && (
           <EmptyState
-            description="Cadastre uma unidade para manter as filiais da sua organização organizadas."
-            title="Nenhuma unidade cadastrada."
+            description={
+              searchQuery
+                ? "Tente alterar os termos pesquisados."
+                : "Cadastre uma unidade para manter as filiais da sua organização organizadas."
+            }
+            title={
+              searchQuery
+                ? "Nenhuma unidade encontrada."
+                : "Nenhuma unidade cadastrada."
+            }
           />
         )}
 
@@ -322,9 +335,7 @@ export default function LocationsPage() {
                       Estado
                       <input
                         aria-describedby={
-                          fieldErrors.state
-                            ? "location-state-error"
-                            : undefined
+                          fieldErrors.state ? "location-state-error" : undefined
                         }
                         aria-invalid={Boolean(fieldErrors.state)}
                         maxLength={100}
@@ -345,9 +356,7 @@ export default function LocationsPage() {
                       Telefone
                       <input
                         aria-describedby={
-                          fieldErrors.phone
-                            ? "location-phone-error"
-                            : undefined
+                          fieldErrors.phone ? "location-phone-error" : undefined
                         }
                         aria-invalid={Boolean(fieldErrors.phone)}
                         inputMode="numeric"

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "react-toastify";
@@ -40,7 +40,7 @@ const location = {
   updatedAt: "2026-10-20T12:00:00.000Z",
 };
 
-let locations: typeof location[];
+let locations: (typeof location)[];
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(status === 204 ? null : JSON.stringify(body), {
@@ -70,12 +70,20 @@ beforeEach(() => {
         return jsonResponse(currentUser);
       }
       if (url.pathname === "/locations" && (init?.method ?? "GET") === "GET") {
+        const search = url.searchParams.get("search")?.toLowerCase();
+        const results = search
+          ? locations.filter((item) =>
+              `${item.name} ${item.address} ${item.city} ${item.state} ${item.phone ?? ""} ${item.managerName ?? ""}`
+                .toLowerCase()
+                .includes(search),
+            )
+          : locations;
         return jsonResponse({
-          data: locations,
+          data: results,
           page: Number(url.searchParams.get("page")),
           limit: Number(url.searchParams.get("limit")),
-          total: locations.length,
-          totalPages: Math.ceil(locations.length / 10),
+          total: results.length,
+          totalPages: Math.ceil(results.length / 10),
         });
       }
       if (url.pathname === "/locations" && init?.method === "POST") {
@@ -113,6 +121,45 @@ beforeEach(() => {
 });
 
 describe("locations page", () => {
+  it("filters the location table from the page heading search", async () => {
+    const user = userEvent.setup();
+    locations = [
+      { ...location },
+      {
+        ...location,
+        id: "location-2",
+        name: "Unidade Sul",
+        city: "Curitiba",
+        state: "PR",
+      },
+    ];
+    renderLocationsPage();
+
+    await screen.findByRole("table", {
+      name: "Unidades da organização",
+    });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Pesquisar unidades" }),
+      "curitiba",
+    );
+    await waitFor(() => {
+      const table = screen.getByRole("table", {
+        name: "Unidades da organização",
+      });
+      expect(within(table).getByText("Unidade Sul")).toBeVisible();
+      expect(
+        within(table).queryByText("Unidade Centro"),
+      ).not.toBeInTheDocument();
+    });
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes("search=curitiba"),
+        ),
+    ).toBe(true);
+  });
+
   it("accepts only numeric phone characters and displays inline field errors", async () => {
     const user = userEvent.setup();
     renderLocationsPage();
@@ -130,14 +177,18 @@ describe("locations page", () => {
         selector: "#location-name-error",
       }),
     ).toBeVisible();
-    expect(within(dialog).getByText("Informe ao menos 8 dígitos.")).toBeVisible();
+    expect(
+      within(dialog).getByText("Informe ao menos 8 dígitos."),
+    ).toBeVisible();
     expect(phone).toHaveAttribute("aria-invalid", "true");
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          new URL(String(input)).pathname === "/locations" &&
-          init?.method === "POST",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            new URL(String(input)).pathname === "/locations" &&
+            init?.method === "POST",
+        ),
     ).toBe(false);
   });
 
@@ -151,11 +202,13 @@ describe("locations page", () => {
     expect(within(table).getByText("Unidade Centro")).toBeVisible();
     expect(within(table).getByText("São Paulo, SP")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(([input]) =>
-        String(input).includes(
-          "/locations?organizationId=organization-1&page=1&limit=10",
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/locations?organizationId=organization-1&page=1&limit=10",
+          ),
         ),
-      ),
     ).toBe(true);
 
     await user.click(screen.getByRole("button", { name: "Nova unidade" }));
@@ -189,7 +242,9 @@ describe("locations page", () => {
     await user.click(
       within(editDialog).getByRole("button", { name: "Salvar alterações" }),
     );
-    expect(toast.success).toHaveBeenCalledWith("Unidade atualizada com sucesso.");
+    expect(toast.success).toHaveBeenCalledWith(
+      "Unidade atualizada com sucesso.",
+    );
     expect(await screen.findByText("Unidade Sul Atualizada")).toBeVisible();
 
     await user.click(
@@ -209,7 +264,9 @@ describe("locations page", () => {
     expect(toast.success).toHaveBeenCalledWith(
       "Unidades selecionadas excluídas com sucesso.",
     );
-    expect(await screen.findByText("Nenhuma unidade cadastrada.")).toBeVisible();
+    expect(
+      await screen.findByText("Nenhuma unidade cadastrada."),
+    ).toBeVisible();
 
     const requests = vi.mocked(fetch).mock.calls.map(([input, init]) => ({
       url: String(input),
@@ -226,9 +283,8 @@ describe("locations page", () => {
     expect(
       requests.some(
         ({ url, init }) =>
-          url.includes(
-            "/locations/location-2?organizationId=organization-1",
-          ) && init?.method === "PATCH",
+          url.includes("/locations/location-2?organizationId=organization-1") &&
+          init?.method === "PATCH",
       ),
     ).toBe(true);
     expect(
@@ -285,11 +341,13 @@ describe("locations page", () => {
     expect(await screen.findByText("Unidade Sul")).toBeVisible();
     expect(screen.getByText("Página 2 de 2")).toBeVisible();
     expect(
-      vi.mocked(fetch).mock.calls.some(([input]) =>
-        String(input).includes(
-          "/locations?organizationId=organization-1&page=2&limit=10",
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input]) =>
+          String(input).includes(
+            "/locations?organizationId=organization-1&page=2&limit=10",
+          ),
         ),
-      ),
     ).toBe(true);
   });
 });

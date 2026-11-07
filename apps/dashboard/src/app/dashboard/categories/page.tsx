@@ -42,12 +42,14 @@ export default function CategoriesPage() {
     page,
     pageCount,
     retryLoading,
+    searchQuery,
     selectedIds,
     someVisibleSelected,
     submitCategory,
     togglePageSelection,
     toggleSelection,
     updateFormField,
+    updateSearchQuery,
   } = useVehicleCategoriesContainer();
 
   return (
@@ -63,6 +65,12 @@ export default function CategoriesPage() {
         description="Organize as categorias utilizadas no catálogo de veículos."
         headingId="categories-heading"
         onAction={openCreateDialog}
+        search={{
+          label: "Pesquisar categorias",
+          placeholder: "Pesquisar categorias...",
+          value: searchQuery,
+          onChange: updateSearchQuery,
+        }}
         title="Categorias"
       />
 
@@ -98,8 +106,16 @@ export default function CategoriesPage() {
         categoryPage &&
         currentCategories.length === 0 && (
           <EmptyState
-            description="Cadastre uma categoria para organizar o catálogo de veículos."
-            title="Nenhuma categoria cadastrada."
+            description={
+              searchQuery
+                ? "Tente alterar os termos pesquisados."
+                : "Cadastre uma categoria para organizar o catálogo de veículos."
+            }
+            title={
+              searchQuery
+                ? "Nenhuma categoria encontrada."
+                : "Nenhuma categoria cadastrada."
+            }
           />
         )}
 
@@ -243,7 +259,9 @@ export default function CategoriesPage() {
                       ? "Nova categoria"
                       : "Editar categoria"}
                   </h2>
-                  <p>Informe o nome e uma descrição opcional para a categoria.</p>
+                  <p>
+                    Informe o nome e uma descrição opcional para a categoria.
+                  </p>
                 </header>
                 <form
                   className={styles.form}
