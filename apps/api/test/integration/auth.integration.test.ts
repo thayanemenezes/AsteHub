@@ -56,6 +56,7 @@ describe("authentication API", () => {
     app = nestApp;
     prisma = app.get(PrismaService);
     await prisma.session.deleteMany();
+    await prisma.organizationInvitation.deleteMany();
     await prisma.membership.deleteMany();
     await prisma.organization.deleteMany();
     await prisma.user.deleteMany();
@@ -159,6 +160,7 @@ describe("authentication API", () => {
         password: "short",
         organizationName: "",
       });
+
     assert.equal(invalid.status, 400, JSON.stringify(invalid.body));
 
     const absent = await request(app.getHttpServer()).post("/auth/login").send({
@@ -174,6 +176,271 @@ describe("authentication API", () => {
     assert.deepEqual(absent.body, badPassword.body);
     assert.equal(absent.body.token, undefined);
     assert.equal(absent.body.passwordHash, undefined);
+  });
+
+  it("manages organization members and accepts one-time invitations securely", async () => {
+    process.env.RESEND_API_KEY = "test-api-key";
+    process.env.EMAIL_FROM = "AsteHub <no-reply@example.com>";
+    process.env.DASHBOARD_URL = "http://localhost:3000";
+    const originalFetch = globalThis.fetch;
+    const sentEmails: string[] = [];
+    globalThis.fetch = async (_input, init) => {
+      sentEmails.push(String(init?.body));
+      return new Response(JSON.stringify({ id: "test-email" }), {
+        status: 200,
+      });
+    };
+
+    try {
+      const ownerRegistration = await request(app.getHttpServer())
+        .post("/auth/register")
+        .send({
+          email: "team-owner@example.com",
+          password: "correct-horse-battery-staple",
+          organizationName: "Team Rental A",
+        });
+      const otherRegistration = await request(app.getHttpServer())
+        .post("/auth/register")
+        .send({
+          email: "other-owner@example.com",
+          password: "correct-horse-battery-staple",
+          organizationName: "Team Rental B",
+        });
+      const ownerCookie = cookieValue(ownerRegistration);
+      const otherCookie = cookieValue(otherRegistration);
+      const organization = await prisma.organization.findFirstOrThrow({
+        where: { name: "Team Rental A" },
+      });
+      const otherOrganization = await prisma.organization.findFirstOrThrow({
+        where: { name: "Team Rental B" },
+      });
+
+      const invite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ email: " NEW-MEMBER@example.com ", role: "MEMBER" });
+      assert.equal(invite.status, 201, JSON.stringify(invite.body));
+      assert.equal(invite.body.email, "new-member@example.com");
+      assert.equal(invite.body.role, "MEMBER");
+      assert.equal(invite.body.token, undefined);
+      assert.equal(sentEmails.length, 1);
+      const inviteEmail = JSON.parse(sentEmails[0] ?? "{}") as {
+        to: string[];
+        html: string;
+      };
+      assert.deepEqual(inviteEmail.to, ["new-member@example.com"]);
+      const invitationUrl = inviteEmail.html.match(
+        /href="(http:\/\/localhost:3000\/accept-invitation\?token=[^"]+)"/,
+      )?.[1];
+      assert.ok(invitationUrl);
+      const token = new URL(invitationUrl).searchParams.get("token");
+      assert.ok(token);
+      const savedInvitation =
+        await prisma.organizationInvitation.findUniqueOrThrow({
+          where: { id: invite.body.id as string },
+        });
+      assert.notEqual(savedInvitation.tokenHash, token);
+
+      const members = await request(app.getHttpServer())
+        .get(`/users?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie);
+      assert.equal(members.status, 200);
+      assert.equal(members.body.members.length, 1);
+      assert.equal(members.body.members[0].email, "team-owner@example.com");
+      assert.equal(members.body.invitations.length, 1);
+      assert.equal(members.body.invitations[0].email, "new-member@example.com");
+      assert.equal(
+        JSON.stringify(members.body).includes("passwordHash"),
+        false,
+      );
+
+      const crossTenantRead = await request(app.getHttpServer())
+        .get(`/users?organizationId=${organization.id}`)
+        .set("Cookie", otherCookie);
+      assert.equal(crossTenantRead.status, 403);
+      const unauthenticatedRead = await request(app.getHttpServer()).get(
+        `/users?organizationId=${organization.id}`,
+      );
+      assert.equal(unauthenticatedRead.status, 401);
+
+      const accepted = await request(app.getHttpServer())
+        .post("/users/invitations/accept")
+        .send({ token, password: "a-secure-member-password" });
+      assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+      assert.equal(accepted.body.email, "new-member@example.com");
+      assert.equal(accepted.body.passwordHash, undefined);
+      const createdMember = await prisma.user.findUniqueOrThrow({
+        where: { email: "new-member@example.com" },
+        include: { memberships: true },
+      });
+      assert.match(createdMember.passwordHash, /^\$argon2id\$/);
+      assert.equal(createdMember.memberships.length, 1);
+      assert.equal(
+        createdMember.memberships[0]?.organizationId,
+        organization.id,
+      );
+      assert.equal(createdMember.memberships[0]?.role, "MEMBER");
+      assert.equal(
+        await prisma.organizationInvitation.count({
+          where: { id: invite.body.id as string },
+        }),
+        0,
+      );
+      const replay = await request(app.getHttpServer())
+        .post("/users/invitations/accept")
+        .send({ token, password: "a-secure-member-password" });
+      assert.equal(replay.status, 400);
+
+      const existingAccountInvite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ email: "other-owner@example.com", role: "MEMBER" });
+      assert.equal(existingAccountInvite.status, 201);
+      const existingAccountToken = new URL(
+        (JSON.parse(sentEmails.at(-1) ?? "{}") as { html: string }).html.match(
+          /href="([^"]+)"/,
+        )?.[1] ?? "",
+      ).searchParams.get("token");
+      assert.ok(existingAccountToken);
+      const wrongExistingPassword = await request(app.getHttpServer())
+        .post("/users/invitations/accept")
+        .send({
+          token: existingAccountToken,
+          password: "another-wrong-password",
+        });
+      assert.equal(wrongExistingPassword.status, 401);
+      const existingAccountAccepted = await request(app.getHttpServer())
+        .post("/users/invitations/accept")
+        .send({
+          token: existingAccountToken,
+          password: "correct-horse-battery-staple",
+        });
+      assert.equal(existingAccountAccepted.status, 201);
+      assert.equal(
+        existingAccountAccepted.body.email,
+        "other-owner@example.com",
+      );
+      assert.equal(
+        await prisma.membership.count({
+          where: {
+            user: { email: "other-owner@example.com" },
+            organizationId: organization.id,
+          },
+        }),
+        1,
+      );
+
+      const memberLogin = await request(app.getHttpServer())
+        .post("/auth/login")
+        .send({
+          email: "new-member@example.com",
+          password: "a-secure-member-password",
+        });
+      const memberCookie = cookieValue(memberLogin);
+
+      const memberCannotInvite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", memberCookie)
+        .send({ email: "another@example.com", role: "MEMBER" });
+      assert.equal(memberCannotInvite.status, 403);
+      const adminInvite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ email: "admin@example.com", role: "ADMIN" });
+      assert.equal(adminInvite.status, 201);
+      const adminToken = new URL(
+        (JSON.parse(sentEmails.at(-1) ?? "{}") as { html: string }).html.match(
+          /href="([^"]+)"/,
+        )?.[1] ?? "",
+      ).searchParams.get("token");
+      assert.ok(adminToken);
+      await request(app.getHttpServer())
+        .post("/users/invitations/accept")
+        .send({ token: adminToken, password: "a-secure-admin-password" });
+      const adminLogin = await request(app.getHttpServer())
+        .post("/auth/login")
+        .send({
+          email: "admin@example.com",
+          password: "a-secure-admin-password",
+        });
+      const adminCookie = cookieValue(adminLogin);
+
+      const ownerInvite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", adminCookie)
+        .send({ email: "forbidden-owner@example.com", role: "OWNER" });
+      assert.equal(ownerInvite.status, 403);
+
+      const listWithAdmin = await request(app.getHttpServer())
+        .get(`/users?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie);
+      const adminId = listWithAdmin.body.members.find(
+        (entry: { email: string }) => entry.email === "admin@example.com",
+      )?.id as string;
+      const ownerId = listWithAdmin.body.members.find(
+        (entry: { email: string }) => entry.email === "team-owner@example.com",
+      )?.id as string;
+      const adminsCannotRemoveOwners = await request(app.getHttpServer())
+        .delete(`/users/${ownerId}?organizationId=${organization.id}`)
+        .set("Cookie", adminCookie);
+      assert.equal(adminsCannotRemoveOwners.status, 403);
+      const updateRole = await request(app.getHttpServer())
+        .patch(`/users/${adminId}?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ role: "OWNER" });
+      assert.equal(updateRole.status, 200);
+      assert.equal(updateRole.body.role, "OWNER");
+
+      const demoteOwner = await request(app.getHttpServer())
+        .patch(`/users/${adminId}?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ role: "ADMIN" });
+      assert.equal(demoteOwner.status, 200);
+      const removeMember = await request(app.getHttpServer())
+        .delete(
+          `/users/${createdMember.memberships[0]?.id}?organizationId=${organization.id}`,
+        )
+        .set("Cookie", ownerCookie);
+      assert.equal(removeMember.status, 204);
+      assert.equal(
+        await prisma.membership.count({
+          where: { userId: createdMember.id, organizationId: organization.id },
+        }),
+        0,
+      );
+
+      const removeLastOwner = await request(app.getHttpServer())
+        .delete(`/users/${ownerId}?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie);
+      assert.equal(removeLastOwner.status, 409);
+
+      const pendingInvite = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ email: "pending@example.com", role: "MEMBER" });
+      assert.equal(pendingInvite.status, 201);
+      const revokeInvite = await request(app.getHttpServer())
+        .delete(
+          `/users/invitations/${pendingInvite.body.id as string}?organizationId=${organization.id}`,
+        )
+        .set("Cookie", ownerCookie);
+      assert.equal(revokeInvite.status, 204);
+      const invalidInput = await request(app.getHttpServer())
+        .post(`/users/invitations?organizationId=${organization.id}`)
+        .set("Cookie", ownerCookie)
+        .send({ email: "not-an-email", role: "OWNER" });
+      assert.equal(invalidInput.status, 400);
+      assert.equal(
+        (
+          await request(app.getHttpServer())
+            .get(`/users?organizationId=${otherOrganization.id}`)
+            .set("Cookie", ownerCookie)
+        ).status,
+        403,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("sends one-time password reset links and invalidates sessions after reset", async () => {

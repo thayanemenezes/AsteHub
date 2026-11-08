@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { PasswordResetEmailService } from "../../src/auth/password-reset-email.service.js";
+import { AuthEmailService } from "../../src/auth/auth-email.service.js";
 
 describe("password reset email delivery", () => {
   it("includes the Resend rejection reason in the API error", async () => {
@@ -21,7 +21,7 @@ describe("password reset email delivery", () => {
 
     try {
       await assert.rejects(
-        new PasswordResetEmailService().send(
+        new AuthEmailService().sendPasswordReset(
           "user@example.com",
           "one-time-token",
         ),

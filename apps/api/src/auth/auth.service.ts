@@ -23,7 +23,7 @@ import {
 } from "./auth-session.js";
 import type { AuthenticatedUser } from "./authenticated-user.js";
 import { PrismaService } from "../prisma/prisma.service.js";
-import { PasswordResetEmailService } from "./password-reset-email.service.js";
+import { AuthEmailService } from "./auth-email.service.js";
 
 const PASSWORD_RESET_TTL_MS = 15 * 60 * 1000;
 const PASSWORD_RESET_COOLDOWN_MS = 60 * 1000;
@@ -36,7 +36,7 @@ export class AuthService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly passwordResetEmail: PasswordResetEmailService,
+    private readonly authEmail: AuthEmailService,
   ) {}
 
   async register(
@@ -165,7 +165,7 @@ export class AuthService {
     });
 
     try {
-      await this.passwordResetEmail.send(user.email, token);
+      await this.authEmail.sendPasswordReset(user.email, token);
     } catch (error) {
       this.logger.error(
         "Password reset email delivery failed.",

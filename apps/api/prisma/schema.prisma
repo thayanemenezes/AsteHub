@@ -42,6 +42,7 @@ model Organization {
   createdAt         DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
   memberships       Membership[]
+  invitations       OrganizationInvitation[]
   vehicles          Vehicle[]
   vehicleCategories VehicleCategory[]
   locations         Location[]
@@ -151,6 +152,20 @@ model Membership {
 
   @@unique([userId, organizationId])
   @@index([organizationId])
+}
+
+model OrganizationInvitation {
+  id             String         @id @default(cuid()) @db.VarChar(30)
+  organizationId String         @db.VarChar(30)
+  email          String         @db.VarChar(320)
+  tokenHash      String         @unique @db.Char(64)
+  role           MembershipRole @default(MEMBER)
+  expiresAt      DateTime       @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email])
+  @@index([organizationId, expiresAt])
 }
 
 model Session {

@@ -153,6 +153,11 @@ export const vehicleCategoryFormSchema = z.object({
   description: optionalText(10, 500),
 });
 
+export const organizationInvitationFormSchema = z.object({
+  email: z.string().trim().email("Informe um e-mail válido.").max(320),
+  role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
+});
+
 export const locationFormSchema = z.object({
   name: requiredText(2, 120),
   address: requiredText(5, 250),

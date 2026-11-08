@@ -1,0 +1,284 @@
+.page {
+  display: grid;
+  gap: 20px;
+}
+
+.permissionNotice,
+.error {
+  padding: 13px 15px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.error p {
+  margin: 0;
+}
+
+.error button {
+  padding: 0;
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.toolbar {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.toolbar h2,
+.toolbar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.toolbar h2 {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.toolbar span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  height: 43px;
+  background: var(--surface-subtle);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  height: 58px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.table th,
+.table td {
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.email {
+  font-weight: 600;
+}
+
+.table select,
+.field input,
+.field select {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.table select:disabled {
+  opacity: 0.8;
+}
+
+.activeStatus,
+.suspendedStatus {
+  display: inline-flex;
+  min-height: 23px;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--success);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.suspendedStatus {
+  background: var(--surface-subtle);
+  color: var(--muted);
+}
+
+.actionsHeading,
+.actions {
+  text-align: right;
+}
+
+.dangerButton {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dangerButton:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+}
+
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dialogBackdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--overlay);
+}
+
+.dialog {
+  width: min(100%, 440px);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.dialogHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dialog h2,
+.dialogHeading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.dialogHeading > button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.dialog form {
+  display: grid;
+  gap: 15px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 40px;
+}
+
+.fieldError {
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.inviteHint,
+.dialog > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.dialogActions button {
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dialogActions button[type="submit"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.dialogActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.dialogActions .confirmDanger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--surface);
+}

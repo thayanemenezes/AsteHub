@@ -48,6 +48,18 @@ The browser uploads directly to S3; each presigned request expires after five mi
 
 Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a seven-day lifetime. Only a SHA-256 hash of its token is stored. Reset tokens are random, single-use, expire after 15 minutes, and are stored only as SHA-256 hashes. Authentication errors do not distinguish an unknown email from a wrong password.
 
+## Organization user endpoints
+
+`GET /users?organizationId=<id>` requires an active membership and returns the organization's members and unexpired invitations. Managing access requires an `OWNER` or `ADMIN` membership.
+
+- `POST /users/invitations?organizationId=<id>` accepts `{ "email": "...", "role": "MEMBER" }` and emails a single-use invitation link that expires in seven days. Owners may invite `OWNER`, `ADMIN`, or `MEMBER`; admins may invite only `ADMIN` or `MEMBER`. Configure `RESEND_API_KEY`, `EMAIL_FROM`, and `DASHBOARD_URL` to deliver invitations.
+- `POST /users/invitations/accept` accepts the invitation `token` and a `password` (12–128 characters). It creates the account or, for an existing account, verifies its password before adding the organization membership. The invited person signs in after accepting.
+- `PATCH /users/:membershipId?organizationId=<id>` accepts `{ "role": "ADMIN" }` to change a member's role. Only owners can promote a member to owner or manage an existing owner.
+- `DELETE /users/:membershipId?organizationId=<id>` removes that user's access to the organization without deleting their global account.
+- `DELETE /users/invitations/:invitationId?organizationId=<id>` revokes a pending invitation.
+
+An organization must always retain at least one active owner. Membership and invitation changes are scoped to the authorized organization.
+
 ## Vehicle endpoints
 
 All vehicle endpoints require an authenticated session and an `organizationId` query parameter. The API verifies that the signed-in user has an active membership in that organization; the supplied ID is never treated as authorization by itself.
@@ -116,7 +128,7 @@ Phone numbers must contain 8–15 digits. Lead statuses are `NEW`, `CONTACTED`, 
 
 ## Database and checks
 
-Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. The API build and development commands generate Prisma Client before compiling or starting; run `npm run db:generate --workspace @astehub/api` to regenerate it explicitly. For schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
+Apply checked-in migrations with `npm run db:migrate --workspace @astehub/api`. The development command generates Prisma Client on startup. After changing `schema.prisma`, stop the API and run `npm run db:generate --workspace @astehub/api` before building or typechecking; for schema changes during development, use `npm run db:migrate:dev --workspace @astehub/api -- --name <migration-name>`.
 For integration tests, point `DATABASE_URL` at the dedicated test database, apply migrations there, and keep that environment variable set while running the tests:
 
 ```powershell

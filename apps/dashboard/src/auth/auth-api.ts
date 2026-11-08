@@ -1,9 +1,11 @@
 export interface OrganizationMembership {
   id: string;
   name: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: OrganizationRole;
   status: "ACTIVE" | "SUSPENDED";
 }
+
+export type OrganizationRole = "OWNER" | "ADMIN" | "MEMBER";
 
 export interface AuthUser {
   id: string;
@@ -45,10 +47,7 @@ export class AuthApi {
   private readonly baseUrl: string;
   private readonly fetcher: typeof fetch;
 
-  constructor(
-    baseUrl = apiBaseUrl(),
-    fetcher: typeof fetch = fetch,
-  ) {
+  constructor(baseUrl = apiBaseUrl(), fetcher: typeof fetch = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
     this.fetcher = fetcher.bind(globalThis);
   }
