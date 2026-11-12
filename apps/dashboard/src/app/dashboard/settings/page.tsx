@@ -1,10 +1,7 @@
-import { DashboardModulePage } from "../_components/module-placeholder";
+import SettingsForm from './settings-form';
 
 export default function SettingsPage() {
   return (
-    <DashboardModulePage
-      title="Configurações"
-      description="Ajuste as informações e preferências da sua organização."
-    />
+    <SettingsForm />
   );
 }

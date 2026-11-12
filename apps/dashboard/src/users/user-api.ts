@@ -27,6 +27,12 @@ export interface OrganizationUsers {
   invitations: OrganizationInvitation[];
 }
 
+export type DashboardLanguage = "pt-BR" | "en";
+
+export interface UserSettings {
+  language: DashboardLanguage;
+}
+
 export class UserApiError extends Error {
   constructor(readonly status: number) {
     super(`User API request failed with status ${status}.`);
@@ -49,6 +55,17 @@ export class UserApi {
   constructor(baseUrl = apiBaseUrl(), fetcher: typeof fetch = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
     this.fetcher = fetcher.bind(globalThis);
+  }
+
+  getSettings(signal?: AbortSignal): Promise<UserSettings> {
+    return this.request("/users/me/settings", { signal });
+  }
+
+  updateSettings(language: DashboardLanguage): Promise<UserSettings> {
+    return this.request("/users/me/settings", {
+      method: "PATCH",
+      body: JSON.stringify({ language }),
+    });
   }
 
   list(

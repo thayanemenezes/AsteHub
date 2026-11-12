@@ -29,6 +29,11 @@ export class UpdateOrganizationMemberDto {
   role!: "OWNER" | "ADMIN" | "MEMBER";
 }
 
+export class UpdateUserSettingsDto {
+  @IsIn(["pt-BR", "en"])
+  language!: "pt-BR" | "en";
+}
+
 export class AcceptOrganizationInvitationDto {
   @IsString()
   @Length(43, 43)

@@ -221,6 +221,18 @@ export const siteFormSchema = z.object({
   logoUrl: optionalHttpsUrl(),
 });
 
+export const siteSettingsFormSchema = siteFormSchema.extend({
+  seoTitle: optionalText(1, 70),
+  seoDescription: optionalText(1, 320),
+  ogTitle: optionalText(1, 95),
+  ogDescription: optionalText(1, 200),
+  ogImageUrl: optionalHttpsUrl(),
+});
+
+export const userSettingsFormSchema = z.object({
+  language: z.enum(["pt-BR", "en"]),
+});
+
 export const leadFormSchema = z.object({
   contactName: requiredText(2, 120),
   email: z

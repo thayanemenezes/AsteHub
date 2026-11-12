@@ -52,6 +52,8 @@ Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a
 
 `GET /users?organizationId=<id>` requires an active membership and returns the organization's members and unexpired invitations. Managing access requires an `OWNER` or `ADMIN` membership.
 
+- `GET /users/me/settings` returns the authenticated user's dashboard preferences.
+- `PATCH /users/me/settings` accepts `{ "language": "pt-BR" }` or `{ "language": "en" }`. Preferences are scoped to the authenticated user and default to `pt-BR`.
 - `POST /users/invitations?organizationId=<id>` accepts `{ "email": "...", "role": "MEMBER" }` and emails a single-use invitation link that expires in seven days. Owners may invite `OWNER`, `ADMIN`, or `MEMBER`; admins may invite only `ADMIN` or `MEMBER`. Configure `RESEND_API_KEY`, `EMAIL_FROM`, and `DASHBOARD_URL` to deliver invitations.
 - `POST /users/invitations/accept` accepts the invitation `token` and a `password` (12–128 characters). It creates the account or, for an existing account, verifies its password before adding the organization membership. The invited person signs in after accepting.
 - `PATCH /users/:membershipId?organizationId=<id>` accepts `{ "role": "ADMIN" }` to change a member's role. Only owners can promote a member to owner or manage an existing owner.
@@ -107,11 +109,11 @@ Site configuration is limited to one record per organization. All endpoints requ
 
 - `GET /sites?organizationId=<id>` returns the organization's site configuration. It returns `404 Not Found` when no configuration has been created.
 - `GET /sites/:id?organizationId=<id>` returns one site configuration belonging to that organization.
-- `POST /sites?organizationId=<id>` creates the configuration with required `publicName` and a lowercase hyphen-separated `slug`. Optional fields are `domain`, `phone`, `description`, `primaryColor`, `secondaryColor`, and an HTTPS `logoUrl`.
+- `POST /sites?organizationId=<id>` creates the configuration with required `publicName` and a lowercase hyphen-separated `slug`. Optional fields include `domain`, `phone`, `description`, `primaryColor`, `secondaryColor`, an HTTPS `logoUrl`, SEO title/description, and Open Graph title/description/image URL.
 - `PATCH /sites/:id?organizationId=<id>` updates one or more configuration fields. Optional fields can be set to `null` or an empty string to clear them.
 - `DELETE /sites/:id?organizationId=<id>` removes the organization's site configuration.
 
-Slugs and configured domains must be unique across organizations; duplicate organization configurations, slugs, or domains return `409 Conflict`. Colors must use six-digit hex notation. Site configuration does not create public pages or publish a site.
+Slugs and configured domains must be unique across organizations; duplicate organization configurations, slugs, or domains return `409 Conflict`. Colors must use six-digit hex notation, image URLs require HTTPS, and metadata lengths are validated by the API. Site configuration does not create public pages or publish a site.
 
 ## Lead endpoints
 

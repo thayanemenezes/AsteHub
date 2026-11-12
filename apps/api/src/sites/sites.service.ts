@@ -19,6 +19,11 @@ const siteSelection = {
   primaryColor: true,
   secondaryColor: true,
   logoUrl: true,
+  seoTitle: true,
+  seoDescription: true,
+  ogTitle: true,
+  ogDescription: true,
+  ogImageUrl: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.SiteSelect;

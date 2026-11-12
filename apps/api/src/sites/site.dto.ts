@@ -77,6 +77,37 @@ export class CreateSiteDto {
   @MaxLength(2048)
   @IsUrl({ protocols: ["https"], require_protocol: true })
   logoUrl?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(70)
+  seoTitle?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(320)
+  seoDescription?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(95)
+  ogTitle?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(200)
+  ogDescription?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(2048)
+  @IsUrl({ protocols: ["https"], require_protocol: true })
+  ogImageUrl?: string | null;
 }
 
 export class UpdateSiteDto {
@@ -136,4 +167,35 @@ export class UpdateSiteDto {
   @MaxLength(2048)
   @IsUrl({ protocols: ["https"], require_protocol: true })
   logoUrl?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(70)
+  seoTitle?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(320)
+  seoDescription?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(95)
+  ogTitle?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(200)
+  ogDescription?: string | null;
+
+  @IsOptional()
+  @Transform(({ value }) => trimToNull(value))
+  @IsString()
+  @MaxLength(2048)
+  @IsUrl({ protocols: ["https"], require_protocol: true })
+  ogImageUrl?: string | null;
 }

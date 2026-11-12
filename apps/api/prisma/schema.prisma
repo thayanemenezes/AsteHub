@@ -24,10 +24,16 @@ enum LeadStatus {
   CLOSED
 }
 
+enum DashboardLanguage {
+  PT_BR
+  EN
+}
+
 model User {
   id                       String              @id @default(cuid()) @db.VarChar(30)
   email                    String              @unique @db.VarChar(320)
   passwordHash             String              @db.VarChar(255)
+  dashboardLanguage        DashboardLanguage   @default(PT_BR)
   passwordResetRequestedAt DateTime?           @db.Timestamptz(3)
   createdAt                DateTime            @default(now()) @db.Timestamptz(3)
   updatedAt                DateTime            @updatedAt @db.Timestamptz(3)
@@ -134,6 +140,11 @@ model Site {
   primaryColor   String?      @db.Char(7)
   secondaryColor String?      @db.Char(7)
   logoUrl        String?      @db.VarChar(2048)
+  seoTitle       String?      @db.VarChar(70)
+  seoDescription String?      @db.VarChar(320)
+  ogTitle        String?      @db.VarChar(95)
+  ogDescription  String?      @db.VarChar(200)
+  ogImageUrl     String?      @db.VarChar(2048)
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)

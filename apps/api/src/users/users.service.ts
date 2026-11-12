@@ -22,6 +22,7 @@ import type {
   AcceptOrganizationInvitationDto,
   CreateOrganizationInvitationDto,
   UpdateOrganizationMemberDto,
+  UpdateUserSettingsDto,
 } from "./users.dto.js";
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -50,6 +51,33 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly authEmail: AuthEmailService,
   ) {}
+
+  async getSettings(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { dashboardLanguage: true },
+    });
+    return {
+      language: user.dashboardLanguage === "EN" ? "en" : "pt-BR",
+    };
+  }
+
+  async updateSettings(userId: string, input: UpdateUserSettingsDto) {
+    if (input.language !== "pt-BR" && input.language !== "en") {
+      throw new BadRequestException(
+        "A supported dashboard language is required.",
+      );
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { dashboardLanguage: input.language === "en" ? "EN" : "PT_BR" },
+      select: { dashboardLanguage: true },
+    });
+    return {
+      language: user.dashboardLanguage === "EN" ? "en" : "pt-BR",
+    };
+  }
 
   async list(userId: string, organizationId: string) {
     await this.requireActiveMembership(userId, organizationId);

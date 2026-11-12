@@ -1,11 +1,11 @@
 :root {
-  color-scheme: light;
-  --ink: #191f35;
-  --muted: #707181;
-  --accent: #282b74;
-  --accent-dark: #1c405e;
-  --paper: #f2f2f8;
-  --line: #a7abd2;
+    color-scheme: light;
+  --ink: #19352f;
+  --muted: #70817a;
+  --accent: #28745c;
+  --accent-dark: #1c5e49;
+  --paper: #fffefa;
+  --line: #e5e9e2;
   --error: #a64036;
   --surface: #ffffff;
   --surface-subtle: #f8f9fc;
@@ -78,20 +78,6 @@ a {
   text-decoration: none;
 }
 
-.brand-mark {
-  display: block;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  color: var(--accent);
-}
-
-.brand-name {
-  font-size: 1.04rem;
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 1;
-}
 
 .eyebrow {
   margin: 0 0 12px;
@@ -408,14 +394,21 @@ h2 {
 }
 
 .dashboard-sidebar .brand {
-  gap: 10px;
+  display: flex;
+  width: 90%;
+  height: 50px;
+  align-items: center;
+  overflow: hidden;
   margin: 0 0 20px;
   color: var(--paper);
 }
 
 .dashboard-sidebar .brand-mark {
-  width: 32px;
-  height: 32px;
+  display: block;
+  width: 90%;
+  height: 50px;
+  object-fit: cover;
+  object-position: center;
   color: var(--line);
 }
 

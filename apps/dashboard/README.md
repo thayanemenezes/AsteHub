@@ -1,6 +1,6 @@
 # AsteHub Dashboard
 
-The dashboard is the authenticated Next.js application for AsteHub. Its private shell lives under `/dashboard` and includes the overview, responsive navigation, account logout, vehicle catalog, categories, locations, site settings, leads, and organization user management. Settings remain a placeholder.
+The dashboard is the authenticated Next.js application for AsteHub. Its private shell lives under `/dashboard` and includes the overview, responsive navigation, account logout, vehicle catalog, categories, locations, site settings, leads, organization user management, and account/site settings. Dashboard language is stored per user; site identity and SEO metadata are stored per organization.
 
 Configure `apps/api/.env` and set `NEXT_PUBLIC_API_URL=http://localhost:3001` in `apps/dashboard/.env.local`. Then start PostgreSQL, apply the API migration, and run the monorepo:
 

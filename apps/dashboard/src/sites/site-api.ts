@@ -8,6 +8,11 @@ export interface OrganizationSite {
   primaryColor: string | null;
   secondaryColor: string | null;
   logoUrl: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +26,11 @@ export interface SiteInput {
   primaryColor: string | null;
   secondaryColor: string | null;
   logoUrl: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  ogImageUrl?: string | null;
 }
 
 export class SiteApiError extends Error {

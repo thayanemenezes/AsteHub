@@ -18,6 +18,7 @@ import {
   AcceptOrganizationInvitationDto,
   CreateOrganizationInvitationDto,
   UpdateOrganizationMemberDto,
+  UpdateUserSettingsDto,
   UsersOrganizationQueryDto,
 } from "./users.dto.js";
 import { UsersService } from "./users.service.js";
@@ -25,6 +26,21 @@ import { UsersService } from "./users.service.js";
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get("me/settings")
+  @UseGuards(AuthGuard)
+  getSettings(@CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.getSettings(user.id);
+  }
+
+  @Patch("me/settings")
+  @UseGuards(AuthGuard)
+  updateSettings(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() input: UpdateUserSettingsDto,
+  ) {
+    return this.usersService.updateSettings(user.id, input);
+  }
 
   @Get()
   @UseGuards(AuthGuard)
