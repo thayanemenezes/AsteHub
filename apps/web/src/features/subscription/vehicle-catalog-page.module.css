@@ -1,0 +1,147 @@
+.page {
+  max-width: 1360px;
+  width: 90%;
+  margin: 40px auto 80px;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  transition: color 150ms ease, transform 150ms ease;
+  margin-right: 8px;
+}
+
+.backLink:hover {
+  color: var(--green-deep);
+  transform: translateX(-3px);
+}
+
+.backIcon {
+  font-size: 16px;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--green-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+}
+
+.title {
+  color: var(--navy);
+  font-size: clamp(32px, 4.5vw, 48px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: var(--steel);
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.filterBtn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 150ms ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--green-deep);
+  background: #f8fafb;
+}
+
+.filterActive {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-bottom: 48px;
+}
+
+.cardCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--muted);
+  gap: 12px;
+}
+
+.emptyIcon {
+  font-size: 36px;
+  color: var(--line);
+}
+
+.disclaimer {
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.disclaimer p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    margin: 24px auto 60px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}

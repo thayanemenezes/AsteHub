@@ -103,11 +103,28 @@ beforeEach(() => {
 });
 
 describe("site settings page", () => {
+  it("shows the site form without an edit action and links to the local preview", async () => {
+    renderSitePage();
+
+    expect(
+      await screen.findByRole("form", { name: "Configuração do site" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Visitar site" }),
+    ).toHaveAttribute("href", "http://localhost:30001");
+    expect(
+      screen.queryByRole("button", {
+        name: /configurar site|editar configuração/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it("validates each field inline and restricts phone to digits", async () => {
     const user = userEvent.setup();
     renderSitePage();
-    await user.click(await screen.findByRole("button", { name: "Configurar site" }));
-    const form = screen.getByRole("form", { name: "Configuração do site" });
+    const form = await screen.findByRole("form", {
+      name: "Configuração do site",
+    });
     const publicName = within(form).getByLabelText("Nome público");
     const phone = within(form).getByLabelText("Telefone");
     await user.type(publicName, "A");
@@ -135,15 +152,17 @@ describe("site settings page", () => {
     const user = userEvent.setup();
     renderSitePage();
 
-    expect(await screen.findByText("Configure a presença pública")).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Configurar site" }));
-
-    const form = screen.getByRole("form", { name: "Configuração do site" });
+    const form = await screen.findByRole("form", {
+      name: "Configuração do site",
+    });
     await user.type(
       within(form).getByLabelText("Nome público"),
       site.publicName,
     );
-    await user.type(within(form).getByLabelText("Identificador do site"), site.slug);
+    await user.type(
+      within(form).getByLabelText("Identificador do site"),
+      site.slug,
+    );
     await user.type(within(form).getByLabelText("Domínio"), site.domain);
     await user.type(within(form).getByLabelText("Telefone"), site.phone);
     await user.type(within(form).getByLabelText("Descrição"), site.description);
@@ -155,7 +174,10 @@ describe("site settings page", () => {
       within(form).getByLabelText("Cor secundária"),
       site.secondaryColor,
     );
-    await user.type(within(form).getByLabelText("URL do logotipo"), site.logoUrl);
+    await user.type(
+      within(form).getByLabelText("URL do logotipo"),
+      site.logoUrl,
+    );
     await user.click(
       within(form).getByRole("button", { name: "Salvar configuração" }),
     );
@@ -163,7 +185,9 @@ describe("site settings page", () => {
     expect(toast.success).toHaveBeenCalledWith(
       "Configuração do site salva com sucesso.",
     );
-    expect(await screen.findByText(site.publicName)).toBeVisible();
+    expect(
+      await within(form).findByRole("button", { name: "Excluir configuração" }),
+    ).toBeVisible();
     expect(siteConfiguration).toMatchObject({
       publicName: site.publicName,
       slug: site.slug,
@@ -171,15 +195,11 @@ describe("site settings page", () => {
       primaryColor: site.primaryColor,
     });
 
-    await user.click(screen.getByRole("button", { name: "Editar configuração" }));
-    const editForm = screen.getByRole("form", {
-      name: "Configuração do site",
-    });
-    const description = within(editForm).getByLabelText("Descrição");
+    const description = within(form).getByLabelText("Descrição");
     await user.clear(description);
     await user.type(description, "Aluguel de veículos atualizado");
     await user.click(
-      within(editForm).getByRole("button", { name: "Salvar alterações" }),
+      within(form).getByRole("button", { name: "Salvar alterações" }),
     );
 
     expect(toast.success).toHaveBeenCalledWith(
@@ -204,8 +224,9 @@ describe("site settings page", () => {
       return jsonResponse({ message: "Not found" }, 404);
     });
     renderSitePage();
-    await user.click(await screen.findByRole("button", { name: "Configurar site" }));
-    const form = screen.getByRole("form", { name: "Configuração do site" });
+    const form = await screen.findByRole("form", {
+      name: "Configuração do site",
+    });
     await user.type(within(form).getByLabelText("Nome público"), "Minha locadora");
     await user.type(within(form).getByLabelText("Identificador do site"), "locadora");
     await user.click(
@@ -226,8 +247,13 @@ describe("site settings page", () => {
     siteConfiguration = { ...site };
     renderSitePage();
 
-    expect(await screen.findByText(site.publicName)).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Excluir configuração" }));
+    const form = await screen.findByRole("form", {
+      name: "Configuração do site",
+    });
+    expect(await within(form).findByDisplayValue(site.publicName)).toBeVisible();
+    await user.click(
+      within(form).getByRole("button", { name: "Excluir configuração" }),
+    );
     const dialog = screen.getByRole("dialog", { name: "Excluir configuração?" });
     await user.click(
       within(dialog).getByRole("button", { name: "Excluir site" }),
@@ -236,8 +262,9 @@ describe("site settings page", () => {
     expect(toast.success).toHaveBeenCalledWith(
       "Configuração do site excluída com sucesso.",
     );
+    await screen.findByRole("button", { name: "Salvar configuração" });
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Configurar site" })).toBeVisible(),
+      expect(within(form).getByLabelText("Nome público")).toHaveValue(""),
     );
   });
 });

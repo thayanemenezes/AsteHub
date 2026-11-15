@@ -1,0 +1,188 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(4, 30, 43, 0.05);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(4, 30, 43, 0.12);
+  border-color: rgba(0, 213, 155, 0.4);
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: var(--navy-deep);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.photo {
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.card:hover .photo {
+  transform: scale(1.04);
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(4, 30, 43, 0.85);
+  backdrop-filter: blur(4px);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0, 213, 155, 0.3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px;
+}
+
+.titleGroup {
+  margin-bottom: 10px;
+}
+
+.brand {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green-deep);
+  margin-bottom: 2px;
+}
+
+.model {
+  color: var(--navy);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: none;
+  font-family: var(--font-body), sans-serif;
+}
+
+.features {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.divider {
+  color: var(--line);
+}
+
+.pricing {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+
+.priceLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.priceValue {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 2px 0 2px;
+}
+
+.priceValue strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 0.02em;
+}
+
+.period {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.disclaimer {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.cardActions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.detailsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.detailsButton:hover {
+  background: #eef3f5;
+  border-color: var(--muted);
+}
+
+.btnIcon {
+  font-size: 16px;
+  color: var(--green-deep);
+}
+
+.proposeButton {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.proposeButton:hover {
+  background: var(--navy-soft);
+  transform: translateY(-1px);
+}

@@ -99,13 +99,13 @@ export default function LoginPage() {
       <aside className="auth-aside" aria-label="Sobre o AsteHub">
         <div className="aside-orbit orbit-one" />
         <div className="aside-orbit orbit-two" />
-        <p className="eyebrow">GESTÃO QUE MOVE</p>
+        <p className="eyebrow">TUDO CONECTADO EM UM SÓ LUGAR</p>
         <h2>
           Seu negócio,
           <br />
           em movimento.
         </h2>
-        <p>Um espaço simples para você e sua equipe.</p>
+        <p>Mais controle, menos complexidade.</p>
       </aside>
     </main>
   );

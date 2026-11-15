@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../auth/auth-provider";
 import { useAsyncResource } from "../../../hooks/use-async-resource";
@@ -86,7 +92,6 @@ export function useSiteContainer() {
   )?.id;
   const api = useMemo(() => new SiteApi(), []);
   const [form, setForm] = useState<SiteFormValues>(emptyForm);
-  const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FormErrors<SiteFormValues>>(
@@ -111,18 +116,9 @@ export function useSiteContainer() {
       ? "Não há uma organização ativa para configurar o site."
       : "";
 
-  function startEditing() {
+  useEffect(() => {
     setForm(formValues(site));
-    setMutationError("");
-    setFieldErrors({});
-    setIsEditing(true);
-  }
-
-  function cancelEditing() {
-    setIsEditing(false);
-    setMutationError("");
-    setFieldErrors({});
-  }
+  }, [site]);
 
   function updateFormField(field: keyof SiteFormValues, value: string) {
     const nextValue = field === "phone" ? digitsOnly(value) : value;
@@ -169,7 +165,6 @@ export function useSiteContainer() {
         await api.create(organizationId, input);
       }
       toast.success("Configuração do site salva com sucesso.");
-      setIsEditing(false);
       resource.retry();
     } catch (error) {
       const message = mutationErrorMessage(error, "save");
@@ -201,12 +196,10 @@ export function useSiteContainer() {
   }
 
   return {
-    cancelEditing,
     confirmDelete,
     form,
     fieldErrors,
     isDeleteDialogOpen,
-    isEditing,
     isLoading: resource.isLoading,
     isRefreshing: resource.isRefreshing,
     isSubmitting,
@@ -216,7 +209,6 @@ export function useSiteContainer() {
     retryLoading: resource.retry,
     setIsDeleteDialogOpen,
     site,
-    startEditing,
     submitSite,
     updateFormField,
   };

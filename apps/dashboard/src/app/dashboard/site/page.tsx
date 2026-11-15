@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  AiOutlineEdit,
-  AiOutlinePlus,
-} from "react-icons/ai";
-import { AiTwotoneDelete } from "react-icons/ai";
+import { AiOutlineEye, AiTwotoneDelete } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
 import { EmptyState } from "../../../components/dashboard/table-feedback";
 import { FieldError } from "../../../components/forms/field-error";
@@ -14,12 +10,10 @@ import styles from "./site.module.css";
 
 export default function SitePage() {
   const {
-    cancelEditing,
     confirmDelete,
     form,
     fieldErrors,
     isDeleteDialogOpen,
-    isEditing,
     isLoading,
     isRefreshing,
     isSubmitting,
@@ -29,12 +23,9 @@ export default function SitePage() {
     retryLoading,
     setIsDeleteDialogOpen,
     site,
-    startEditing,
     submitSite,
     updateFormField,
   } = useSiteContainer();
-
-  const actionLabel = site ? "Editar configuração" : "Configurar site";
 
   return (
     <section
@@ -43,18 +34,12 @@ export default function SitePage() {
     >
       <ToastContainer autoClose={4000} position="bottom-right" />
       <PageHeading
-        actionDisabled={!organizationId || isLoading || isEditing}
-        actionIcon={
-          site ? (
-            <AiOutlineEdit aria-hidden="true" size={14} />
-          ) : (
-            <AiOutlinePlus aria-hidden="true" size={14} />
-          )
-        }
-        actionLabel={actionLabel}
+        actionHref="http://localhost:3001"
+        target="_blank"
+        actionIcon={<AiOutlineEye aria-hidden="true" size={14} />}
+        actionLabel="Visitar site"
         description="Configure a identidade pública e os dados de contato do site da sua locadora."
         headingId="site-heading"
-        onAction={startEditing}
         title="Site"
       />
 
@@ -82,89 +67,13 @@ export default function SitePage() {
         />
       )}
 
-      {!isLoading && organizationId && !loadError && !site && !isEditing && (
-        <EmptyState
-          description="Cadastre a identidade pública da sua locadora para começar a configurar o site."
-          title="Configure a presença pública"
-        />
-      )}
-
       {isRefreshing && (
         <p className={styles.refreshStatus} role="status">
           Atualizando configuração...
         </p>
       )}
 
-      {site && !isEditing && (
-        <section
-          aria-label="Resumo da configuração do site"
-          className={styles.summary}
-        >
-          <div className={styles.identity}>
-            {site.logoUrl ? (
-              <img alt="" className={styles.logo} src={site.logoUrl} />
-            ) : (
-              <span aria-hidden="true" className={styles.logoPlaceholder}>
-                {site.publicName.charAt(0).toUpperCase()}
-              </span>
-            )}
-            <div>
-              <h2>{site.publicName}</h2>
-              <p>{site.description || "Sem descrição configurada."}</p>
-            </div>
-          </div>
-
-          <dl className={styles.details}>
-            <div>
-              <dt>Identificador</dt>
-              <dd>{site.slug}</dd>
-            </div>
-            <div>
-              <dt>Domínio</dt>
-              <dd>{site.domain || "Ainda não configurado"}</dd>
-            </div>
-            <div>
-              <dt>Telefone</dt>
-              <dd>{site.phone || "Ainda não configurado"}</dd>
-            </div>
-            <div>
-              <dt>Cores</dt>
-              <dd className={styles.colors}>
-                <span
-                  aria-label={`Cor principal ${site.primaryColor ?? "padrão"}`}
-                  className={styles.colorSwatch}
-                  style={{
-                    backgroundColor: site.primaryColor ?? "var(--accent)",
-                  }}
-                />
-                <span
-                  aria-label={`Cor secundária ${site.secondaryColor ?? "padrão"}`}
-                  className={styles.colorSwatch}
-                  style={{
-                    backgroundColor:
-                      site.secondaryColor ?? "var(--surface-subtle)",
-                  }}
-                />
-                <span>
-                  {site.primaryColor ?? "Padrão"} /{" "}
-                  {site.secondaryColor ?? "Padrão"}
-                </span>
-              </dd>
-            </div>
-          </dl>
-
-          <button
-            className={styles.deleteButton}
-            onClick={() => setIsDeleteDialogOpen(true)}
-            type="button"
-          >
-            <AiTwotoneDelete aria-hidden="true" size={14} />
-            Excluir configuração
-          </button>
-        </section>
-      )}
-
-      {isEditing && (
+      {!isLoading && organizationId && !loadError && (
         <section className={styles.formCard}>
           <form
             aria-label="Configuração do site"
@@ -173,7 +82,7 @@ export default function SitePage() {
             onSubmit={submitSite}
           >
             <div className={styles.formHeading}>
-              <h2>{site ? "Editar configuração" : "Configurar site"}</h2>
+              <h2>Configuração do site</h2>
               <p>
                 Nome público e identificador são obrigatórios. Os demais dados
                 são opcionais.
@@ -187,7 +96,6 @@ export default function SitePage() {
                   fieldErrors.publicName ? "site-public-name-error" : undefined
                 }
                 aria-invalid={Boolean(fieldErrors.publicName)}
-                autoFocus
                 maxLength={120}
                 onChange={(event) =>
                   updateFormField("publicName", event.target.value)
@@ -364,17 +272,18 @@ export default function SitePage() {
             <div className={styles.formActions}>
               {site && (
                 <button
-                  className={styles.secondaryButton}
-                  disabled={isSubmitting}
-                  onClick={cancelEditing}
+                  className={styles.deleteButton}
+                  disabled={isSubmitting || isRefreshing}
+                  onClick={() => setIsDeleteDialogOpen(true)}
                   type="button"
                 >
-                  Cancelar
+                  <AiTwotoneDelete aria-hidden="true" size={14} />
+                  Excluir configuração
                 </button>
               )}
               <button
                 className={styles.saveButton}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRefreshing}
                 type="submit"
               >
                 {isSubmitting

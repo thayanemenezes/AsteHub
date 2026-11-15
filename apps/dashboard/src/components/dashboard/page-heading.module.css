@@ -82,6 +82,7 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
+  text-decoration: none;
 }
 
 .actionButton:hover:not(:disabled) {

@@ -1,0 +1,338 @@
+.section {
+  padding: 90px 0 80px;
+  background: var(--paper);
+}
+
+.container {
+  max-width: 1360px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 50px;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--green-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.title {
+  color: var(--navy);
+  font-size: clamp(28px, 3.8vw, 44px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: var(--steel);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.calculatorCard {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 36px;
+  padding: 40px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 36px rgba(4, 30, 43, 0.07);
+}
+
+.inputsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldSelected {
+  color: var(--green-deep);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.categoryOption {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+  transition: all 180ms ease;
+}
+
+.categoryOption:hover {
+  border-color: rgba(0, 213, 155, 0.5);
+  background: #f8fafb;
+}
+
+.optionActive {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.optionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.catName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.checkIcon {
+  color: var(--green-deep);
+  font-size: 16px;
+}
+
+.catDesc {
+  font-size: 12px;
+  color: var(--steel);
+  line-height: 1.4;
+}
+
+.pillGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pillOption {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  transition: all 180ms ease;
+}
+
+.pillOption:hover {
+  border-color: rgba(0, 213, 155, 0.5);
+  background: #f8fafb;
+}
+
+.pillActive {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--navy-deep);
+}
+
+.summaryColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryBox {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 28px;
+  border-radius: 16px;
+  background: var(--navy-deep);
+  color: var(--white);
+  box-shadow: 0 12px 30px rgba(4, 30, 43, 0.25);
+}
+
+.summaryTop {
+  margin-bottom: 20px;
+}
+
+.summaryKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.calcIcon {
+  font-size: 14px;
+}
+
+.summaryTitle {
+  color: var(--white);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 24px;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summaryLabel {
+  font-size: 13px;
+  color: var(--on-navy-muted);
+}
+
+.summaryValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  text-align: right;
+}
+
+.priceContainer {
+  margin-top: auto;
+  margin-bottom: 24px;
+}
+
+.pricePrefix {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-navy-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.priceBig {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.priceBig strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--green);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.priceBig span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-navy-muted);
+}
+
+.disclaimerNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--on-navy-muted);
+  line-height: 1.45;
+}
+
+.infoIcon {
+  font-size: 14px;
+  color: var(--green);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.quoteCta {
+  width: 100%;
+  padding: 16px 24px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--green);
+  color: var(--navy-deep);
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 4px 16px rgba(0, 213, 155, 0.35);
+}
+
+.quoteCta:hover {
+  background: var(--green-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 213, 155, 0.45);
+}
+
+@media (max-width: 980px) {
+  .calculatorCard {
+    grid-template-columns: 1fr;
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 60px 0 50px;
+  }
+
+  .categoryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pillGroup {
+    grid-template-columns: 1fr;
+  }
+
+  .priceBig strong {
+    font-size: 30px;
+  }
+}

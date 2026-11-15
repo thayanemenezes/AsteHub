@@ -15,9 +15,11 @@ interface PageHeadingProps {
   description: string;
   actionLabel: string;
   actionIcon: ReactNode;
-  onAction: () => void;
+  onAction?: () => void;
+  actionHref?: string;
   actionDisabled?: boolean;
   search?: PageHeadingSearch;
+  target?: string;
 }
 
 export function PageHeading({
@@ -27,8 +29,10 @@ export function PageHeading({
   actionLabel,
   actionIcon,
   onAction,
+  actionHref,
   actionDisabled = false,
   search,
+  target,
 }: PageHeadingProps) {
   return (
     <header className={styles.heading}>
@@ -50,15 +54,22 @@ export function PageHeading({
             />
           </label>
         )}
-        <button
-          className={styles.actionButton}
-          disabled={actionDisabled}
-          onClick={onAction}
-          type="button"
-        >
-          {actionIcon}
-          {actionLabel}
-        </button>
+        {actionHref ? (
+          <a className={styles.actionButton} href={actionHref} target={target}>
+            {actionIcon}
+            {actionLabel}
+          </a>
+        ) : (
+          <button
+            className={styles.actionButton}
+            disabled={actionDisabled}
+            onClick={onAction}
+            type="button"
+          >
+            {actionIcon}
+            {actionLabel}
+          </button>
+        )}
       </div>
     </header>
   );

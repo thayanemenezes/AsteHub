@@ -1,11 +1,11 @@
 :root {
     color-scheme: light;
-  --ink: #19352f;
-  --muted: #70817a;
-  --accent: #28745c;
-  --accent-dark: #1c5e49;
-  --paper: #fffefa;
-  --line: #e5e9e2;
+  --ink: #192635;
+  --muted: #707981;
+  --accent: #00d59b;
+  --accent-dark: #041e2bf2;
+  --paper: #fafcff;
+  --line: #e2e7e9;
   --error: #a64036;
   --surface: #ffffff;
   --surface-subtle: #f8f9fc;
@@ -247,11 +247,11 @@ h2 {
   padding: 68px;
   background:
     radial-gradient(
-      ellipse at 75% 25%,
+      ellipse at 85% 35%,
       var(--accent),
-      transparent 42%
+      transparent 30%
     ),
-    linear-gradient(145deg, #224f39, #173830 80%);
+    linear-gradient(45deg, #224c4f, #212552 30%);
   color: white;
 }
 
