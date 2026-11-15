@@ -17,6 +17,7 @@ import { CurrentUser } from "../decorator/current-user.decorator.js";
 import {
   AcceptOrganizationInvitationDto,
   CreateOrganizationInvitationDto,
+  UpdateUserProfileDto,
   UpdateOrganizationMemberDto,
   UpdateUserSettingsDto,
   UsersOrganizationQueryDto,
@@ -40,6 +41,21 @@ export class UsersController {
     @Body() input: UpdateUserSettingsDto,
   ) {
     return this.usersService.updateSettings(user.id, input);
+  }
+
+  @Get("me/profile")
+  @UseGuards(AuthGuard)
+  getProfile(@CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.getProfile(user.id);
+  }
+
+  @Patch("me/profile")
+  @UseGuards(AuthGuard)
+  updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() input: UpdateUserProfileDto,
+  ) {
+    return this.usersService.updateProfile(user.id, input);
   }
 
   @Get()

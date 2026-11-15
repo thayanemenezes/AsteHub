@@ -21,6 +21,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import type {
   AcceptOrganizationInvitationDto,
   CreateOrganizationInvitationDto,
+  UpdateUserProfileDto,
   UpdateOrganizationMemberDto,
   UpdateUserSettingsDto,
 } from "./users.dto.js";
@@ -77,6 +78,49 @@ export class UsersService {
     return {
       language: user.dashboardLanguage === "EN" ? "en" : "pt-BR",
     };
+  }
+
+  async getProfile(userId: string) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async updateProfile(userId: string, input: UpdateUserProfileDto) {
+    try {
+      return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: input.name.trim(),
+          email: normalizeEmail(input.email),
+          phone: input.phone.trim() || null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          createdAt: true,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new ConflictException(
+          "An account with this email address already exists.",
+        );
+      }
+      throw error;
+    }
   }
 
   async list(userId: string, organizationId: string) {

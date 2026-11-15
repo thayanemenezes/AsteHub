@@ -43,7 +43,7 @@ export default function LoginPage() {
   return (
     <main className="auth-shell">
       <section className="auth-card" aria-labelledby="login-heading">
-        <Brand />
+        <Brand src="/logo.png" />
         <p className="eyebrow">BEM-VINDO DE VOLTA</p>
         <h1 id="login-heading">Entrar no AsteHub</h1>
         <p className="intro">Acesse sua conta para continuar de onde parou.</p>

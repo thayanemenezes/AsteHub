@@ -33,6 +33,20 @@ export interface UserSettings {
   language: DashboardLanguage;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+}
+
+export interface UserProfileInput {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export class UserApiError extends Error {
   constructor(readonly status: number) {
     super(`User API request failed with status ${status}.`);
@@ -65,6 +79,17 @@ export class UserApi {
     return this.request("/users/me/settings", {
       method: "PATCH",
       body: JSON.stringify({ language }),
+    });
+  }
+
+  getProfile(signal?: AbortSignal): Promise<UserProfile> {
+    return this.request("/users/me/profile", { signal });
+  }
+
+  updateProfile(input: UserProfileInput): Promise<UserProfile> {
+    return this.request("/users/me/profile", {
+      method: "PATCH",
+      body: JSON.stringify(input),
     });
   }
 

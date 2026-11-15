@@ -234,7 +234,9 @@ export class AuthService {
       where: { id: user.id },
       select: {
         id: true,
+        name: true,
         email: true,
+        phone: true,
         createdAt: true,
         memberships: {
           select: {
@@ -249,7 +251,9 @@ export class AuthService {
 
     return {
       id: current.id,
+      name: current.name,
       email: current.email,
+      phone: current.phone,
       createdAt: current.createdAt,
       organizations: current.memberships.map((membership) => ({
         ...membership.organization,

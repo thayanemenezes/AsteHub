@@ -22,6 +22,9 @@ export type AuthStatus =
 interface AuthContextValue {
   status: AuthStatus;
   user: AuthUser | null;
+  updateProfile: (
+    profile: Pick<AuthUser, "name" | "email" | "phone">,
+  ) => void;
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
@@ -77,9 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("unauthenticated");
   }, [api]);
 
+  const updateProfile = useCallback(
+    (profile: Pick<AuthUser, "name" | "email" | "phone">) => {
+      setUser((current) => (current ? { ...current, ...profile } : current));
+    },
+    [],
+  );
+
   const value = useMemo(
-    () => ({ status, user, login, register, logout, retry }),
-    [status, user, login, register, logout, retry],
+    () => ({ status, user, updateProfile, login, register, logout, retry }),
+    [status, user, updateProfile, login, register, logout, retry],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

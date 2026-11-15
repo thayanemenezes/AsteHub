@@ -1,0 +1,184 @@
+.pageHeading {
+  margin-bottom: 28px;
+}
+
+.pageHeading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 19px;
+}
+
+.pageHeading p,
+.sectionHeading p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.loading,
+.card,
+.error {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.loading {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.card {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  margin: 16px 0;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.form {
+  display: grid;
+  gap: 17px;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.field input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--surface);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.actions button:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.actions button:focus-visible,
+.error button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.formError,
+.refreshError {
+  margin: 0;
+  color: var(--danger);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.error {
+  padding: 13px 15px;
+  color: var(--danger);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.error p {
+  margin: 0;
+}
+
+.error button {
+  padding: 0;
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.refreshStatus {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.membershipList {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.membershipList li {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.role {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.noOrganizations {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}

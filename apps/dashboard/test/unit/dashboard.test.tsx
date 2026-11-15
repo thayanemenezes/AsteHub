@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import DashboardHomePage from "../../src/app/dashboard/page";
 import DashboardLayout from "../../src/app/dashboard/layout";
+import ProfilePage from "../../src/app/dashboard/profile/page";
 import { DashboardModulePage } from "../../src/app/dashboard/_components/module-placeholder";
 import { AuthProvider } from "../../src/auth/auth-provider";
 
@@ -146,6 +147,89 @@ describe("dashboard shell", () => {
       method: "POST",
       credentials: "include",
     });
+  });
+
+  it("opens the profile menu from the navbar account control", async () => {
+    const user = userEvent.setup();
+    renderDashboard();
+
+    const profileMenu = await screen.findByRole("button", {
+      name: "Menu de perfil de manager@example.com",
+    });
+    expect(profileMenu).toHaveAttribute("aria-expanded", "false");
+    await user.click(profileMenu);
+
+    expect(profileMenu).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("link", { name: "Perfil" }),
+    ).toHaveAttribute("href", "/dashboard/profile");
+    expect(
+      screen.getByRole("button", { name: "Sair da conta" }),
+    ).toBeVisible();
+  });
+
+  it("loads and saves profile fields while keeping the organization role read-only", async () => {
+    const user = userEvent.setup();
+    const profile = {
+      id: authenticatedUser.id,
+      name: "Manager Name",
+      email: authenticatedUser.email,
+      phone: "11987654321",
+      createdAt: authenticatedUser.createdAt,
+    };
+    const savedProfile = {
+      ...profile,
+      name: "Ana Manager",
+      email: "ana@example.com",
+      phone: "5511999999999",
+    };
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse(authenticatedUser))
+      .mockResolvedValueOnce(jsonResponse(profile))
+      .mockResolvedValueOnce(jsonResponse(savedProfile));
+    currentPath.set("/dashboard/profile");
+    renderDashboard(<ProfilePage />);
+
+    const name = await screen.findByRole("textbox", { name: "Nome" });
+    const email = screen.getByRole("textbox", { name: "E-mail" });
+    const phone = screen.getByRole("textbox", { name: "Telefone" });
+    await waitFor(() => {
+      expect(name).toHaveValue("Manager Name");
+      expect(email).toHaveValue(authenticatedUser.email);
+      expect(phone).toHaveValue("11987654321");
+    });
+    expect(screen.getByText("Proprietário")).toBeVisible();
+    expect(screen.queryByLabelText("Papel")).not.toBeInTheDocument();
+
+    await user.clear(name);
+    await user.type(name, "Ana Manager");
+    await user.clear(email);
+    await user.type(email, "ana@example.com");
+    await user.clear(phone);
+    await user.type(phone, "5511999999999");
+    await user.click(screen.getByRole("button", { name: "Salvar perfil" }));
+
+    expect(await screen.findByText("Perfil atualizado com sucesso.")).toBeVisible();
+    expect(vi.mocked(fetch).mock.calls[1]?.[0]).toBe(
+      "http://localhost:3001/users/me/profile",
+    );
+    expect(vi.mocked(fetch).mock.calls[2]?.[0]).toBe(
+      "http://localhost:3001/users/me/profile",
+    );
+    expect(vi.mocked(fetch).mock.calls[2]?.[1]).toMatchObject({
+      method: "PATCH",
+      credentials: "include",
+      body: JSON.stringify({
+        name: "Ana Manager",
+        email: "ana@example.com",
+        phone: "5511999999999",
+      }),
+    });
+    expect(
+      screen.getByRole("button", {
+        name: "Menu de perfil de ana@example.com",
+      }),
+    ).toBeVisible();
   });
 
   it("closes the account dropdown with Escape and restores focus", async () => {

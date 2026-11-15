@@ -31,7 +31,9 @@ enum DashboardLanguage {
 
 model User {
   id                       String              @id @default(cuid()) @db.VarChar(30)
+  name                     String?             @db.VarChar(120)
   email                    String              @unique @db.VarChar(320)
+  phone                    String?             @db.VarChar(40)
   passwordHash             String              @db.VarChar(255)
   dashboardLanguage        DashboardLanguage   @default(PT_BR)
   passwordResetRequestedAt DateTime?           @db.Timestamptz(3)

@@ -233,6 +233,16 @@ export const userSettingsFormSchema = z.object({
   language: z.enum(["pt-BR", "en"]),
 });
 
+export const userProfileFormSchema = z.object({
+  name: requiredText(2, 120),
+  email: z
+    .string()
+    .trim()
+    .max(320, "Use no máximo 320 caracteres.")
+    .email("Informe um e-mail válido."),
+  phone: optionalPhone(),
+});
+
 export const leadFormSchema = z.object({
   contactName: requiredText(2, 120),
   email: z

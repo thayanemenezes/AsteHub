@@ -251,7 +251,7 @@ h2 {
       var(--accent),
       transparent 42%
     ),
-    linear-gradient(145deg, #2a224f, #1e1738 80%);  
+    linear-gradient(145deg, #224f39, #173830 80%);
   color: white;
 }
 
@@ -389,27 +389,13 @@ h2 {
   color: #f3f7f0;
 }
 
-.dashboard-sidebar-brand {
-  padding: 0 10px;
-}
-
 .dashboard-sidebar .brand {
-  display: flex;
-  width: 90%;
-  height: 50px;
-  align-items: center;
-  overflow: hidden;
-  margin: 0 0 20px;
-  color: var(--paper);
+  margin-bottom: 16px;
 }
 
-.dashboard-sidebar .brand-mark {
-  display: block;
-  width: 90%;
-  height: 50px;
-  object-fit: cover;
-  object-position: center;
-  color: var(--line);
+.brand-mark {
+  width: 100%;
+  height: 52px;
 }
 
 .dashboard-organization {
@@ -589,7 +575,11 @@ h2 {
   min-height: 40px;
   align-items: center;
   gap: 9px;
+  padding: 0 10px;
+  margin-top: 4px;
   border: 0;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 6px;
   background: transparent;
   color: #9b4138;
   font-size: 12px;
@@ -604,6 +594,28 @@ h2 {
 
 .dashboard-account-dropdown .dashboard-logout-button:focus-visible {
   outline: 3px solid #d59e95;
+  outline-offset: 1px;
+}
+
+.dashboard-account-dropdown .dashboard-profile-link {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dashboard-account-dropdown .dashboard-profile-link:hover {
+  background: var(--surface-subtle);
+  color: var(--accent-dark);
+}
+
+.dashboard-account-dropdown .dashboard-profile-link:focus-visible {
+  outline: 3px solid var(--focus);
   outline-offset: 1px;
 }
 
@@ -696,7 +708,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--line);
+  color: var(--accent-dark);
   font-size: 11px;
 }
 
@@ -707,10 +719,46 @@ h2 {
 
 .dashboard-topbar-user {
   display: flex;
+  width: auto;
   align-items: center;
   gap: 9px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
   color: var(--accent);
+  cursor: pointer;
   font-size: 11px;
+  text-align: left;
+}
+
+.dashboard-topbar-user:hover,
+.dashboard-topbar-user[aria-expanded="true"] {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+}
+
+.dashboard-topbar-user:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.dashboard-topbar-account-menu {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-topbar-account-menu .dashboard-account-dropdown {
+  top: calc(100% + 8px);
+  bottom: auto;
+  width: min(230px, calc(100vw - 32px));
+}
+
+.dashboard-topbar-user-email {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dashboard-topbar-user .dashboard-avatar {
@@ -758,11 +806,11 @@ h2 {
   justify-content: space-between;
   overflow: hidden;
   padding: 32px 38px;
-  border: 1px solid #b5c2cb;
+  border: 1px solid transparent;
   border-radius: 15px;
   background:
-    radial-gradient(ellipse at 90% 20%, rgba(167, 183, 210, 0.38), transparent 34%),
-    linear-gradient(115deg, #e7eef1, #f5f2f8 78%);
+    radial-gradient(ellipse at 90% 20%, rgba(167, 210, 171, 0.38), transparent 34%),
+    linear-gradient(115deg, #e7f1ea, #f3f8f2 78%);
 }
 
 .dashboard-welcome-copy {
@@ -1128,7 +1176,7 @@ h2 {
     font-size: 10px;
   }
 
-  .dashboard-topbar-user {
+  .dashboard-topbar-user-email {
     display: none;
   }
 

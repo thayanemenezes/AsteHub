@@ -22,11 +22,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { status, user, logout, retry } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [accountMenuSource, setAccountMenuSource] = useState<
+    "sidebar" | "navbar" | null
+  >(null);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   const firstNavigationLinkRef = useRef<HTMLAnchorElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const accountMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const navbarAccountMenuRef = useRef<HTMLDivElement>(null);
+  const navbarAccountMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const accountMenuOpen = accountMenuSource !== null;
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   const activeOrganization = user?.organizations?.find(
@@ -76,16 +81,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     function closeOnOutsidePointer(event: PointerEvent) {
       if (
         event.target instanceof Node &&
-        !accountMenuRef.current?.contains(event.target)
+        !accountMenuRef.current?.contains(event.target) &&
+        !navbarAccountMenuRef.current?.contains(event.target)
       ) {
-        setAccountMenuOpen(false);
+        setAccountMenuSource(null);
       }
     }
 
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setAccountMenuOpen(false);
-        accountMenuTriggerRef.current?.focus();
+        setAccountMenuSource(null);
+        if (accountMenuSource === "navbar") {
+          navbarAccountMenuTriggerRef.current?.focus();
+        } else {
+          accountMenuTriggerRef.current?.focus();
+        }
       }
     }
 
@@ -95,7 +105,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [accountMenuOpen]);
+  }, [accountMenuOpen, accountMenuSource]);
 
   function closeMobileMenu() {
     setMobileMenuOpen(false);
@@ -107,13 +117,45 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setLoggingOut(true);
     try {
       await logout();
-      setAccountMenuOpen(false);
+      setAccountMenuSource(null);
       router.push("/login");
     } catch {
       setLogoutError("Não foi possível encerrar a sessão. Tente novamente.");
     } finally {
       setLoggingOut(false);
     }
+  }
+
+  function renderAccountDropdown() {
+    return (
+      <div
+        aria-label="Ações da conta"
+        className="dashboard-account-dropdown"
+        id="dashboard-account-actions"
+        role="group"
+      >
+        {logoutError && (
+          <p className="dashboard-logout-error" role="alert">
+            {logoutError}
+          </p>
+        )}
+        <Link
+          className="dashboard-profile-link"
+          href="/dashboard/profile"
+          onClick={() => setAccountMenuSource(null)}
+        >
+          Perfil
+        </Link>
+        <button
+          className="dashboard-logout-button"
+          disabled={loggingOut}
+          onClick={() => void handleLogout()}
+          type="button"
+        >
+          {loggingOut ? "Saindo..." : "Sair da conta"}
+        </button>
+      </div>
+    );
   }
 
   if (status === "loading" || status === "unauthenticated") {
@@ -161,7 +203,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         className={`dashboard-sidebar${mobileMenuOpen ? " is-open" : ""}`}
       >
         <div className="dashboard-sidebar-brand">
-          <Brand href="/dashboard" />
+          <Brand href="/dashboard" src="/logo-white.png" />
         </div>
 
         <div className="dashboard-organization">
@@ -232,41 +274,26 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 !(nextFocusedElement instanceof Node) ||
                 !event.currentTarget.contains(nextFocusedElement)
               ) {
-                setAccountMenuOpen(false);
+                setAccountMenuSource(null);
               }
             }}
             ref={accountMenuRef}
           >
-            {accountMenuOpen && (
-              <div
-                aria-label="Ações da conta"
-                className="dashboard-account-dropdown"
-                id="dashboard-account-actions"
-                role="group"
-              >
-                {logoutError && (
-                  <p className="dashboard-logout-error" role="alert">
-                    {logoutError}
-                  </p>
-                )}
-                <button
-                  className="dashboard-logout-button"
-                  disabled={loggingOut}
-                  onClick={() => void handleLogout()}
-                  type="button"
-                >
-                  {loggingOut ? "Saindo..." : "Sair da conta"}
-                </button>
-              </div>
-            )}
+            {accountMenuSource === "sidebar" && renderAccountDropdown()}
             <button
               aria-controls={
-                accountMenuOpen ? "dashboard-account-actions" : undefined
+                accountMenuSource === "sidebar"
+                  ? "dashboard-account-actions"
+                  : undefined
               }
-              aria-expanded={accountMenuOpen}
+              aria-expanded={accountMenuSource === "sidebar"}
               aria-label={`Ações da conta de ${user.email}`}
               className="dashboard-account-trigger"
-              onClick={() => setAccountMenuOpen((open) => !open)}
+              onClick={() =>
+                setAccountMenuSource((current) =>
+                  current === "sidebar" ? null : "sidebar",
+                )
+              }
               ref={accountMenuTriggerRef}
               type="button"
             >
@@ -316,13 +343,61 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="dashboard-breadcrumb">
             <span>Workspace</span>
             <span aria-hidden="true">/</span>
-            <strong>{currentPage?.label ?? "Visão geral"}</strong>
+            <strong>
+              {currentPage?.label ??
+                (pathname === "/dashboard/profile" ? "Perfil" : "Visão geral")}
+            </strong>
           </div>
-          <div className="dashboard-topbar-user">
-            <span className="dashboard-avatar" aria-hidden="true">
-              {user.email.charAt(0).toUpperCase()}
-            </span>
-            <span>{user.email}</span>
+          <div
+            className="dashboard-account-menu dashboard-topbar-account-menu"
+            onBlurCapture={(event) => {
+              const nextFocusedElement = event.relatedTarget;
+              if (
+                !(nextFocusedElement instanceof Node) ||
+                !event.currentTarget.contains(nextFocusedElement)
+              ) {
+                setAccountMenuSource(null);
+              }
+            }}
+            ref={navbarAccountMenuRef}
+          >
+            {accountMenuSource === "navbar" && renderAccountDropdown()}
+            <button
+              aria-controls={
+                accountMenuSource === "navbar"
+                  ? "dashboard-account-actions"
+                  : undefined
+              }
+              aria-expanded={accountMenuSource === "navbar"}
+              aria-label={`Menu de perfil de ${user.email}`}
+              className="dashboard-account-trigger dashboard-topbar-user"
+              onClick={() =>
+                setAccountMenuSource((current) =>
+                  current === "navbar" ? null : "navbar",
+                )
+              }
+              ref={navbarAccountMenuTriggerRef}
+              type="button"
+            >
+              <span className="dashboard-avatar" aria-hidden="true">
+                {(user.name?.trim().charAt(0) || user.email.charAt(0)).toUpperCase()}
+              </span>
+              <span className="dashboard-topbar-user-email">{user.email}</span>
+              <svg
+                aria-hidden="true"
+                className="dashboard-account-chevron"
+                fill="none"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="m6 8 4 4 4-4"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </button>
           </div>
         </header>
 

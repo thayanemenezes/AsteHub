@@ -44,7 +44,7 @@ The browser uploads directly to S3; each presigned request expires after five mi
 - `POST /auth/password-reset` accepts `email` and always returns the same response whether or not the account exists. For an eligible account, the API sends a single-use reset link that expires in 15 minutes; requests are limited to one per account per minute.
 - `POST /auth/password-reset/confirm` accepts the emailed `token` and a new `password` (12–128 characters). A successful reset consumes the token and invalidates all active sessions for the account.
 - `POST /auth/logout` invalidates the presented session and clears its cookie.
-- `GET /auth/me` returns the authenticated user's public profile, memberships, organization names, roles, and statuses.
+- `GET /auth/me` returns the authenticated user's public profile (name, email, and phone), memberships, organization names, roles, and statuses.
 
 Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a seven-day lifetime. Only a SHA-256 hash of its token is stored. Reset tokens are random, single-use, expire after 15 minutes, and are stored only as SHA-256 hashes. Authentication errors do not distinguish an unknown email from a wrong password.
 
@@ -52,6 +52,8 @@ Sessions use a random `astehub_session` `HttpOnly`, `SameSite=Lax` cookie with a
 
 `GET /users?organizationId=<id>` requires an active membership and returns the organization's members and unexpired invitations. Managing access requires an `OWNER` or `ADMIN` membership.
 
+- `GET /users/me/profile` returns the authenticated user's name, email, phone, and account creation date.
+- `PATCH /users/me/profile` accepts `{ "name": "...", "email": "...", "phone": "..." }`. Name and email are required; phone may be an empty string or 8–15 digits. Email addresses are normalized to lowercase, and an address already used by another account returns `409 Conflict`. Organization roles are not editable through this endpoint.
 - `GET /users/me/settings` returns the authenticated user's dashboard preferences.
 - `PATCH /users/me/settings` accepts `{ "language": "pt-BR" }` or `{ "language": "en" }`. Preferences are scoped to the authenticated user and default to `pt-BR`.
 - `POST /users/invitations?organizationId=<id>` accepts `{ "email": "...", "role": "MEMBER" }` and emails a single-use invitation link that expires in seven days. Owners may invite `OWNER`, `ADMIN`, or `MEMBER`; admins may invite only `ADMIN` or `MEMBER`. Configure `RESEND_API_KEY`, `EMAIL_FROM`, and `DASHBOARD_URL` to deliver invitations.

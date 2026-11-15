@@ -40,7 +40,6 @@ export default function DashboardHomePage() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-page-heading">
-        <p className="dashboard-eyebrow">ASTE HUB</p>
         <h1>Visão geral</h1>
         <p>Um espaço para administrar a presença digital da sua locadora.</p>
       </header>

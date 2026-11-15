@@ -5,6 +5,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { AuthApi } from "../../auth/auth-api";
 import { validateEmail, validatePassword } from "../../auth/auth-form";
 import { Brand } from "../../components/brand";
+import { useRouter } from 'next/navigation';
+import { toast } from "react-toastify/unstyled";
+
 
 const GENERIC_REQUEST_MESSAGE =
   "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.";
@@ -17,6 +20,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setToken(new URLSearchParams(window.location.search).get("token") ?? "");
@@ -49,6 +53,8 @@ export default function ResetPasswordPage() {
         setStatus("Sua senha foi redefinida. Você já pode entrar.");
         setPassword("");
         setConfirmPassword("");
+        toast.success("Senha redefinida com sucesso!");
+        router.push("/login");
       } else {
         const result = await api.requestPasswordReset(email.trim());
         setStatus(result.message || GENERIC_REQUEST_MESSAGE);
@@ -69,7 +75,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="auth-shell auth-shell--single">
       <section className="auth-card" aria-labelledby="reset-password-heading">
-        <Brand />
+        <Brand src="/logo.png" />
         <p className="eyebrow">ACESSO À CONTA</p>
         <h1 id="reset-password-heading">
           {token ? "Criar nova senha" : "Recuperar senha"}

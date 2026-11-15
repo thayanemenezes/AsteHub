@@ -178,6 +178,63 @@ describe("authentication API", () => {
     assert.equal(absent.body.passwordHash, undefined);
   });
 
+  it("allows users to update personal profile data but not their organization role", async () => {
+    const registration = await request(app.getHttpServer())
+      .post("/auth/register")
+      .send({
+        email: "profile@example.com",
+        password: "correct-horse-battery-staple",
+        organizationName: "Profile Rental",
+      });
+    const cookie = cookieValue(registration);
+
+    const initialProfile = await request(app.getHttpServer())
+      .get("/users/me/profile")
+      .set("Cookie", cookie);
+    assert.equal(initialProfile.status, 200);
+    assert.equal(initialProfile.body.email, "profile@example.com");
+    assert.equal(initialProfile.body.name, null);
+    assert.equal(initialProfile.body.phone, null);
+
+    const forbiddenRoleUpdate = await request(app.getHttpServer())
+      .patch("/users/me/profile")
+      .set("Cookie", cookie)
+      .send({
+        name: "Profile Owner",
+        email: "profile@example.com",
+        phone: "11987654321",
+        role: "ADMIN",
+      });
+    assert.equal(forbiddenRoleUpdate.status, 400);
+
+    const update = await request(app.getHttpServer())
+      .patch("/users/me/profile")
+      .set("Cookie", cookie)
+      .send({
+        name: " Profile Owner ",
+        email: " PROFILE-OWNER@EXAMPLE.COM ",
+        phone: "11987654321",
+      });
+    assert.equal(update.status, 200, JSON.stringify(update.body));
+    assert.equal(update.body.name, "Profile Owner");
+    assert.equal(update.body.email, "profile-owner@example.com");
+    assert.equal(update.body.phone, "11987654321");
+
+    const currentUser = await request(app.getHttpServer())
+      .get("/auth/me")
+      .set("Cookie", cookie);
+    assert.equal(currentUser.status, 200);
+    assert.equal(currentUser.body.email, "profile-owner@example.com");
+    assert.equal(currentUser.body.name, "Profile Owner");
+    assert.equal(currentUser.body.phone, "11987654321");
+    assert.equal(currentUser.body.organizations[0].role, "OWNER");
+
+    const anonymousProfile = await request(app.getHttpServer()).get(
+      "/users/me/profile",
+    );
+    assert.equal(anonymousProfile.status, 401);
+  });
+
   it("manages organization members and accepts one-time invitations securely", async () => {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.EMAIL_FROM = "AsteHub <no-reply@example.com>";

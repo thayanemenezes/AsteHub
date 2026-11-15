@@ -1,7 +1,7 @@
-export function Brand({ href = "/" }: { href?: string }) {
+export function Brand({ href = "/", src }: { href?: string; src: string }) {
   return (
     <a className="brand" href={href} aria-label="AsteHub início">
-      <img src="/logo.png" alt="AsteHub" className="brand-mark" />
+      <img src={src} alt="AsteHub" className="brand-mark" />
     </a>
   );
 }
