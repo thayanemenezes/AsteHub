@@ -155,6 +155,22 @@ export default function SitePage() {
               </label>
             </div>
 
+            <label className={styles.publicationField}>
+              <input
+                aria-label="Publicar site"
+                checked={form.isPublished}
+                onChange={(event) =>
+                  updateFormField("isPublished", event.target.checked)
+                }
+                type="checkbox"
+              />
+              Publicar site
+              <span>
+                Quando publicado, o site e os conteúdos publicados ficam
+                disponíveis publicamente.
+              </span>
+            </label>
+
             <div className={styles.formRow}>
               <label>
                 Telefone

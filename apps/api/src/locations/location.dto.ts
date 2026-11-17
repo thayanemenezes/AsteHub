@@ -3,6 +3,7 @@ import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -43,6 +44,10 @@ export class CreateLocationDto {
   @Length(1, 120)
   name!: string;
 
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
+
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
   @IsString()
   @Length(1, 250)
@@ -80,6 +85,10 @@ export class UpdateLocationDto {
   @IsString()
   @Length(1, 120)
   name?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 
   @IsOptional()
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))

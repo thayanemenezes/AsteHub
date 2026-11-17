@@ -1,8 +1,8 @@
 .wrap {
-  width: 90%;
-  max-width: 1360px;
-  height: 380px;
-  max-height: 380px;
+  width: 100%;
+  /* max-width: 1360px; */
+  height: 420px;
+  max-height: 420px;
   margin: 28px auto 0;
 }
 
@@ -10,7 +10,7 @@
   position: relative;
   height: 100%;
   overflow: hidden;
-  border-radius: 20px;
+  /* border-radius: 20px; */
   background: var(--navy-deep);
   box-shadow: 0 16px 36px rgba(4, 30, 43, 0.22);
 }
@@ -27,8 +27,8 @@
 }
 
 .photo {
-  object-fit: cover;
-  object-position: center;
+  object-fit:cover;
+  object-position: right;
 }
 
 .shade {
@@ -70,7 +70,7 @@
   margin: 0 0 12px;
   color: var(--white);
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(28px, 4.2vw, 46px);
+  font-size: clamp(30px, 4.5vw, 48px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0.02em;

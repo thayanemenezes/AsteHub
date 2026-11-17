@@ -36,6 +36,7 @@ export type LocationDialog =
 
 export interface LocationFormValues {
   name: string;
+  isPublished: boolean;
   address: string;
   city: string;
   state: string;
@@ -46,6 +47,7 @@ export interface LocationFormValues {
 
 const emptyForm: LocationFormValues = {
   name: "",
+  isPublished: false,
   address: "",
   city: "",
   state: "",
@@ -142,6 +144,7 @@ export function useLocationsContainer() {
   function openEditDialog(location: OrganizationLocation) {
     setForm({
       name: location.name,
+      isPublished: location.isPublished,
       address: location.address,
       city: location.city,
       state: location.state,
@@ -182,6 +185,10 @@ export function useLocationsContainer() {
     });
   }
 
+  function updatePublished(value: boolean) {
+    setForm((current) => ({ ...current, isPublished: value }));
+  }
+
   function goToPreviousPage() {
     setPage((current) => Math.max(1, current - 1));
   }
@@ -214,6 +221,7 @@ export function useLocationsContainer() {
 
     const input: LocationInput = {
       name: parsedForm.data.name,
+      isPublished: parsedForm.data.isPublished,
       address: parsedForm.data.address,
       city: parsedForm.data.city,
       state: parsedForm.data.state,
@@ -327,5 +335,6 @@ export function useLocationsContainer() {
     togglePageSelection,
     toggleSelection,
     updateFormField,
+    updatePublished,
   };
 }

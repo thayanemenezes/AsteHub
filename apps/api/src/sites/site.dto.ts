@@ -1,6 +1,7 @@
 import { Transform } from "class-transformer";
 import {
   IsFQDN,
+  IsBoolean,
   IsOptional,
   IsString,
   IsUrl,
@@ -37,6 +38,10 @@ export class CreateSiteDto {
   @Length(1, 60)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   slug!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 
   @IsOptional()
   @Transform(({ value }) =>
@@ -127,6 +132,10 @@ export class UpdateSiteDto {
   @Length(1, 60)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   slug?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 
   @IsOptional()
   @Transform(({ value }) =>

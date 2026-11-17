@@ -1,6 +1,7 @@
 export interface OrganizationLocation {
   id: string;
   name: string;
+  isPublished: boolean;
   address: string;
   city: string;
   state: string;
@@ -21,6 +22,7 @@ export interface LocationPage {
 
 export interface LocationInput {
   name: string;
+  isPublished?: boolean;
   address: string;
   city: string;
   state: string;

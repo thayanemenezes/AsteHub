@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState, useRef, type TouchEvent } from "react";
 import {
+  AiOutlineCar,
   AiOutlineLeft,
   AiOutlineRight,
   AiOutlineArrowRight,
 } from "react-icons/ai";
-import type { Vehicle } from "../content";
-import { VehicleCard } from "./vehicle-card";
+import type { PublicVehicle } from "../public-site-api";
+import { PublicVehicleCard } from "../vehicle-card";
+import { QuoteTrigger } from "./quote-trigger";
 import styles from "./vehicle-slider.module.css";
 
 function pageSizeFor(width: number) {
@@ -29,7 +31,7 @@ function chunk<T>(items: T[], size: number): T[][] {
   return pages;
 }
 
-export function VehicleSlider({ vehicles }: { vehicles: Vehicle[] }) {
+export function VehicleSlider({ vehicles }: { vehicles: PublicVehicle[] }) {
   const [pageSize, setPageSize] = useState(3);
   const [page, setPage] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -52,6 +54,9 @@ export function VehicleSlider({ vehicles }: { vehicles: Vehicle[] }) {
   const safePage = Math.min(page, Math.max(pages.length - 1, 0));
 
   function go(delta: number) {
+    if (pages.length === 0) {
+      return;
+    }
     setPage((current) => (current + delta + pages.length) % pages.length);
   }
 
@@ -92,57 +97,68 @@ export function VehicleSlider({ vehicles }: { vehicles: Vehicle[] }) {
             </p>
           </div>
 
-          <div className={styles.navControls}>
-            <button
-              type="button"
-              className={styles.arrow}
-              aria-label="Ver veículos anteriores"
-              onClick={() => go(-1)}
-            >
-              <AiOutlineLeft />
-            </button>
-
-            <span className={styles.counter}>
-              {safePage + 1} / {pages.length}
-            </span>
-
-            <button
-              type="button"
-              className={styles.arrow}
-              aria-label="Ver próximos veículos"
-              onClick={() => go(1)}
-            >
-              <AiOutlineRight />
-            </button>
-          </div>
-        </div>
-
-        <div
-          className={styles.viewport}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div
-            className={styles.track}
-            style={{ transform: `translateX(-${safePage * 100}%)` }}
-          >
-            {pages.map((group, groupIndex) => (
-              <div
-                key={`page-${groupIndex}`}
-                className={styles.slide}
-                style={{
-                  gridTemplateColumns: `repeat(${pageSize}, 1fr)`,
-                }}
+          {vehicles.length > 0 && (
+            <div className={styles.navControls}>
+              <button
+                type="button"
+                className={styles.arrow}
+                aria-label="Ver veículos anteriores"
+                onClick={() => go(-1)}
               >
-                {group.map((vehicle) => (
-                  <div key={vehicle.id} className={styles.cardWrapper}>
-                    <VehicleCard vehicle={vehicle} />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
+                <AiOutlineLeft />
+              </button>
+
+              <span className={styles.counter}>
+                {safePage + 1} / {pages.length}
+              </span>
+
+              <button
+                type="button"
+                className={styles.arrow}
+                aria-label="Ver próximos veículos"
+                onClick={() => go(1)}
+              >
+                <AiOutlineRight />
+              </button>
+            </div>
+          )}
         </div>
+
+        {vehicles.length > 0 ? (
+          <div
+            className={styles.viewport}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div
+              className={styles.track}
+              style={{ transform: `translateX(-${safePage * 100}%)` }}
+            >
+              {pages.map((group, groupIndex) => (
+                <div
+                  key={`page-${groupIndex}`}
+                  className={styles.slide}
+                  style={{
+                    gridTemplateColumns: `repeat(${pageSize}, 1fr)`,
+                  }}
+                >
+                  {group.map((vehicle) => (
+                    <div key={vehicle.id} className={styles.cardWrapper}>
+                      <PublicVehicleCard vehicle={vehicle} />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.emptyState} role="status">
+            <AiOutlineCar aria-hidden="true" className={styles.emptyIcon} />
+            <p className={styles.emptyText}>
+              Nenhum veículo publicado no momento.
+            </p>
+          </div>
+        )}
 
         <div className={styles.footerAction}>
           <Link href="/veiculos" className={styles.catalogButton}>
@@ -150,8 +166,7 @@ export function VehicleSlider({ vehicles }: { vehicles: Vehicle[] }) {
             <AiOutlineArrowRight className={styles.arrowIcon} />
           </Link>
           <p className={styles.note}>
-            Valores mensais calculados com base em prazos e franquias
-            demonstrativos.
+            Consulte disponibilidade e condições diretamente com a locadora.
           </p>
         </div>
       </div>

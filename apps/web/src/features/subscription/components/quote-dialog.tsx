@@ -1,42 +1,36 @@
 "use client";
 
 import { useEffect, useId, useState, type FormEvent } from "react";
-import {
-  AiOutlineClose,
-  AiOutlineCheckCircle,
-  AiOutlineInfoCircle,
-} from "react-icons/ai";
-import { vehicles, terms, distances } from "../content";
+import { AiOutlineClose, AiOutlineCheckCircle, AiOutlineInfoCircle } from "react-icons/ai";
 import styles from "./quote-dialog.module.css";
 
 interface QuoteDialogProps {
   open: boolean;
   initialVehicleId?: string;
+  siteSlug: string;
   onClose: () => void;
 }
 
 export function QuoteDialog({
   open,
   initialVehicleId,
+  siteSlug,
   onClose,
 }: QuoteDialogProps) {
   const titleId = useId();
-  const [selectedVehicle, setSelectedVehicle] = useState(
-    initialVehicleId ?? vehicles[0]?.id ?? "",
-  );
-  const [selectedTerm, setSelectedTerm] = useState("24");
-  const [selectedKm, setSelectedKm] = useState("2000");
+  const [selectedVehicle, setSelectedVehicle] = useState(initialVehicleId ?? "");
   const [sent, setSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    if (initialVehicleId) {
-      setSelectedVehicle(initialVehicleId);
-    }
+    setSelectedVehicle(initialVehicleId ?? "");
   }, [initialVehicleId]);
 
   useEffect(() => {
     if (!open) {
       setSent(false);
+      setSubmitError("");
       return;
     }
 
@@ -60,9 +54,44 @@ export function QuoteDialog({
     return null;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSent(true);
+    if (isSubmitting) return;
+    const formData = new FormData(event.currentTarget);
+    const phone = String(formData.get("telefone") ?? "").replace(/\D/g, "");
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const response = await fetch(
+        `/api/public/${encodeURIComponent(siteSlug)}/leads`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contactName: formData.get("nome"),
+            email: String(formData.get("email") ?? "").trim() || undefined,
+            phone,
+            message: formData.get("mensagem"),
+            ...(selectedVehicle ? { vehicleId: selectedVehicle } : {}),
+          }),
+        },
+      );
+      if (!response.ok) {
+        setSubmitError(
+          response.status === 429
+            ? "Muitas solicitações foram enviadas. Tente novamente mais tarde."
+            : "Não foi possível enviar sua solicitação. Confira os dados e tente novamente.",
+        );
+        return;
+      }
+      setSent(true);
+    } catch {
+      setSubmitError(
+        "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -94,17 +123,16 @@ export function QuoteDialog({
             <div className={styles.successIconWrap}>
               <AiOutlineCheckCircle className={styles.successIcon} />
             </div>
-            <h3>Proposta demonstrativa registrada!</h3>
+            <h3>Solicitação enviada!</h3>
             <p className={styles.successText}>
-              Obrigado pelo interesse! Esta é uma demonstração de frontend para
-              validação da experiência do usuário.
+              Obrigado pelo contato. A equipe da locadora poderá retornar pelos
+              dados informados.
             </p>
             <div className={styles.demoNotice}>
               <AiOutlineInfoCircle className={styles.noticeIcon} />
               <span>
-                Nenhum dado pessoal foi enviado para servidores externos. Em
-                produção com o ecossistema AsteHub, esta solicitação geraria um
-                Lead qualificado no painel da locadora.
+                Sua solicitação foi encaminhada à locadora e registrada para
+                atendimento.
               </span>
             </div>
             <button
@@ -115,44 +143,42 @@ export function QuoteDialog({
                 onClose();
               }}
             >
-              Concluir demonstração
+              Concluir
             </button>
           </div>
         ) : (
           <>
             <p className={styles.intro}>
-              Preencha os dados abaixo para receber uma simulação detalhada com
-              as condições do seu plano.
+              Preencha os dados para que a locadora possa entrar em contato.
             </p>
 
             <form className={styles.form} onSubmit={handleSubmit}>
+              <label className={styles.formLabel}>
+                Nome completo *
+                <input
+                  className={styles.input}
+                  name="nome"
+                  type="text"
+                  placeholder="Seu nome completo"
+                  autoComplete="name"
+                  maxLength={120}
+                  required
+                />
+              </label>
+
               <div className={styles.formRow}>
                 <label className={styles.formLabel}>
-                  Nome completo *
-                  <input
-                    className={styles.input}
-                    name="nome"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    autoComplete="name"
-                    required
-                  />
-                </label>
-
-                <label className={styles.formLabel}>
-                  E-mail *
+                  E-mail
                   <input
                     className={styles.input}
                     name="email"
                     type="email"
                     placeholder="seuemail@exemplo.com"
                     autoComplete="email"
-                    required
+                    maxLength={320}
                   />
                 </label>
-              </div>
 
-              <div className={styles.formRow}>
                 <label className={styles.formLabel}>
                   Telefone / WhatsApp *
                   <input
@@ -161,77 +187,39 @@ export function QuoteDialog({
                     type="tel"
                     placeholder="(11) 99999-9999"
                     autoComplete="tel"
+                    minLength={8}
+                    maxLength={20}
                     required
                   />
-                </label>
-
-                <label className={styles.formLabel}>
-                  Veículo de interesse
-                  <select
-                    className={styles.select}
-                    name="veiculo"
-                    value={selectedVehicle}
-                    onChange={(e) => setSelectedVehicle(e.target.value)}
-                  >
-                    {vehicles.map((vehicle) => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.brand} {vehicle.model} ({vehicle.category})
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className={styles.formRow}>
-                <label className={styles.formLabel}>
-                  Prazo pretendido
-                  <select
-                    className={styles.select}
-                    name="prazo"
-                    value={selectedTerm}
-                    onChange={(e) => setSelectedTerm(e.target.value)}
-                  >
-                    {terms.map((term) => (
-                      <option key={term} value={term}>
-                        {term} meses
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className={styles.formLabel}>
-                  Franquia mensal
-                  <select
-                    className={styles.select}
-                    name="franquia"
-                    value={selectedKm}
-                    onChange={(e) => setSelectedKm(e.target.value)}
-                  >
-                    {distances.map((dist) => (
-                      <option key={dist} value={dist}>
-                        {dist.toLocaleString("pt-BR")} km/mês
-                      </option>
-                    ))}
-                  </select>
                 </label>
               </div>
 
               <label className={styles.formLabel}>
-                Observações adicionais (opcional)
+                Como podemos ajudar? *
                 <textarea
                   className={styles.textarea}
                   name="mensagem"
                   rows={3}
-                  placeholder="Ex: preferência de cor, data prevista para retirada, dúvidas sobre condutor adicional..."
+                  minLength={10}
+                  maxLength={1000}
+                  required
+                  placeholder="Escreva sua mensagem para a locadora."
                 />
               </label>
+              <input name="vehicleId" type="hidden" value={selectedVehicle} />
 
               <div className={styles.formDisclaimer}>
                 <span>
-                  Ambiente de demonstração. Seus dados não serão comercializados
-                  nem transmitidos a serviços externos.
+                  Seus dados serão usados pela locadora para responder a esta
+                  solicitação.
                 </span>
               </div>
+
+              {submitError && (
+                <p className={styles.submitError} role="alert">
+                  {submitError}
+                </p>
+              )}
 
               <div className={styles.actions}>
                 <button
@@ -241,8 +229,12 @@ export function QuoteDialog({
                 >
                   Cancelar
                 </button>
-                <button className={styles.submit} type="submit">
-                  Enviar solicitação
+                <button
+                  className={styles.submit}
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? "Enviando..." : "Enviar solicitação"}
                 </button>
               </div>
             </form>

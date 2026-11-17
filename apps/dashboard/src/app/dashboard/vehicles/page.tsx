@@ -77,6 +77,7 @@ export default function VehiclesPage() {
     toggleSelection,
     updateCustomField,
     updateElectric,
+    updatePublished,
     updateFormField,
     updateSearchQuery,
     selectImageFiles,
@@ -457,6 +458,16 @@ export default function VehiclesPage() {
                       type="checkbox"
                     />
                     Veículo elétrico
+                  </label>
+                  <label className="vehicle-electric-field">
+                    <input
+                      checked={form.isPublished}
+                      onChange={(event) =>
+                        updatePublished(event.currentTarget.checked)
+                      }
+                      type="checkbox"
+                    />
+                    Publicar no site
                   </label>
                   <label>
                     URLs das imagens

@@ -26,6 +26,7 @@ import {
 export interface SiteFormValues {
   publicName: string;
   slug: string;
+  isPublished: boolean;
   domain: string;
   phone: string;
   description: string;
@@ -37,6 +38,7 @@ export interface SiteFormValues {
 const emptyForm: SiteFormValues = {
   publicName: "",
   slug: "",
+  isPublished: false,
   domain: "",
   phone: "",
   description: "",
@@ -76,6 +78,7 @@ function formValues(site: OrganizationSite | null): SiteFormValues {
   return {
     publicName: site.publicName,
     slug: site.slug,
+    isPublished: site.isPublished,
     domain: site.domain ?? "",
     phone: site.phone ?? "",
     description: site.description ?? "",
@@ -120,8 +123,12 @@ export function useSiteContainer() {
     setForm(formValues(site));
   }, [site]);
 
-  function updateFormField(field: keyof SiteFormValues, value: string) {
-    const nextValue = field === "phone" ? digitsOnly(value) : value;
+  function updateFormField(
+    field: keyof SiteFormValues,
+    value: string | boolean,
+  ) {
+    const nextValue =
+      field === "phone" && typeof value === "string" ? digitsOnly(value) : value;
     setForm((current) => ({ ...current, [field]: nextValue }));
     setFieldErrors((current) => {
       if (!current[field]) {
@@ -148,6 +155,7 @@ export function useSiteContainer() {
     const input: SiteInput = {
       publicName: parsedForm.data.publicName,
       slug: parsedForm.data.slug,
+      isPublished: form.isPublished,
       domain: optionalValue(parsedForm.data.domain)?.toLowerCase() ?? null,
       phone: optionalValue(parsedForm.data.phone),
       description: optionalValue(parsedForm.data.description),

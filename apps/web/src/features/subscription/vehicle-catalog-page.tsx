@@ -1,88 +1,99 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { AiOutlineArrowLeft, AiOutlineCar } from "react-icons/ai";
-import { vehicles } from "./content";
-import { VehicleCard } from "./components/vehicle-card";
-import styles from "./vehicle-catalog-page.module.css";
+import type {
+  PublicCategory,
+  PublicPage,
+  PublicVehicle,
+} from "./public-site-api";
+import { PublicVehicleCard } from "./vehicle-card";
+import styles from "./public-site.module.css";
 
-const categories = [
-  "Todos",
-  "SUV Compacto",
-  "Hatch Premium",
-  "Sedan Médio",
-  "SUV Médio",
-  "SUV Urbano",
-  "Utilitário / Picape",
-];
-
-export function VehicleCatalogPage() {
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
-
-  const filteredVehicles =
-    selectedCategory === "Todos"
-      ? vehicles
-      : vehicles.filter((v) => v.category === selectedCategory);
+export function VehicleCatalogPage({
+  categories,
+  categoryId,
+  vehicles,
+}: {
+  categories: PublicCategory[];
+  categoryId?: string;
+  vehicles: PublicPage<PublicVehicle>;
+}) {
+  const categoryQuery = categoryId
+    ? `?category=${encodeURIComponent(categoryId)}`
+    : "";
 
   return (
     <main className={styles.page}>
-      <div className={styles.header}>
-        <Link href="/" className={styles.backLink}>
-          <AiOutlineArrowLeft className={styles.backIcon} />
+      <header className={styles.pageHeading}>
+        <h1>Catálogo de veículos</h1>
+        <p>Consulte os veículos publicados pela locadora.</p>
+        <Link className={styles.textLink} href="/">
           Voltar para a página inicial
         </Link>
-        <h1 className={styles.title}>Catálogo de Veículos</h1>
-        <p className={styles.subtitle}>
-          Conheça todos os modelos disponíveis para locação mensal com pacotes
-          de proteção, manutenção e assistência inclusos.
-        </p>
+      </header>
 
-        <div
-          className={styles.filters}
-          role="tablist"
-          aria-label="Filtrar por categoria"
+      <nav aria-label="Filtrar por categoria" className={styles.filters}>
+        <Link
+          aria-current={categoryId ? undefined : "page"}
+          className={`${styles.filter} ${!categoryId ? styles.filterActive : ""}`}
+          href="/veiculos"
         >
-          {categories.map((cat) => {
-            const active = cat === selectedCategory;
-            return (
-              <button
-                key={cat}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                className={`${styles.filterBtn} ${active ? styles.filterActive : ""}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        {filteredVehicles.map((vehicle) => (
-          <div key={vehicle.id} className={styles.cardCol}>
-            <VehicleCard vehicle={vehicle} />
-          </div>
+          Todas
+        </Link>
+        {categories.map((category) => (
+          <Link
+            aria-current={category.id === categoryId ? "page" : undefined}
+            className={`${styles.filter} ${category.id === categoryId ? styles.filterActive : ""}`}
+            href={`/veiculos?category=${encodeURIComponent(category.id)}`}
+            key={category.id}
+          >
+            {category.name}
+          </Link>
         ))}
-      </div>
+      </nav>
 
-      {filteredVehicles.length === 0 && (
-        <div className={styles.empty}>
-          <AiOutlineCar className={styles.emptyIcon} />
-          <p>Nenhum veículo encontrado para a categoria selecionada.</p>
+      {vehicles.data.length > 0 ? (
+        <div className={styles.vehicleGrid}>
+          {vehicles.data.map((vehicle) => (
+            <PublicVehicleCard key={vehicle.id} vehicle={vehicle} />
+          ))}
+        </div>
+      ) : (
+        <div className={styles.empty} role="status">
+          <p>
+            {categoryId
+              ? "Nenhum veículo publicado foi encontrado para esta categoria."
+              : "Nenhum veículo publicado no momento."}
+          </p>
+          {categoryId && (
+            <Link className={styles.textLink} href="/veiculos">
+              Ver todos os veículos
+            </Link>
+          )}
         </div>
       )}
 
-      <div className={styles.disclaimer}>
-        <p>
-          *Todos os valores informados são simulações ilustrativas com base em
-          contratos demonstrativos. As características dos modelos podem variar
-          conforme disponibilidade de estoque.
-        </p>
-      </div>
+      {vehicles.totalPages > 1 && (
+        <nav aria-label="Paginação" className={styles.pagination}>
+          {vehicles.page > 1 ? (
+            <Link
+              href={`/veiculos?page=${vehicles.page - 1}${categoryQuery.replace("?", "&")}`}
+            >
+              Página anterior
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span>
+            Página {vehicles.page} de {vehicles.totalPages}
+          </span>
+          {vehicles.page < vehicles.totalPages && (
+            <Link
+              href={`/veiculos?page=${vehicles.page + 1}${categoryQuery.replace("?", "&")}`}
+            >
+              Próxima página
+            </Link>
+          )}
+        </nav>
+      )}
     </main>
   );
 }

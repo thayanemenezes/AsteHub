@@ -1,20 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
 import { QuoteTrigger } from "./quote-trigger";
 import styles from "./site-header.module.css";
+import Image from "next/image";
+import type { PublicSite } from "../public-site-api";
 
 const links = [
-  { href: "/#assinatura", label: "Assinatura" },
-  { href: "/#sobre", label: "Sobre" },
-  { href: "/#calculadora", label: "Calculadora de Assinatura" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/#veiculos", label: "Veículos" },
+  { href: "/#unidades", label: "Unidades" },
+  { href: "/veiculos", label: "Catálogo" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ site }: { site: PublicSite }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -33,17 +33,21 @@ export function SiteHeader() {
         <div className={styles.container}>
           <Link
             className={styles.brand}
-            href="/#assinatura"
-            aria-label="AsteHub Início"
+            href="/"
+            aria-label={`${site.publicName} - início`}
           >
-            <Image
-              src="/logo-white.png"
-              alt="AsteHub"
-              width={160}
-              height={44}
-              priority
-              className={styles.brandLogo}
-            />
+            {site.logoUrl ? (
+              <Image
+                src={site.logoUrl}
+                alt={site.publicName}
+                width={160}
+                height={44}
+                className={styles.brandLogo}
+                unoptimized
+              />
+            ) : (
+              <span className={styles.brandName}>{site.publicName}</span>
+            )}
           </Link>
 
           <nav className={styles.nav} aria-label="Navegação principal">

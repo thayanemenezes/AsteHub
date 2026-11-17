@@ -3,6 +3,7 @@ export interface Vehicle {
   make: string;
   model: string;
   year: number;
+  isPublished: boolean;
   description: string | null;
   series: string | null;
   isElectric: boolean;
@@ -31,6 +32,7 @@ export interface VehicleInput {
   make: string;
   model: string;
   year: number;
+  isPublished?: boolean;
   description?: string;
   series?: string | null;
   isElectric?: boolean;

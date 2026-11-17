@@ -258,6 +258,19 @@
   font-weight: 600;
 }
 
+.publicationField {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.publicationField input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 .form input,
 .form textarea {
   width: 100%;

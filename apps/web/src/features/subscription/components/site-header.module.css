@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(4, 30, 43, 0.95);
+  background: var(--site-secondary, var(--navy-deep));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -38,6 +38,13 @@
   object-fit: contain;
 }
 
+.brandName {
+  color: var(--white);
+  font-family: var(--font-display), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -69,7 +76,7 @@
   border: 0;
   border-radius: 8px;
   padding: 12px 22px;
-  background: var(--green);
+  background: var(--site-primary, var(--green));
   color: var(--navy-deep);
   font-family: var(--font-display), sans-serif;
   font-size: 16px;
@@ -80,7 +87,7 @@
 }
 
 .quote:hover {
-  background: var(--green-deep);
+  background: var(--site-primary, var(--green-deep));
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(0, 213, 155, 0.35);
 }

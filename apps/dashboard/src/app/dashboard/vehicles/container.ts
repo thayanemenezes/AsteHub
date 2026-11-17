@@ -47,6 +47,7 @@ export interface VehicleFormValues {
   make: string;
   model: string;
   year: string;
+  isPublished: boolean;
   description: string;
   series: string;
   isElectric: boolean;
@@ -59,6 +60,7 @@ const emptyForm: VehicleFormValues = {
   make: "",
   model: "",
   year: String(new Date().getFullYear()),
+  isPublished: false,
   description: "",
   series: "",
   isElectric: false,
@@ -165,6 +167,7 @@ export function useVehiclesContainer() {
       make: vehicle.make,
       model: vehicle.model,
       year: String(vehicle.year),
+      isPublished: vehicle.isPublished,
       description: vehicle.description ?? "",
       series: vehicle.series ?? "",
       isElectric: vehicle.isElectric,
@@ -222,6 +225,10 @@ export function useVehiclesContainer() {
 
   function updateElectric(value: boolean) {
     setForm((current) => ({ ...current, isElectric: value }));
+  }
+
+  function updatePublished(value: boolean) {
+    setForm((current) => ({ ...current, isPublished: value }));
   }
 
   function selectImageFiles(files: FileList | null) {
@@ -348,6 +355,7 @@ export function useVehiclesContainer() {
       make: parsedForm.data.make,
       model: parsedForm.data.model,
       year: Number(parsedForm.data.year),
+      isPublished: parsedForm.data.isPublished,
       description: parsedForm.data.description,
       series: parsedForm.data.series || null,
       isElectric: parsedForm.data.isElectric,
@@ -494,6 +502,7 @@ export function useVehiclesContainer() {
     imageUploadError,
     updateCustomField,
     updateElectric,
+    updatePublished,
     updateFormField,
     vehicleDialog,
     vehiclePage,

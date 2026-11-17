@@ -44,6 +44,7 @@ export default function LocationsPage() {
     togglePageSelection,
     toggleSelection,
     updateFormField,
+    updatePublished,
     updateSearchQuery,
   } = useLocationsContainer();
 
@@ -414,6 +415,16 @@ export default function LocationsPage() {
                       id="location-description-error"
                       message={fieldErrors.description}
                     />
+                  </label>
+                  <label className={styles.publicationField}>
+                    <input
+                      checked={form.isPublished}
+                      onChange={(event) =>
+                        updatePublished(event.currentTarget.checked)
+                      }
+                      type="checkbox"
+                    />
+                    Publicar unidade no site
                   </label>
                   {mutationError && (
                     <p className={styles.dialogError} role="alert">

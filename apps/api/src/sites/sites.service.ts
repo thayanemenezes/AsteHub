@@ -13,6 +13,7 @@ const siteSelection = {
   id: true,
   publicName: true,
   slug: true,
+  isPublished: true,
   domain: true,
   phone: true,
   description: true,

@@ -73,6 +73,7 @@ export const vehicleFormSchema = z.object({
   series: z.string().trim().max(100, "Use no máximo 100 caracteres."),
   categoryId: z.string().max(30, "Categoria inválida."),
   isElectric: z.boolean(),
+  isPublished: z.boolean(),
   images: z
     .string()
     .superRefine((value, context) => {
@@ -160,6 +161,7 @@ export const organizationInvitationFormSchema = z.object({
 
 export const locationFormSchema = z.object({
   name: requiredText(2, 120),
+  isPublished: z.boolean(),
   address: requiredText(5, 250),
   city: requiredText(2, 100),
   state: requiredText(2, 100),

@@ -2,6 +2,7 @@ export interface OrganizationSite {
   id: string;
   publicName: string;
   slug: string;
+  isPublished: boolean;
   domain: string | null;
   phone: string | null;
   description: string | null;
@@ -20,6 +21,7 @@ export interface OrganizationSite {
 export interface SiteInput {
   publicName: string;
   slug: string;
+  isPublished?: boolean;
   domain: string | null;
   phone: string | null;
   description: string | null;

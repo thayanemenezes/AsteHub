@@ -15,6 +15,7 @@ import type {
 const locationSelection = {
   id: true,
   name: true,
+  isPublished: true,
   address: true,
   city: true,
   state: true,

@@ -35,6 +35,7 @@ const vehicle: Vehicle = {
   make: "Toyota",
   model: "Corolla",
   year: 2024,
+  isPublished: false,
   description: "Sedan automático",
   series: null,
   isElectric: false,
@@ -345,6 +346,7 @@ describe("vehicle management page", () => {
       "Touring",
     );
     await user.click(within(createDialog).getByLabelText("Veículo elétrico"));
+    await user.click(within(createDialog).getByLabelText("Publicar no site"));
     await user.type(
       within(createDialog).getByLabelText("URLs das imagens"),
       "https://images.example.com/civic-front.jpg\nhttps://images.example.com/civic-side.jpg",
@@ -384,6 +386,7 @@ describe("vehicle management page", () => {
     expect(JSON.parse(String(createRequest?.[1]?.body))).toMatchObject({
       series: "Touring",
       isElectric: true,
+      isPublished: true,
       images: [
         "https://images.example.com/civic-front.jpg",
         "https://images.example.com/civic-side.jpg",

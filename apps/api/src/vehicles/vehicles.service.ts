@@ -17,6 +17,7 @@ const vehicleSelection = {
   make: true,
   model: true,
   year: true,
+  isPublished: true,
   description: true,
   series: true,
   isElectric: true,

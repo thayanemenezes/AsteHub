@@ -107,6 +107,30 @@
   font-weight: 600;
 }
 
+.publicationField {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 9px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.publicationField input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.publicationField span {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
 .form input,
 .form textarea {
   width: 100%;

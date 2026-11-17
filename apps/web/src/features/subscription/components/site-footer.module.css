@@ -34,6 +34,13 @@
   object-fit: contain;
 }
 
+.brandName {
+  color: var(--white);
+  font-family: var(--font-display), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
 .brandDesc {
   color: var(--on-navy);
   font-size: 14px;

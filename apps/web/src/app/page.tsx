@@ -1,5 +1,5 @@
-import { SubscriptionPage } from "@/features/subscription/subscription-page";
+import { SubscriptionContainer } from "@/features/subscription/subscription-container";
 
 export default function HomePage() {
-  return <SubscriptionPage />;
+  return <SubscriptionContainer />;
 }

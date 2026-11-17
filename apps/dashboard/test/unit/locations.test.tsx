@@ -30,6 +30,7 @@ const currentUser = {
 const location = {
   id: "location-1",
   name: "Unidade Centro",
+  isPublished: false,
   address: "Rua das Flores, 123",
   city: "São Paulo",
   state: "SP",
@@ -225,6 +226,9 @@ describe("locations page", () => {
       "João Santos",
     );
     await user.click(
+      within(createDialog).getByLabelText("Publicar unidade no site"),
+    );
+    await user.click(
       within(createDialog).getByRole("button", { name: "Salvar unidade" }),
     );
     expect(toast.success).toHaveBeenCalledWith(
@@ -277,7 +281,8 @@ describe("locations page", () => {
         ({ url, init }) =>
           url.includes("/locations?organizationId=organization-1") &&
           init?.method === "POST" &&
-          JSON.parse(String(init.body)).managerName === "João Santos",
+          JSON.parse(String(init.body)).managerName === "João Santos" &&
+          JSON.parse(String(init.body)).isPublished === true,
       ),
     ).toBe(true);
     expect(

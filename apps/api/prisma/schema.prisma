@@ -47,6 +47,7 @@ model User {
 model Organization {
   id                String            @id @default(cuid()) @db.VarChar(30)
   name              String            @db.VarChar(120)
+  isActive           Boolean           @default(true)
   createdAt         DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
   memberships       Membership[]
@@ -70,6 +71,7 @@ model Vehicle {
   images         String[]         @default([])
   customFields   Json             @default("[]")
   categoryId     String?          @db.VarChar(30)
+  isPublished    Boolean          @default(false)
   createdAt      DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -77,6 +79,7 @@ model Vehicle {
   leads          Lead[]
 
   @@index([organizationId, createdAt])
+  @@index([organizationId, isPublished])
 }
 
 model VehicleCategory {
@@ -103,12 +106,14 @@ model Location {
   phone          String?      @db.VarChar(40)
   description    String?      @db.VarChar(500)
   managerName    String?      @db.VarChar(120)
+  isPublished    Boolean      @default(false)
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   leads          Lead[]
 
   @@index([organizationId, createdAt])
+  @@index([organizationId, isPublished])
 }
 
 model Lead {
@@ -147,6 +152,7 @@ model Site {
   ogTitle        String?      @db.VarChar(95)
   ogDescription  String?      @db.VarChar(200)
   ogImageUrl     String?      @db.VarChar(2048)
+  isPublished    Boolean      @default(false)
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)

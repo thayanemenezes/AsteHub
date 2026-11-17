@@ -95,6 +95,10 @@ export class CreateVehicleDto {
   year!: number;
 
   @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
+
+  @IsOptional()
   @IsString()
   @Length(1, 30)
   categoryId?: string | null;
@@ -153,6 +157,10 @@ export class UpdateVehicleDto {
   @Min(1886)
   @Max(2100)
   year?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 
   @IsOptional()
   @IsString()

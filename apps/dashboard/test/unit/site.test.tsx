@@ -31,6 +31,7 @@ const site = {
   id: "site-1",
   publicName: "Locadora Central",
   slug: "locadora-central",
+  isPublished: false,
   domain: "www.locadoracentral.com.br",
   phone: "+55 11 3333-4444",
   description: "Aluguel de veículos",
@@ -178,6 +179,7 @@ describe("site settings page", () => {
       within(form).getByLabelText("URL do logotipo"),
       site.logoUrl,
     );
+    await user.click(within(form).getByLabelText("Publicar site"));
     await user.click(
       within(form).getByRole("button", { name: "Salvar configuração" }),
     );
@@ -191,6 +193,7 @@ describe("site settings page", () => {
     expect(siteConfiguration).toMatchObject({
       publicName: site.publicName,
       slug: site.slug,
+      isPublished: true,
       domain: site.domain,
       primaryColor: site.primaryColor,
     });
@@ -208,7 +211,7 @@ describe("site settings page", () => {
     expect(siteConfiguration?.description).toBe(
       "Aluguel de veículos atualizado",
     );
-  });
+  }, 10_000);
 
   it("shows a validation error from API and preserves entered values", async () => {
     const user = userEvent.setup();

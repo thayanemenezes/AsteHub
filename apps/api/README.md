@@ -15,7 +15,7 @@ npm run db:migrate --workspace @astehub/api
 npm run dev
 ```
 
-The root `npm run dev` starts both the API and web app. The sample environments use the development PostgreSQL database on port `5433` and the API at `http://localhost:3001`. Docker Compose also starts an isolated integration-test database on port `5434`; never use the development database for integration tests. Set `DATABASE_URL` to the appropriate PostgreSQL database before applying migrations in another environment. `COOKIE_DOMAIN` is optional; set it only when the API and web app share a parent domain. In production, configure `CORS_ORIGINS` with the exact comma-separated trusted origins. Production cookies are always `Secure`.
+The root `npm run dev` starts the API, dashboard, and public web app. The API listens on `http://localhost:3002`; the public web preview listens on `http://localhost:3001`. Set `API_URL` and `PUBLIC_SITE_SLUG` in `apps\web\.env.local` to the API URL and the slug of a published site. For subdomain hosting, configure `PUBLIC_BASE_DOMAIN` in both API and web environments. The sample API environment uses the development PostgreSQL database on port `5433`. Docker Compose also starts an isolated integration-test database on port `5434`; never use the development database for integration tests. Set `DATABASE_URL` to the appropriate PostgreSQL database before applying migrations in another environment. `COOKIE_DOMAIN` is optional; set it only when the API and dashboard share a parent domain. In production, configure `CORS_ORIGINS` with the exact comma-separated trusted origins. Production cookies are always `Secure`.
 
 Password reset email delivery is handled by the API through Resend. Configure `RESEND_API_KEY`, `EMAIL_FROM` (a verified sender), and `DASHBOARD_URL` (the dashboard origin) in the API environment. `DASHBOARD_URL` must use HTTPS in production. Never expose the Resend key to the dashboard.
 
@@ -70,8 +70,8 @@ All vehicle endpoints require an authenticated session and an `organizationId` q
 
 - `GET /vehicles?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated vehicle list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100. Optional `search` filters by make, model, series, description, or exact year.
 - `GET /vehicles/:id?organizationId=<id>` returns a vehicle in that organization.
-- `POST /vehicles?organizationId=<id>` creates a vehicle from `make`, `model`, and `year`; optional fields are `categoryId` (a category in the same organization), `description`, `series`, `isElectric`, `images` (up to 20 HTTP(S) URLs), and `customFields` (up to 30 unique `{ "name", "value" }` text pairs). Deleting a category clears it from its vehicles.
-- `PATCH /vehicles/:id?organizationId=<id>` updates one or more vehicle fields. `categoryId` must identify a category in the same organization; send `null` to remove it. Sending an empty `images` or `customFields` array clears that collection.
+- `POST /vehicles?organizationId=<id>` creates a vehicle from `make`, `model`, and `year`; optional fields are `categoryId` (a category in the same organization), `description`, `series`, `isElectric`, `isPublished` (defaults to `false`), `images` (up to 20 HTTP(S) URLs), and `customFields` (up to 30 unique `{ "name", "value" }` text pairs). Deleting a category clears it from its vehicles.
+- `PATCH /vehicles/:id?organizationId=<id>` updates one or more vehicle fields, including `isPublished`. `categoryId` must identify a category in the same organization; send `null` to remove it. Sending an empty `images` or `customFields` array clears that collection.
 - `DELETE /vehicles/:id?organizationId=<id>` deletes one vehicle.
 - `DELETE /vehicles/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and deletes all requested vehicles atomically.
 
@@ -98,8 +98,8 @@ All location endpoints require an authenticated session and an `organizationId` 
 
 - `GET /locations?organizationId=<id>&page=1&limit=10&search=<term>` returns a paginated location list (`data`, `page`, `limit`, `total`, `totalPages`). `limit` is capped at 100. Optional `search` filters by name, address, city, state, phone, or manager.
 - `GET /locations/:id?organizationId=<id>` returns one location in that organization.
-- `POST /locations?organizationId=<id>` creates a location with required `name`, `address`, `city`, and `state`; `phone`, `description`, and `managerName` are optional.
-- `PATCH /locations/:id?organizationId=<id>` updates one or more location fields.
+- `POST /locations?organizationId=<id>` creates a location with required `name`, `address`, `city`, and `state`; `phone`, `description`, `managerName`, and `isPublished` (defaults to `false`) are optional.
+- `PATCH /locations/:id?organizationId=<id>` updates one or more location fields, including `isPublished`.
 - `DELETE /locations/:id?organizationId=<id>` deletes one location.
 - `DELETE /locations/bulk?organizationId=<id>` accepts `{ "ids": ["..."] }` and atomically deletes all requested locations.
 
@@ -111,11 +111,24 @@ Site configuration is limited to one record per organization. All endpoints requ
 
 - `GET /sites?organizationId=<id>` returns the organization's site configuration. It returns `404 Not Found` when no configuration has been created.
 - `GET /sites/:id?organizationId=<id>` returns one site configuration belonging to that organization.
-- `POST /sites?organizationId=<id>` creates the configuration with required `publicName` and a lowercase hyphen-separated `slug`. Optional fields include `domain`, `phone`, `description`, `primaryColor`, `secondaryColor`, an HTTPS `logoUrl`, SEO title/description, and Open Graph title/description/image URL.
-- `PATCH /sites/:id?organizationId=<id>` updates one or more configuration fields. Optional fields can be set to `null` or an empty string to clear them.
+- `POST /sites?organizationId=<id>` creates the configuration with required `publicName` and a lowercase hyphen-separated `slug`. Optional fields include `isPublished` (defaults to `false`), `domain`, `phone`, `description`, `primaryColor`, `secondaryColor`, an HTTPS `logoUrl`, SEO title/description, and Open Graph title/description/image URL.
+- `PATCH /sites/:id?organizationId=<id>` updates one or more configuration fields, including `isPublished`. Optional fields can be set to `null` or an empty string to clear them.
 - `DELETE /sites/:id?organizationId=<id>` removes the organization's site configuration.
 
-Slugs and configured domains must be unique across organizations; duplicate organization configurations, slugs, or domains return `409 Conflict`. Colors must use six-digit hex notation, image URLs require HTTPS, and metadata lengths are validated by the API. Site configuration does not create public pages or publish a site.
+Slugs and configured domains must be unique across organizations; duplicate organization configurations, slugs, or domains return `409 Conflict`. Colors must use six-digit hex notation, image URLs require HTTPS, and metadata lengths are validated by the API. New sites are unpublished until explicitly published. Existing sites and catalog content also default to unpublished after migration.
+
+## Public site endpoints
+
+These endpoints do not require a session. Resolve a tenant by its site slug, or by `<slug>.<PUBLIC_BASE_DOMAIN>` when that base domain is configured. Custom domains are not used for public resolution because domain ownership is not verified. The site must be published and its organization active.
+
+- `GET /public/:tenant/site` returns only public branding, contact, and SEO fields.
+- `GET /public/:tenant/vehicles?page=1&limit=10&categoryId=<id>` returns published vehicles in that organization, with pagination. `limit` is capped at 100.
+- `GET /public/:tenant/vehicles/:id` returns a published vehicle in the resolved organization; other-tenant and unpublished IDs return `404`.
+- `GET /public/:tenant/categories` returns categories associated with at least one published vehicle.
+- `GET /public/:tenant/locations?page=1&limit=10` returns published locations without internal manager data.
+- `POST /public/:tenant/leads` accepts lead contact fields and optional published `vehicleId`/`locationId`. `organizationId` is never accepted from the visitor. The response is `{ "accepted": true }` and does not include personal data.
+
+Public lead submissions are limited to five per IP and tenant per ten-minute window in each API process. Public web pages fetch API data server-side; the quote form submits through the web app's same-origin `/api/public/:tenant/leads` route.
 
 ## Lead endpoints
 

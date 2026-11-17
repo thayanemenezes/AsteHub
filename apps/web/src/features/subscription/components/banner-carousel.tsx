@@ -47,14 +47,14 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     if (Math.abs(diff) > 40) {
       if (diff > 0) {
         go(1); // Swipe left -> next
-      } else {
+      } else {   
         go(-1); // Swipe right -> prev
       }
     }
     touchStartX.current = null;
   }
 
-  const current = banners[index];
+  const current = banners[index];  
 
   return (
     <section
