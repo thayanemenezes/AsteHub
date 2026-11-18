@@ -155,9 +155,9 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 8px;
-  background: rgba(0, 213, 155, 0.08);
-  border: 1px solid rgba(0, 213, 155, 0.2);
-  color: var(--green);
+  background: var(--color-primary-subtle, rgba(118, 129, 179, 0.10));
+  border: 1px solid var(--color-primary-border, rgba(118, 129, 179, 0.25));
+  color: var(--color-primary-light, #8F9BCB);
   font-size: 12px;
   font-weight: 600;
   margin-top: 10px;

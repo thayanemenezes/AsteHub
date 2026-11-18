@@ -89,7 +89,7 @@
 .quote:hover {
   background: var(--site-primary, var(--green-deep));
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 213, 155, 0.35);
+  box-shadow: 0 4px 14px rgba(118, 129, 179, 0.40);
 }
 
 .menuButton {
@@ -129,7 +129,7 @@
     inset: 0;
     z-index: 39;
     top: 74px;
-    background: rgba(4, 30, 43, 0.65);
+    background: rgba(18, 22, 36, 0.65);
     backdrop-filter: blur(4px);
     animation: fadeIn 200ms ease;
   }

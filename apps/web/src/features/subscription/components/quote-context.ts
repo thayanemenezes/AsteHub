@@ -4,6 +4,7 @@ import { createContext, useContext } from "react";
 
 export type QuoteContextValue = {
   openQuote: (initialVehicleId?: string) => void;
+  siteSlug: string;
 };
 
 export const QuoteContext = createContext<QuoteContextValue | null>(null);

@@ -1,0 +1,153 @@
+:root {
+  color-scheme: light;
+
+  /* =========================================================================
+     ASTEHUB DESIGN TOKENS
+     Primary Palette (Specification):
+     #7681B3 (Primary)
+     #6F73D2 (Medium Slate Blue)
+     #83C9F4 (Sky Blue)
+     #A3D5FF (Sky Blue Soft)
+     #D9F0FF (Alice Blue)
+     ========================================================================= */
+
+  /* Raw palette references */
+  --palette-glaucous: #7681B3;
+  --palette-medium-slate-blue: #6F73D2;
+  --palette-sky-vibrant: #83C9F4;
+  --palette-sky-soft: #A3D5FF;
+  --palette-alice-blue: #D9F0FF;
+
+  /* Primary Brand - #7681B3 */
+  --color-primary: #7681B3;
+  --color-primary-hover: #636EA2;
+  --color-primary-active: #525D91;
+  --color-primary-light: #8F9BCB;
+  --color-primary-subtle: #EEF2FA;
+  --color-primary-border: #CCD3E8;
+  --color-primary-contrast: #FFFFFF;
+
+  /* Secondary / Periwinkle - #6F73D2 */
+  --color-secondary: #6F73D2;
+  --color-secondary-hover: #5B5FB8;
+  --color-secondary-active: #4D51A8;
+  --color-secondary-light: #8C90E2;
+  --color-secondary-subtle: #EEF0FB;
+  --color-secondary-border: #CAD0F3;
+  --color-secondary-contrast: #FFFFFF;
+
+  /* Accent Highlight - #83C9F4 */
+  --color-accent: #83C9F4;
+  --color-accent-hover: #6CBCEE;
+  --color-accent-active: #55ADE9;
+  --color-accent-subtle: #E8F5FD;
+  --color-accent-border: #BCE2FA;
+  --color-accent-contrast: #0D3352;
+
+  /* Pastel Sky - #A3D5FF */
+  --color-sky: #A3D5FF;
+  --color-sky-hover: #8EC7FB;
+  --color-sky-subtle: #F0F7FF;
+  --color-sky-border: #CCE5FF;
+  --color-sky-contrast: #0E3354;
+
+  /* Ice Blue - #D9F0FF */
+  --color-ice: #D9F0FF;
+  --color-ice-subtle: #F4FAFF;
+  --color-ice-border: #BEE3FC;
+  --color-ice-contrast: #0F2B48;
+
+  /* High Contrast Typography & Neutrals */
+  --color-ink: #151B2E;
+  --color-ink-secondary: #333C57;
+  --color-muted: #586380;
+  --color-subtle: #8792AB;
+
+  /* Backgrounds & Surfaces */
+  --color-background: #F4F7FC;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F0F4FA;
+  --color-surface-card: #FFFFFF;
+  --color-border: #DFE5F0;
+  --color-border-subtle: #EDF1F7;
+  --color-border-strong: #C4CEE0;
+  --color-line: #DFE5F0;
+
+  /* Dark Canvas & Shells (Sidebar, Footer, Hero banners) */
+  --color-dark-canvas: #121624;
+  --color-dark-surface: #181D30;
+  --color-dark-surface-elevated: #222942;
+  --color-dark-border: rgba(255, 255, 255, 0.10);
+  --color-dark-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-dark-text: #F1F4FB;
+  --color-dark-muted: #9BA5C0;
+
+  /* Feedback */
+  --color-success: #1E8E63;
+  --color-success-subtle: #EFFBF5;
+  --color-warning: #D97706;
+  --color-warning-subtle: #FFFBEB;
+  --color-danger: #D9383A;
+  --color-danger-subtle: #FDF2F2;
+  --color-focus: #6F73D2;
+
+  /* Shadows */
+  --shadow-subtle: 0 4px 20px rgba(21, 27, 46, 0.04);
+  --shadow-card: 0 10px 30px rgba(21, 27, 46, 0.06);
+  --shadow-dialog: 0 24px 70px rgba(18, 22, 36, 0.28);
+  --shadow-header: 0 8px 24px rgba(18, 22, 36, 0.12);
+  --overlay: rgba(18, 22, 36, 0.48);
+
+  /* Gradients */
+  --gradient-auth-aside: linear-gradient(135deg, #181D30 0%, #242B48 55%, #7681B3 100%);
+  --gradient-welcome: radial-gradient(ellipse at 90% 20%, rgba(131, 201, 244, 0.25), transparent 45%), linear-gradient(115deg, #D9F0FF 0%, #EEF4FB 85%);
+  --gradient-banner-shade: linear-gradient(100deg, rgba(18, 22, 36, 0.94) 0%, rgba(18, 22, 36, 0.70) 50%, rgba(18, 22, 36, 0.15) 100%);
+  --gradient-page-glow: radial-gradient(circle at top right, rgba(118, 129, 179, 0.16), transparent 38%), radial-gradient(circle at bottom left, rgba(131, 201, 244, 0.12), transparent 32%);
+
+  /* =========================================================================
+     COMPATIBILITY MAPPINGS FOR DASHBOARD & WEB
+     ========================================================================= */
+
+  /* Dashboard compatibility aliases */
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --accent: var(--color-primary);
+  --accent-dark: var(--color-dark-surface);
+  --paper: var(--color-background);
+  --line: var(--color-border);
+  --error: var(--color-danger);
+  --danger: var(--color-danger);
+  --surface: var(--color-surface);
+  --surface-subtle: var(--color-surface-subtle);
+  --border: var(--color-border);
+  --border-subtle: var(--color-border-subtle);
+  --success: var(--color-success);
+  --focus: var(--color-focus);
+
+  /* Web site compatibility aliases */
+  --navy: var(--color-dark-surface);
+  --navy-deep: var(--color-dark-canvas);
+  --navy-soft: var(--color-dark-surface-elevated);
+  --green: var(--color-primary);
+  --green-deep: var(--color-primary-hover);
+  --green-soft: var(--color-ice);
+  --steel: var(--color-muted);
+  --white: #FFFFFF;
+  --banner-shade: var(--gradient-banner-shade);
+  --page-glow: var(--gradient-page-glow);
+  --on-navy: rgba(255, 255, 255, 0.92);
+  --on-navy-muted: rgba(255, 255, 255, 0.74);
+  --on-navy-soft: rgba(255, 255, 255, 0.82);
+  --on-navy-line: rgba(255, 255, 255, 0.12);
+  --on-navy-border: rgba(255, 255, 255, 0.16);
+  --on-navy-fill: rgba(255, 255, 255, 0.05);
+  --on-navy-hover: rgba(255, 255, 255, 0.10);
+  --dot: rgba(255, 255, 255, 0.45);
+}
+
+.brand-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 56px;
+}

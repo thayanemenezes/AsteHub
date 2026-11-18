@@ -231,17 +231,6 @@
   opacity: 0.5;
 }
 
-.dialogBackdrop {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  overflow-y: auto;
-  place-items: center;
-  padding: 24px;
-  background: var(--overlay);
-}
-
 .dialog {
   width: min(100%, 560px);
   max-height: calc(100vh - 48px);
@@ -374,10 +363,6 @@
 }
 
 @media (max-width: 700px) {
-  .dialogBackdrop {
-    padding: 14px;
-  }
-
   .dialog {
     padding: 18px;
   }

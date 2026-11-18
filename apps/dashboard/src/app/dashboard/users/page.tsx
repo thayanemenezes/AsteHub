@@ -6,6 +6,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { DialogBackdrop } from "../../../components/dashboard/dialog-backdrop";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import {
   isOrganizationRole,
@@ -265,7 +266,7 @@ export default function UsersPage() {
       )}
 
       {inviteOpen && (
-        <div className={styles.dialogBackdrop}>
+        <DialogBackdrop onClose={closeInvite}>
           <section
             aria-labelledby="invite-dialog-heading"
             aria-modal="true"
@@ -325,11 +326,11 @@ export default function UsersPage() {
               </footer>
             </form>
           </section>
-        </div>
+        </DialogBackdrop>
       )}
 
       {confirmation && (
-        <div className={styles.dialogBackdrop}>
+        <DialogBackdrop onClose={() => setConfirmation(null)}>
           <section
             aria-labelledby="confirmation-heading"
             aria-modal="true"
@@ -368,7 +369,7 @@ export default function UsersPage() {
               </button>
             </footer>
           </section>
-        </div>
+        </DialogBackdrop>
       )}
     </section>
   );

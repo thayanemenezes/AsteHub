@@ -47,7 +47,7 @@ export function AcceptInvitationForm({ token }: { token: string }) {
   return (
     <main className="auth-shell">
       <section aria-labelledby="invitation-heading" className="auth-card">
-        <Brand />
+        <Brand src="/logo-white.png"/>
         <p className="eyebrow">ACESSO À EQUIPE</p>
         <h1 id="invitation-heading">
           {acceptedEmail ? "Convite aceito" : "Aceitar convite"}

@@ -9,9 +9,9 @@ import Image from "next/image";
 import type { PublicSite } from "../public-site-api";
 
 const links = [
-  { href: "/#veiculos", label: "Veículos" },
-  { href: "/#unidades", label: "Unidades" },
-  { href: "/veiculos", label: "Catálogo" },
+  { href: "/veiculos", label: "Assinatura" },
+  { href: "/", label: "Unidades" },
+  { href: "/#faq", label: "Dúvidas" },
 ];
 
 export function SiteHeader({ site }: { site: PublicSite }) {

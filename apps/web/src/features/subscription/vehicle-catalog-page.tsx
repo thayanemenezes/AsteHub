@@ -6,6 +6,7 @@ import type {
 } from "./public-site-api";
 import { PublicVehicleCard } from "./vehicle-card";
 import styles from "./public-site.module.css";
+import { IoArrowBack } from "react-icons/io5";
 
 export function VehicleCatalogPage({
   categories,
@@ -26,6 +27,7 @@ export function VehicleCatalogPage({
         <h1>Catálogo de veículos</h1>
         <p>Consulte os veículos publicados pela locadora.</p>
         <Link className={styles.textLink} href="/">
+   
           Voltar para a página inicial
         </Link>
       </header>

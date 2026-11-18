@@ -112,7 +112,7 @@ describe("site settings page", () => {
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Visitar site" }),
-    ).toHaveAttribute("href", "http://localhost:30001");
+    ).toHaveAttribute("href", "http://localhost:3001");
     expect(
       screen.queryByRole("button", {
         name: /configurar site|editar configuração/i,

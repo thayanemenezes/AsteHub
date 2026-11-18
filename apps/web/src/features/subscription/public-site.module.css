@@ -91,6 +91,10 @@
   color: var(--navy-soft);
   font-weight: 700;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
 }
 
 .vehicleGrid,

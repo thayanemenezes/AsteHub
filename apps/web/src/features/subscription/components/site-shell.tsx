@@ -38,6 +38,7 @@ export function SiteShell({
     <QuoteContext.Provider
       value={{
         openQuote: handleOpenQuote,
+        siteSlug: site.slug,
       }}
     >
       <div style={siteTheme}>

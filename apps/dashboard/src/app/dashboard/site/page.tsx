@@ -2,6 +2,7 @@
 
 import { AiOutlineEye, AiTwotoneDelete } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
+import { DialogBackdrop } from "../../../components/dashboard/dialog-backdrop";
 import { EmptyState } from "../../../components/dashboard/table-feedback";
 import { FieldError } from "../../../components/forms/field-error";
 import { PageHeading } from "../../../components/dashboard/page-heading";
@@ -314,7 +315,7 @@ export default function SitePage() {
       )}
 
       {isDeleteDialogOpen && site && (
-        <div className={styles.dialogBackdrop}>
+        <DialogBackdrop onClose={() => setIsDeleteDialogOpen(false)}>
           <section
             aria-labelledby="delete-site-heading"
             aria-modal="true"
@@ -350,7 +351,7 @@ export default function SitePage() {
               </button>
             </div>
           </section>
-        </div>
+        </DialogBackdrop>
       )}
     </section>
   );

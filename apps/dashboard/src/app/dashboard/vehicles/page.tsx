@@ -9,6 +9,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { DialogBackdrop } from "../../../components/dashboard/dialog-backdrop";
 import { FieldError } from "../../../components/forms/field-error";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import styles from "./vehicles.module.css";
@@ -288,7 +289,7 @@ export default function VehiclesPage() {
       )}
 
       {vehicleDialog && (
-        <div className="vehicle-dialog-backdrop">
+        <DialogBackdrop onClose={closeDialog}>
           <section
             aria-labelledby="vehicle-dialog-heading"
             aria-modal="true"
@@ -662,7 +663,7 @@ export default function VehiclesPage() {
               </>
             )}
           </section>
-        </div>
+        </DialogBackdrop>
       )}
     </section>
   );

@@ -12,6 +12,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { DialogBackdrop } from "../../../components/dashboard/dialog-backdrop";
 import { FieldError } from "../../../components/forms/field-error";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import { useVehicleCategoriesContainer } from "./container";
@@ -243,7 +244,7 @@ export default function CategoriesPage() {
       )}
 
       {categoryDialog && (
-        <div className={styles.dialogBackdrop}>
+        <DialogBackdrop onClose={closeDialog}>
           <section
             aria-labelledby="category-dialog-heading"
             aria-modal="true"
@@ -384,7 +385,7 @@ export default function CategoriesPage() {
               </>
             )}
           </section>
-        </div>
+        </DialogBackdrop>
       )}
     </section>
   );

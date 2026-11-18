@@ -6,6 +6,7 @@ import {
   EmptyState,
   TableLoadingState,
 } from "../../../components/dashboard/table-feedback";
+import { DialogBackdrop } from "../../../components/dashboard/dialog-backdrop";
 import { PageHeading } from "../../../components/dashboard/page-heading";
 import { FieldError } from "../../../components/forms/field-error";
 import type { LeadStatus } from "@repo/contracts";
@@ -275,7 +276,7 @@ export default function LeadsPage() {
       )}
 
       {leadDialog && (
-        <div className={styles.dialogBackdrop}>
+        <DialogBackdrop onClose={closeDialog}>
           <section
             aria-labelledby="lead-dialog-heading"
             aria-modal="true"
@@ -501,7 +502,7 @@ export default function LeadsPage() {
               </>
             )}
           </section>
-        </div>
+        </DialogBackdrop>
       )}
     </section>
   );

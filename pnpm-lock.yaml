@@ -114,6 +114,9 @@ importers:
       '@repo/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@repo/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -175,6 +178,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@repo/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       next:
         specifier: 16.3.8
         version: 16.3.8(@babel/core@7.29.7)(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -255,10 +261,22 @@ importers:
         specifier: 17.12.0
         version: 17.12.0
 
+  packages/theme:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
   packages/typescript-config: {}
 
   packages/ui:
     dependencies:
+      '@repo/theme':
+        specifier: workspace:*
+        version: link:../theme
       react:
         specifier: 19.2.8
         version: 19.2.8

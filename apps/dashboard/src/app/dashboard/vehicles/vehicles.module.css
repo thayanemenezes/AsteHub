@@ -252,19 +252,8 @@
   text-decoration: underline;
 }
 
-.page :global(.vehicle-dialog-backdrop) {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 24px;
-  background: var(--overlay);
-}
-
 .page :global(.vehicle-dialog) {
-  width: min(100%, 480px);
+  width: min(100%, 620px);
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   padding: 25px;

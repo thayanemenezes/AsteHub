@@ -189,6 +189,7 @@ export class VehiclesService {
     organizationId: string,
     categoryId: string | null | undefined,
   ) {
+    
     if (!categoryId) {
       return;
     }

@@ -1,24 +1,33 @@
+@import "@repo/theme/theme.css";
+
+/*
+ * Dashboard globals.css
+ * Paleta: #7681B3 (Glaucous, primária), #6F73D2 (Medium Slate Blue),
+ *         #83C9F4 (Sky Blue), #A3D5FF (Sky Blue soft), #D9F0FF (Alice Blue)
+ */
+
 :root {
-    color-scheme: light;
-  --ink: #192635;
-  --muted: #707981;
-  --accent: #00d59b;
-  --accent-dark: #041e2bf2;
-  --paper: #fafcff;
-  --line: #e2e7e9;
-  --error: #a64036;
-  --surface: #ffffff;
-  --surface-subtle: #f8f9fc;
-  --border: #e5e7ef;
-  --border-subtle: #eef0f5;
-  --danger: var(--error);
-  --success: #286c52;
-  --focus: #8f9de0;
-  --shadow-subtle: 0 8px 24px rgb(25 31 53 / 3%);
-  --shadow-dialog: 0 24px 70px rgb(25 31 53 / 20%);
-  --overlay: rgb(25 31 53 / 48%);
+  color-scheme: light;
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", Georgia, serif;
+
+  /* Legacy alias overrides specific to dashboard */
+  --accent:      var(--color-primary);       /* #7681B3 */
+  --accent-dark: var(--color-dark-surface);  /* #181D30 */
+  --paper:       var(--color-background);    /* #F4F7FC */
+  --ink:         var(--color-ink);           /* #151B2E */
+  --muted:       var(--color-muted);         /* #586380 */
+  --line:        var(--color-border);        /* #DFE5F0 */
+  --error:       var(--color-danger);
+  --danger:      var(--color-danger);
+  --success:     var(--color-success);
+  --focus:       var(--color-focus);         /* #6F73D2 */
+  --surface:     var(--color-surface);
+  --surface-subtle: var(--color-surface-subtle);
+  --border:      var(--color-border);
+  --border-subtle: var(--color-border-subtle);
+  --shadow-subtle: var(--shadow-subtle);
+  --shadow-dialog: var(--shadow-dialog);
 }
 
 * {
@@ -28,8 +37,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f4f5ef;
-  color: var(--ink);
+  background: var(--color-background);
+  color: var(--color-ink);
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -40,8 +49,17 @@ textarea {
 }
 
 a {
-  color: var(--accent-dark);
+  color: var(--color-secondary);
 }
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   AUTH SHELL
+   ============================================================ */
 
 .auth-shell {
   display: grid;
@@ -50,10 +68,10 @@ a {
   min-height: min(740px, calc(100vh - 64px));
   margin: 32px auto;
   overflow: hidden;
-  border: 1px solid #e9ebe5;
+  border: 1px solid var(--color-border);
   border-radius: 24px;
-  background: var(--paper);
-  box-shadow: 0 24px 70px rgb(35 58 47 / 9%);
+  background: var(--color-background);
+  box-shadow: var(--shadow-dialog);
 }
 
 .auth-shell--single {
@@ -72,16 +90,27 @@ a {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
   margin-bottom: 52px;
-  color: var(--ink);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
+.brand-name {
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  color: var(--color-primary);
+}
 
 .eyebrow {
   margin: 0 0 12px;
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -90,7 +119,7 @@ a {
 h1,
 h2 {
   margin: 0;
-  color: var(--ink);
+  color: var(--color-ink);
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: -0.035em;
@@ -103,7 +132,7 @@ h2 {
 
 .intro {
   margin: 12px 0 28px;
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -115,7 +144,7 @@ h2 {
 
 .auth-card label {
   margin: 16px 0 8px;
-  color: #3e514a;
+  color: var(--color-ink-secondary);
   font-size: 12px;
   font-weight: 600;
 }
@@ -124,11 +153,11 @@ h2 {
   width: 100%;
   min-height: 47px;
   padding: 0 13px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--color-border);
   border-radius: 9px;
   outline: none;
-  background: #fff;
-  color: var(--ink);
+  background: var(--color-surface);
+  color: var(--color-ink);
   font-size: 14px;
   transition:
     border-color 150ms ease,
@@ -136,17 +165,18 @@ h2 {
 }
 
 .auth-card input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(40 116 92 / 12%);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(118, 129, 179, 0.18);
 }
 
 .auth-card input::placeholder {
-  color: #a2aca6;
+  color: var(--color-subtle);
 }
 
 .password-recovery-link {
   align-self: flex-end;
   margin-top: 10px;
+  color: var(--color-secondary);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -158,7 +188,7 @@ h2 {
 
 .field-hint {
   margin: 7px 0 0;
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 11px;
 }
 
@@ -180,13 +210,13 @@ h2 {
 
 .primary-button {
   margin-top: 24px;
-  background: var(--accent);
+  background: var(--color-primary);
   color: white;
 }
 
 .primary-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: var(--accent-dark);
+  background: var(--color-primary-hover);
 }
 
 .primary-button:disabled,
@@ -198,23 +228,24 @@ h2 {
 .secondary-button {
   width: 100%;
   margin-top: 24px;
-  border: 1px solid var(--line);
-  background: white;
-  color: var(--ink);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
 }
 
 .secondary-button:hover:not(:disabled) {
-  background: #f5f7f2;
+  background: var(--color-surface-subtle);
 }
 
 .auth-switch {
   margin: 24px 0 0;
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 12px;
   text-align: center;
 }
 
 .auth-switch a {
+  color: var(--color-secondary);
   font-weight: 600;
   text-decoration: none;
 }
@@ -230,13 +261,14 @@ h2 {
 }
 
 .error-message {
-  color: var(--error);
+  color: var(--color-danger);
 }
 
 .success-message {
-  color: var(--accent-dark);
+  color: var(--color-primary);
 }
 
+/* Auth aside panel */
 .auth-aside {
   position: relative;
   display: flex;
@@ -245,25 +277,19 @@ h2 {
   min-height: 100%;
   overflow: hidden;
   padding: 68px;
-  background:
-    radial-gradient(
-      ellipse at 85% 35%,
-      var(--accent),
-      transparent 30%
-    ),
-    linear-gradient(45deg, #224c4f, #212552 30%);
-  color: white;
+  background: var(--gradient-auth-aside);
+  color: var(--color-dark-text);
 }
 
 .auth-aside .eyebrow {
   position: relative;
-  color: #b9d2a7;
+  color: var(--color-accent);
 }
 
 .auth-aside h2 {
   position: relative;
   margin-top: 12px;
-  color: #fffef6;
+  color: #FFFFFF;
   font-size: clamp(38px, 5vw, 58px);
   line-height: 1.14;
 }
@@ -272,7 +298,7 @@ h2 {
   position: relative;
   max-width: 300px;
   margin-top: 18px;
-  color: #ccdad0;
+  color: var(--color-dark-muted);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -280,7 +306,7 @@ h2 {
 .aside-footnote {
   position: absolute;
   bottom: 40px;
-  color: #a9c2b3;
+  color: var(--color-primary-light);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.18em;
@@ -291,7 +317,7 @@ h2 {
   right: -130px;
   width: 390px;
   height: 390px;
-  border: 1px solid rgb(220 238 220 / 14%);
+  border: 1px solid rgba(118, 129, 179, 0.22);
   border-radius: 50%;
 }
 
@@ -304,8 +330,12 @@ h2 {
   right: -70px;
   width: 270px;
   height: 270px;
-  border-color: rgb(220 238 220 / 10%);
+  border-color: rgba(131, 201, 244, 0.16);
 }
+
+/* ============================================================
+   PROTECTED SHELL
+   ============================================================ */
 
 .protected-shell {
   display: grid;
@@ -315,17 +345,17 @@ h2 {
 }
 
 .protected-shell > p[role="status"] {
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 14px;
 }
 
 .protected-card {
   width: min(100%, 520px);
   padding: 48px;
-  border: 1px solid #e9ebe5;
+  border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: var(--paper);
-  box-shadow: 0 20px 60px rgb(35 58 47 / 8%);
+  background: var(--color-background);
+  box-shadow: var(--shadow-dialog);
 }
 
 .protected-card .brand {
@@ -337,14 +367,14 @@ h2 {
 }
 
 .protected-card > p {
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 13px;
   line-height: 1.6;
 }
 
 .account-email {
   padding-bottom: 22px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .organization-list {
@@ -362,19 +392,23 @@ h2 {
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
-  background: #f4f6f1;
+  background: var(--color-ice);
   font-size: 12px;
 }
 
 .membership-role {
-  color: var(--accent-dark);
+  color: var(--color-secondary);
   font-size: 10px;
   font-weight: 700;
 }
 
+/* ============================================================
+   DASHBOARD SHELL
+   ============================================================ */
+
 .dashboard-shell {
   min-height: 100vh;
-  background: #f5f7f3;
+  background: var(--color-background);
 }
 
 .dashboard-sidebar {
@@ -385,12 +419,13 @@ h2 {
   height: 100vh;
   flex-direction: column;
   padding: 25px 18px 18px;
-  background: var(--accent-dark);
-  color: #f3f7f0;
+  background: var(--color-dark-surface);
+  color: var(--color-dark-text);
 }
 
 .dashboard-sidebar .brand {
   margin-bottom: 16px;
+  color: var(--color-primary-light);
 }
 
 .brand-mark {
@@ -404,9 +439,9 @@ h2 {
   align-items: center;
   gap: 11px;
   padding: 12px 10px;
-  border: 1px solid rgb(235 245 231 / 12%);
+  border: 1px solid var(--color-dark-border);
   border-radius: 10px;
-  background: rgb(255 255 255 / 5%);
+  background: var(--color-dark-border-subtle);
 }
 
 .dashboard-organization-mark {
@@ -416,8 +451,8 @@ h2 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 9px;
-  background: var(--line);
-  color: var(--accent);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 700;
 }
@@ -431,7 +466,7 @@ h2 {
 
 .dashboard-organization-label,
 .dashboard-navigation-label {
-  color: var(--line);
+  color: var(--color-dark-muted);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -439,7 +474,7 @@ h2 {
 
 .dashboard-organization-name {
   overflow: hidden;
-  color: var(--paper);
+  color: var(--color-dark-text);
   font-size: 12px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -471,7 +506,7 @@ h2 {
   gap: 12px;
   padding: 0 11px;
   border-radius: 8px;
-  color: var(--paper);
+  color: var(--color-dark-text);
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
@@ -491,13 +526,13 @@ h2 {
 
 .dashboard-navigation-link:hover,
 .dashboard-navigation-link:focus-visible {
-  background: rgb(255 255 255 / 8%);
+  background: var(--color-dark-border-subtle);
   color: #fff;
 }
 
 .dashboard-navigation-link[aria-current="page"] {
-  background: #e8efe4;
-  color: var(--accent-dark);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -507,7 +542,7 @@ h2 {
 
 .dashboard-sidebar-footer {
   padding: 16px 2px 0;
-  border-top: 1px solid rgb(235 245 231 / 13%);
+  border-top: 1px solid var(--color-dark-border);
 }
 
 .dashboard-account-menu {
@@ -531,12 +566,12 @@ h2 {
 
 .dashboard-account-trigger:hover,
 .dashboard-account-trigger[aria-expanded="true"] {
-  border-color: rgb(235 245 231 / 12%);
-  background: rgb(255 255 255 / 6%);
+  border-color: var(--color-dark-border);
+  background: var(--color-dark-border-subtle);
 }
 
 .dashboard-account-trigger:focus-visible {
-  outline: 3px solid #a7c695;
+  outline: 3px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
@@ -548,7 +583,7 @@ h2 {
   width: 17px;
   height: 17px;
   flex: 0 0 auto;
-  color: #a9c2b3;
+  color: var(--color-dark-muted);
   transition: transform 150ms ease;
 }
 
@@ -564,10 +599,10 @@ h2 {
   width: 100%;
   min-width: 210px;
   padding: 8px;
-  border: 1px solid #e3e9e1;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
-  background: #fffefa;
-  box-shadow: 0 12px 32px rgb(12 32 23 / 22%);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dialog);
 }
 
 .dashboard-account-dropdown .dashboard-logout-button {
@@ -578,22 +613,22 @@ h2 {
   padding: 0 10px;
   margin-top: 4px;
   border: 0;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border-subtle);
   border-radius: 6px;
   background: transparent;
-  color: #9b4138;
+  color: var(--color-danger);
   font-size: 12px;
   font-weight: 600;
   text-align: left;
 }
 
 .dashboard-account-dropdown .dashboard-logout-button:hover:not(:disabled) {
-  background: #fbefed;
-  color: #80342e;
+  background: var(--color-danger-subtle);
+  color: #B02020;
 }
 
 .dashboard-account-dropdown .dashboard-logout-button:focus-visible {
-  outline: 3px solid #d59e95;
+  outline: 3px solid rgba(217, 56, 58, 0.4);
   outline-offset: 1px;
 }
 
@@ -603,26 +638,26 @@ h2 {
   align-items: center;
   padding: 0 10px;
   border-radius: 6px;
-  color: var(--ink);
+  color: var(--color-ink);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .dashboard-account-dropdown .dashboard-profile-link:hover {
-  background: var(--surface-subtle);
-  color: var(--accent-dark);
+  background: var(--color-primary-subtle);
+  color: var(--color-secondary);
 }
 
 .dashboard-account-dropdown .dashboard-profile-link:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 3px solid var(--color-focus);
   outline-offset: 1px;
 }
 
 .dashboard-account-dropdown .dashboard-logout-error {
   padding: 3px 7px 7px;
   margin: 0;
-  color: var(--error);
+  color: var(--color-danger);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -633,17 +668,17 @@ h2 {
   height: 34px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid #d6e4d1;
+  border: 1px solid var(--color-primary-border);
   border-radius: 50%;
-  background: #e9ebf3;
-  color: var(--accent-dark);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
   font-size: 12px;
   font-weight: 700;
 }
 
 .dashboard-user-email {
   overflow: hidden;
-  color: #e9ebf3;
+  color: var(--color-dark-text);
   font-size: 11px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -651,7 +686,7 @@ h2 {
 }
 
 .dashboard-user-role {
-  color: #e9ebf3;
+  color: var(--color-dark-muted);
   font-size: 10px;
 }
 
@@ -659,17 +694,17 @@ h2 {
   width: 100%;
   min-height: 38px;
   padding: 0 10px;
-  border: 1px solid rgb(235 245 231 / 15%);
+  border: 1px solid var(--color-dark-border);
   border-radius: 8px;
   background: transparent;
-  color: #e9ebf3;
+  color: var(--color-dark-text);
   cursor: pointer;
   font-size: 11px;
   text-align: left;
 }
 
 .dashboard-logout-button:hover:not(:disabled) {
-  background: rgb(255 255 255 / 8%);
+  background: var(--color-dark-border-subtle);
   color: #fff;
 }
 
@@ -680,7 +715,7 @@ h2 {
 
 .dashboard-logout-error {
   margin: 0 7px 10px;
-  color: #ffd0c8;
+  color: var(--color-accent);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -689,6 +724,10 @@ h2 {
   min-height: 100vh;
   margin-left: 264px;
 }
+
+/* ============================================================
+   DASHBOARD TOPBAR
+   ============================================================ */
 
 .dashboard-topbar {
   position: sticky;
@@ -699,8 +738,8 @@ h2 {
   align-items: center;
   justify-content: space-between;
   padding: 0 42px;
-  border-bottom: 1px solid var(--paper);
-  background: rgb(255 255 255 / 94%);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
 }
 
@@ -708,12 +747,12 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--accent-dark);
+  color: var(--color-secondary);
   font-size: 11px;
 }
 
 .dashboard-breadcrumb strong {
-  color: var(--accent);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -726,7 +765,7 @@ h2 {
   border: 1px solid transparent;
   border-radius: 9px;
   background: transparent;
-  color: var(--accent);
+  color: var(--color-primary);
   cursor: pointer;
   font-size: 11px;
   text-align: left;
@@ -734,12 +773,12 @@ h2 {
 
 .dashboard-topbar-user:hover,
 .dashboard-topbar-user[aria-expanded="true"] {
-  border-color: var(--border);
-  background: var(--surface-subtle);
+  border-color: var(--color-border);
+  background: var(--color-primary-subtle);
 }
 
 .dashboard-topbar-user:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -766,6 +805,10 @@ h2 {
   height: 31px;
 }
 
+/* ============================================================
+   DASHBOARD CONTENT
+   ============================================================ */
+
 .dashboard-content {
   width: min(100%, 1280px);
   padding: 38px 42px 56px;
@@ -778,7 +821,7 @@ h2 {
 
 .dashboard-eyebrow {
   margin: 0 0 8px;
-  color: var(--accent);
+  color: var(--color-primary);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -793,10 +836,14 @@ h2 {
 .dashboard-page-heading p {
   max-width: 430px;
   margin: 9px 0 0;
-  color: #849088;
+  color: var(--color-muted);
   font-size: 12px;
   line-height: 1.65;
 }
+
+/* ============================================================
+   DASHBOARD WELCOME CARD
+   ============================================================ */
 
 .dashboard-welcome-card {
   position: relative;
@@ -806,11 +853,9 @@ h2 {
   justify-content: space-between;
   overflow: hidden;
   padding: 32px 38px;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-sky-border);
   border-radius: 15px;
-  background:
-    radial-gradient(ellipse at 90% 20%, rgba(167, 210, 171, 0.38), transparent 34%),
-    linear-gradient(115deg, #e7f1ea, #f3f8f2 78%);
+  background: var(--gradient-welcome);
 }
 
 .dashboard-welcome-copy {
@@ -821,7 +866,7 @@ h2 {
 
 .dashboard-welcome-eyebrow {
   margin: 0 0 11px;
-  color: #4e5679;
+  color: var(--color-secondary);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -829,7 +874,7 @@ h2 {
 
 .dashboard-welcome-card h2 {
   overflow-wrap: anywhere;
-  color: #1c2943;
+  color: var(--color-dark-surface);
   font-size: clamp(23px, 3vw, 31px);
   line-height: 1.2;
 }
@@ -837,7 +882,7 @@ h2 {
 .dashboard-welcome-card .dashboard-welcome-copy > p:not(.dashboard-welcome-eyebrow) {
   max-width: 520px;
   margin: 11px 0 0;
-  color: #646c76;
+  color: var(--color-ink-secondary);
   font-size: 12px;
   line-height: 1.7;
 }
@@ -845,7 +890,7 @@ h2 {
 .dashboard-welcome-organization {
   display: inline-block;
   margin-top: 15px;
-  color: #394270;
+  color: var(--color-secondary);
   font-size: 11px;
   font-weight: 700;
 }
@@ -857,10 +902,10 @@ h2 {
   flex: 0 0 auto;
   place-items: center;
   margin: 0 26px 0 20px;
-  border: 1px solid rgb(47 111 76 / 13%);
+  border: 1px solid var(--color-sky-border);
   border-radius: 50%;
-  background: rgb(255 255 255 / 54%);
-  color: #4d5585;
+  background: rgba(255, 255, 255, 0.60);
+  color: var(--color-secondary);
 }
 
 .dashboard-welcome-art svg {
@@ -868,6 +913,10 @@ h2 {
   height: 44px;
   stroke-width: 1.2;
 }
+
+/* ============================================================
+   DASHBOARD SECTION HEADINGS
+   ============================================================ */
 
 .dashboard-section-heading {
   display: flex;
@@ -878,7 +927,7 @@ h2 {
 }
 
 .dashboard-section-heading h2 {
-  color: #26233f;
+  color: var(--color-dark-surface);
   font-family: var(--font-display);
   font-size: 23px;
   font-weight: 500;
@@ -887,9 +936,13 @@ h2 {
 
 .dashboard-section-heading > p {
   margin: 0 0 2px;
-  color: #848590;
+  color: var(--color-muted);
   font-size: 11px;
 }
+
+/* ============================================================
+   DASHBOARD SHORTCUTS
+   ============================================================ */
 
 .dashboard-shortcuts {
   display: grid;
@@ -903,9 +956,9 @@ h2 {
   align-items: center;
   gap: 14px;
   padding: 15px 17px;
-  border: 1px solid #e5eae2;
+  border: 1px solid var(--color-border);
   border-radius: 11px;
-  background: #fff;
+  background: var(--color-surface);
   color: inherit;
   text-decoration: none;
   transition:
@@ -917,8 +970,8 @@ h2 {
 .dashboard-shortcut-card:hover,
 .dashboard-shortcut-card:focus-visible {
   transform: translateY(-1px);
-  border-color: #c8d9c7;
-  box-shadow: 0 9px 24px rgb(35 58 47 / 6%);
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-card);
 }
 
 .dashboard-shortcut-icon,
@@ -930,8 +983,8 @@ h2 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 10px;
-  background: var(--paper);
-  color: var(--accent-dark);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
 }
 
 .dashboard-shortcut-copy {
@@ -942,21 +995,25 @@ h2 {
 }
 
 .dashboard-shortcut-copy strong {
-  color: #29443a;
+  color: var(--color-ink);
   font-size: 12px;
   font-weight: 700;
 }
 
 .dashboard-shortcut-copy > span {
-  color: #87938c;
+  color: var(--color-muted);
   font-size: 10px;
   line-height: 1.5;
 }
 
 .dashboard-shortcut-arrow {
-  color: #799080;
+  color: var(--color-primary);
   font-size: 17px;
 }
+
+/* ============================================================
+   DASHBOARD INDICATORS
+   ============================================================ */
 
 .dashboard-no-indicators {
   display: flex;
@@ -964,15 +1021,15 @@ h2 {
   gap: 14px;
   padding: 17px 18px;
   margin-top: 22px;
-  border: 1px dashed #d9e2d7;
+  border: 1px dashed var(--color-sky-border);
   border-radius: 10px;
-  background: rgb(255 255 255 / 54%);
+  background: rgba(255, 255, 255, 0.60);
 }
 
 .dashboard-no-indicators-mark {
   width: 34px;
   height: 34px;
-  background: #f4f6f0;
+  background: var(--color-ice);
 }
 
 .dashboard-no-indicators-mark svg {
@@ -982,10 +1039,14 @@ h2 {
 
 .dashboard-no-indicators p {
   margin: 0;
-  color: #849088;
+  color: var(--color-muted);
   font-size: 11px;
   line-height: 1.6;
 }
+
+/* ============================================================
+   DASHBOARD EMPTY STATE
+   ============================================================ */
 
 .dashboard-empty-state {
   display: grid;
@@ -993,9 +1054,9 @@ h2 {
   justify-items: center;
   align-content: center;
   padding: 36px 24px;
-  border: 1px solid #e5eae2;
+  border: 1px solid var(--color-border);
   border-radius: 13px;
-  background: #fff;
+  background: var(--color-surface);
   text-align: center;
 }
 
@@ -1006,7 +1067,7 @@ h2 {
 }
 
 .dashboard-empty-state h2 {
-  color: #29443a;
+  color: var(--color-ink);
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 700;
@@ -1016,10 +1077,14 @@ h2 {
 .dashboard-empty-state p {
   max-width: 430px;
   margin: 9px 0 0;
-  color: #849088;
+  color: var(--color-muted);
   font-size: 11px;
   line-height: 1.65;
 }
+
+/* ============================================================
+   DASHBOARD MENU TOGGLE & BACKDROP
+   ============================================================ */
 
 .dashboard-menu-toggle {
   display: none;
@@ -1029,6 +1094,10 @@ h2 {
   display: none;
 }
 
+/* ============================================================
+   DASHBOARD AUTH STATE & ERROR
+   ============================================================ */
+
 .dashboard-auth-state {
   display: grid;
   min-height: 100vh;
@@ -1037,30 +1106,34 @@ h2 {
 }
 
 .dashboard-auth-state > p[role="status"] {
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 13px;
 }
 
 .dashboard-auth-error {
   width: min(100%, 470px);
   padding: 34px;
-  border: 1px solid #e5eae2;
+  border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .dashboard-auth-error > p {
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* ============================================================
+   DASHBOARD PRIMARY BUTTON
+   ============================================================ */
 
 .dashboard-primary-button {
   min-height: 42px;
   padding: 0 16px;
   border: 0;
   border-radius: 8px;
-  background: var(--accent);
+  background: var(--color-primary);
   color: #fff;
   cursor: pointer;
   font-size: 12px;
@@ -1068,20 +1141,24 @@ h2 {
 }
 
 .dashboard-primary-button:hover {
-  background: var(--accent-dark);
+  background: var(--color-primary-hover);
 }
+
+/* ============================================================
+   FOCUS RINGS
+   ============================================================ */
 
 .dashboard-sidebar a:focus-visible,
 .dashboard-sidebar button:focus-visible,
 .dashboard-menu-toggle:focus-visible,
 .dashboard-primary-button:focus-visible {
-  outline: 3px solid #a7c695;
+  outline: 3px solid var(--color-primary-light);
   outline-offset: 3px;
 }
 
 .dashboard-shortcut-card:focus-visible,
 .dashboard-backdrop:focus-visible {
-  outline: 3px solid #6a9c6c;
+  outline: 3px solid var(--color-secondary);
   outline-offset: 3px;
 }
 
@@ -1093,6 +1170,33 @@ h2 {
 .dashboard-shortcut-card:focus-visible {
   outline-offset: 2px;
 }
+
+/* ============================================================
+   AUTH SUBMIT LINK (invitation)
+   ============================================================ */
+
+.auth-submit {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border-radius: 9px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+
+.auth-submit:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 
 @media (max-width: 900px) {
   .dashboard-topbar {
@@ -1114,7 +1218,7 @@ h2 {
   .dashboard-sidebar {
     z-index: 40;
     width: min(290px, calc(100vw - 54px));
-    box-shadow: 18px 0 45px rgb(16 38 30 / 22%);
+    box-shadow: 18px 0 45px rgba(18, 22, 36, 0.28);
     transform: translateX(-110%);
     visibility: hidden;
     transition:
@@ -1133,7 +1237,7 @@ h2 {
     z-index: 35;
     inset: 0;
     display: block;
-    background: rgb(16 32 26 / 42%);
+    background: var(--overlay);
   }
 
   .dashboard-main-column {
@@ -1156,9 +1260,9 @@ h2 {
     justify-items: center;
     gap: 4px;
     padding: 0;
-    border: 1px solid #e4e9e2;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: #fff;
+    background: var(--color-surface);
     cursor: pointer;
   }
 
@@ -1166,7 +1270,7 @@ h2 {
     width: 15px;
     height: 1.5px;
     border-radius: 2px;
-    background: #315847;
+    background: var(--color-secondary);
   }
 
   .dashboard-breadcrumb {

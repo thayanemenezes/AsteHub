@@ -89,7 +89,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
           </div>
         ))}
 
-        <div className={styles.shade} />
+        <div className={styles.shade} />  
 
         {current && (
           <div className={styles.copy}>
