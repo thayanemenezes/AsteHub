@@ -24,7 +24,7 @@
 
 .eyebrow {
   display: inline-block;
-  color: var(--green-deep);
+  color: var(--color-ink-secondary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -51,7 +51,7 @@
 }
 
 .text {
-  color: var(--steel);
+  color: var(--color-ink-secondary);
   font-size: 15px;
   line-height: 1.65;
   margin-bottom: 28px;
@@ -79,7 +79,7 @@
   height: 38px;
   border-radius: 10px;
   background: var(--green-soft);
-  color: var(--green-deep);
+  color: var(--color-ink-secondary);
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -94,7 +94,7 @@
 }
 
 .pillarText {
-  color: var(--steel);
+  color: var(--color-ink-secondary);
   font-size: 13px;
   line-height: 1.45;
 }

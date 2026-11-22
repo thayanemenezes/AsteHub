@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "accent" | "sky" | "ice" | "neutral" | "success" | "danger";
+  variant?: "primary" | "secondary" | "teal" | "neutral" | "success" | "danger" | "warning";
   className?: string;
 }
 
@@ -25,46 +25,42 @@ export function Badge({
     border: "1px solid transparent",
   };
 
+  // Paleta: Dark Cyan #119da4 / Cerulean #0c7489 / Dark Teal #13505b / Dust Grey #d7d9ce
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      background: "var(--color-primary-subtle, #EEF2FA)",
-      color: "var(--color-primary, #7681B3)",
-      borderColor: "var(--color-primary-border, #CCD3E8)",
+      background: "var(--color-primary-subtle, #e4f6f7)",
+      color: "var(--color-secondary, #0c7489)",
+      borderColor: "var(--color-primary-border, #a8dde0)",
     },
     secondary: {
-      background: "var(--color-secondary-subtle, #EEF0FB)",
-      color: "var(--color-secondary, #6F73D2)",
-      borderColor: "var(--color-secondary-border, #CAD0F3)",
+      background: "var(--color-secondary-subtle, #ddf0f3)",
+      color: "var(--color-secondary, #0c7489)",
+      borderColor: "var(--color-secondary-border, #90cdd5)",
     },
-    accent: {
-      background: "var(--color-accent-subtle, #E8F5FD)",
-      color: "#0F4466",
-      borderColor: "var(--color-accent-border, #BCE2FA)",
-    },
-    sky: {
-      background: "var(--color-sky-subtle, #F0F7FF)",
-      color: "#123B63",
-      borderColor: "var(--color-sky-border, #CCE5FF)",
-    },
-    ice: {
-      background: "var(--color-ice, #D9F0FF)",
-      color: "#16365C",
-      borderColor: "var(--color-ice-border, #BEE3FC)",
+    teal: {
+      background: "rgba(19, 80, 91, 0.10)",
+      color: "var(--color-dark-surface, #13505b)",
+      borderColor: "rgba(19, 80, 91, 0.20)",
     },
     neutral: {
-      background: "var(--color-surface-subtle, #F0F4FA)",
-      color: "var(--color-muted, #586380)",
-      borderColor: "var(--color-border, #DFE5F0)",
+      background: "var(--color-surface-subtle, #f0f0ed)",
+      color: "var(--color-muted, #6b6e65)",
+      borderColor: "var(--color-border, #c8cac0)",
     },
     success: {
-      background: "var(--color-success-subtle, #EFFBF5)",
-      color: "var(--color-success, #1E8E63)",
-      borderColor: "rgba(30, 142, 99, 0.2)",
+      background: "var(--color-success-subtle, #e4f6f7)",
+      color: "var(--color-success, #119da4)",
+      borderColor: "var(--color-primary-border, #a8dde0)",
     },
     danger: {
-      background: "var(--color-danger-subtle, #FDF2F2)",
-      color: "var(--color-danger, #D9383A)",
-      borderColor: "rgba(217, 56, 58, 0.2)",
+      background: "var(--color-danger-subtle, #fdf2f1)",
+      color: "var(--color-danger, #c0392b)",
+      borderColor: "rgba(192, 57, 43, 0.22)",
+    },
+    warning: {
+      background: "var(--color-warning-subtle, #fdf5e4)",
+      color: "var(--color-warning, #b07d2a)",
+      borderColor: "rgba(176, 125, 42, 0.22)",
     },
   };
 

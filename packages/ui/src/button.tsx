@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "accent";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "teal";
   size?: "sm" | "md" | "lg";
   className?: string;
   appName?: string;
@@ -38,30 +38,31 @@ export function Button({
     lg: { padding: "12px 24px", fontSize: "16px", minHeight: "48px" },
   };
 
+  // Paleta: Dark Cyan #119da4 / Cerulean #0c7489 / Dark Teal #13505b
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      background: "var(--color-primary, #7681B3)",
-      color: "var(--color-primary-contrast, #FFFFFF)",
+      background: "var(--color-primary, #119da4)",
+      color: "#ffffff",
       borderColor: "transparent",
     },
     secondary: {
-      background: "var(--color-secondary, #6F73D2)",
-      color: "var(--color-secondary-contrast, #FFFFFF)",
+      background: "var(--color-secondary, #0c7489)",
+      color: "#ffffff",
       borderColor: "transparent",
     },
-    accent: {
-      background: "var(--color-accent, #83C9F4)",
-      color: "var(--color-accent-contrast, #0D3352)",
+    teal: {
+      background: "var(--color-dark-surface, #13505b)",
+      color: "var(--color-dark-text, #e8ebe6)",
       borderColor: "transparent",
     },
     outline: {
       background: "transparent",
-      color: "var(--color-primary, #7681B3)",
-      borderColor: "var(--color-primary, #7681B3)",
+      color: "var(--color-primary, #119da4)",
+      borderColor: "var(--color-primary, #119da4)",
     },
     ghost: {
       background: "transparent",
-      color: "var(--color-ink, #151B2E)",
+      color: "var(--color-ink, #040404)",
       borderColor: "transparent",
     },
   };

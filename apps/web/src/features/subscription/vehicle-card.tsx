@@ -38,7 +38,9 @@ export function PublicVehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
         </p>
         <div className={styles.vehicleActions}>
           <Link href={`/veiculos/${vehicle.id}`}>Ver detalhes</Link>
-          <QuoteTrigger vehicleId={vehicle.id}>Solicitar cotação</QuoteTrigger>
+          <QuoteTrigger className={styles.quoteButton} vehicleId={vehicle.id}>
+            Solicitar cotação
+          </QuoteTrigger>
         </div>
       </div>
     </article>

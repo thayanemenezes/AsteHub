@@ -1,8 +1,10 @@
 .section {
-  padding: 90px 0 80px;
+  padding: 96px 0 88px;
   background: var(--surface);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
 }
 
 .container {
@@ -13,7 +15,7 @@
 
 .sectionHead {
   text-align: center;
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto 56px;
 }
 
@@ -31,29 +33,445 @@
   color: var(--navy);
   font-size: clamp(28px, 3.8vw, 44px);
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .subtitle {
   color: var(--steel);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-.areaA {
-  margin-bottom: 64px;
+/* ==========================================================================
+   ÁREA A: INTERACTIVE JOURNEY SHOWCASE (HERO + TIMELINE STREAM)
+   ========================================================================== */
+.journeyShowcase {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr;
+  gap: 40px;
+  align-items: stretch;
+  margin-bottom: 76px;
+  background: linear-gradient(135deg, #ffffff 0%, #f4f8f9 100%);
+  border-radius: 28px;
+  border: 1px solid rgba(4, 30, 43, 0.08);
+  padding: 32px;
+  box-shadow: 0 16px 40px -12px rgba(4, 30, 43, 0.06);
+}
+
+/* Lado Esquerdo: Card / Banner Visual do Veículo */
+.visualHero {
+  display: flex;
+  flex-direction: column;
+}
+
+.visualCard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(4, 30, 43, 0.14);
+}
+
+.visualImageWrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.visualImage {
+  object-fit: cover;
+  transition: transform 600ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.visualCard:hover .visualImage {
+  transform: scale(1.04);
+}
+
+.visualOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 30, 43, 0.55) 0%,
+    rgba(4, 30, 43, 0.25) 40%,
+    rgba(4, 30, 43, 0.88) 85%,
+    rgba(4, 30, 43, 0.96) 100%
+  );
+  z-index: 1;
+}
+
+.visualMetaTop {
+  position: relative;
+  z-index: 2;
+  padding: 24px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.visualBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--navy);
+  color: var(--green);
+  font-family: var(--font-display), sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 213, 155, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.visualFeatureTag {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  color: var(--navy-deep);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.visualMetaBottom {
+  position: relative;
+  z-index: 2;
+  padding: 26px;
+}
+
+.visualHighlightBox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.visualMetricIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--green);
+  color: var(--navy-deep);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.visualTagline {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green-soft);
+}
+
+.visualHighlightText {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.visualActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.visualCta {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--green);
+  color: var(--navy-deep);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 13px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 14px rgba(0, 213, 155, 0.35);
+}
+
+.visualCta:hover {
+  background: #02f0b0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 213, 155, 0.45);
+}
+
+.visualSecondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 13px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  text-decoration: none;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.visualSecondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Lado Direito: Trilha Dinâmica / Timeline Interativa */
+.stepsTimeline {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 12px 8px 4px;
+}
+
+.timelineHeader {
+  margin-bottom: 22px;
+}
+
+.timelineKicker {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--green-deep);
+  margin-bottom: 4px;
+}
+
+.timelineTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trackItem {
+  display: flex;
+  gap: 18px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-align: left;
+  outline: none;
+}
+
+.trackItem:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(4, 30, 43, 0.08);
+  transform: translateX(4px);
+}
+
+.trackItemActive {
+  background: #ffffff;
+  border-color: rgba(0, 213, 155, 0.45);
+  box-shadow: 0 8px 24px rgba(4, 30, 43, 0.08);
+  transform: translateX(6px);
+}
+
+.trackItemPassed .nodeNumber {
+  color: var(--green);
+}
+
+/* Coluna Indicadora (Node e Linha Conectora) */
+.trackIndicatorCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+}
+
+.indicatorNode {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 250ms ease;
+  z-index: 2;
+}
+
+.nodeNumber {
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--steel);
+  transition: color 250ms ease;
+}
+
+.nodeIcon {
+  display: none;
+  font-size: 20px;
+}
+
+.trackItemActive .indicatorNode {
+  background: var(--navy);
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px var(--green-soft);
+}
+
+.trackItemActive .nodeNumber {
+  display: none;
+}
+
+.trackItemActive .nodeIcon {
+  display: block;
+  color: var(--green);
+}
+
+.connectingRail {
+  position: absolute;
+  top: 44px;
+  bottom: -18px;
+  width: 2px;
+  background: var(--line);
+  z-index: 1;
+  transition: background 300ms ease;
+}
+
+.connectingRailActive {
+  background: linear-gradient(180deg, var(--green) 0%, rgba(0, 213, 155, 0.2) 100%);
+}
+
+/* Conteúdo da Etapa na Trilha */
+.trackContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.trackContentTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.trackTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--steel);
+}
+
+.trackItemActive .trackTag {
+  color: var(--green-deep);
+}
+
+.activePill {
+  display: inline-block;
+  background: var(--green-soft);
+  color: var(--navy-deep);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.trackTitle {
+  font-family: var(--font-body), sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+  transition: color 200ms ease;
+}
+
+.trackItemActive .trackTitle {
+  color: var(--navy-deep);
+  font-weight: 800;
+}
+
+.trackText {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--steel);
+  margin-bottom: 8px;
+}
+
+.trackDetailBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  background: #f0f7f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(4, 30, 43, 0.06);
+}
+
+.trackDetailIcon {
+  color: var(--green-deep);
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   ÁREA B: O QUE ESTÁ INCLUSO NA ASSINATURA
+   ========================================================================== */
+.areaB {
+  padding-top: 56px;
+  border-top: 1px dashed var(--line);
 }
 
 .areaHeader {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .areaBadge {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   background: var(--green-soft);
   color: var(--navy-deep);
@@ -61,91 +479,21 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .areaTitle {
   color: var(--navy);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .areaText {
   color: var(--steel);
-  font-size: 14px;
-}
-
-.stepsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
-.stepCard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  border-radius: 16px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
-}
-
-.stepCard:hover {
-  transform: translateY(-3px);
-  border-color: rgba(0, 213, 155, 0.4);
-  box-shadow: 0 10px 24px rgba(4, 30, 43, 0.06);
-}
-
-.stepTop {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.stepNumber {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--navy);
-  color: var(--green);
-  font-family: var(--font-display), sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.stepLine {
-  display: none;
-}
-
-.stepTitle {
-  color: var(--navy);
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  font-family: var(--font-body), sans-serif;
-  text-transform: none;
-}
-
-.stepText {
-  color: var(--steel);
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.areaB {
-  padding-top: 48px;
-  border-top: 1px dashed var(--line);
+  font-size: 14.5px;
 }
 
 .benefitsGrid {
@@ -160,16 +508,17 @@
   align-items: flex-start;
   gap: 16px;
   padding: 22px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #f8fafb;
   border: 1px solid var(--line);
-  transition: transform 200ms ease, background 200ms ease;
+  transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
 }
 
 .benefitCard:hover {
-  background: var(--surface);
+  background: #ffffff;
   transform: translateY(-2px);
   border-color: rgba(0, 213, 155, 0.4);
+  box-shadow: 0 8px 20px rgba(4, 30, 43, 0.05);
 }
 
 .iconWrap {
@@ -178,7 +527,7 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--green-soft);
   color: var(--green-deep);
   flex-shrink: 0;
@@ -226,9 +575,22 @@
   line-height: 1.5;
 }
 
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
 @media (max-width: 1024px) {
-  .stepsGrid {
-    grid-template-columns: repeat(2, 1fr);
+  .journeyShowcase {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 24px;
+  }
+
+  .visualCard {
+    min-height: 380px;
+  }
+
+  .stepsTimeline {
+    padding: 0;
   }
 
   .benefitsGrid {
@@ -238,11 +600,42 @@
 
 @media (max-width: 640px) {
   .section {
-    padding: 60px 0 50px;
+    padding: 64px 0 54px;
   }
 
-  .stepsGrid {
-    grid-template-columns: 1fr;
+  .journeyShowcase {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .visualCard {
+    min-height: 320px;
+  }
+
+  .visualMetaTop {
+    padding: 16px;
+  }
+
+  .visualMetaBottom {
+    padding: 16px;
+  }
+
+  .visualActions {
+    flex-direction: column;
+  }
+
+  .visualCta,
+  .visualSecondaryBtn {
+    width: 100%;
+  }
+
+  .trackItem {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .trackItemActive {
+    transform: none;
   }
 
   .benefitsGrid {

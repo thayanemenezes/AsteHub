@@ -2,8 +2,8 @@
 
 /*
  * Web globals.css
- * Paleta: #7681B3 (Glaucous, primária), #6F73D2 (Medium Slate Blue),
- *         #83C9F4 (Sky Blue), #A3D5FF (Sky Blue soft), #D9F0FF (Alice Blue)
+ * Paleta: #119da4 (Dark Cyan, primária), #0c7489 (Cerulean),
+ *         #13505b (Dark Teal), #040404 (Black), #d7d9ce (Dust Grey)
  */
 
 :root {
@@ -11,36 +11,36 @@
   --font-display: "Rajdhani", "Barlow Condensed", "Exo 2", "Saira", system-ui, -apple-system, sans-serif;
   --font-body: "Sora", "Plus Jakarta Sans", "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  /* Web-specific aliases (--navy-* etc used throughout component css) */
-  --navy:         var(--color-dark-surface);         /* #181D30 */
-  --navy-deep:    var(--color-dark-canvas);          /* #121624 */
-  --navy-soft:    var(--color-dark-surface-elevated);/* #222942 */
-  --green:        var(--color-primary);              /* #7681B3 */
-  --green-deep:   var(--color-primary-hover);        /* #636EA2 */
-  --green-soft:   var(--color-ice);                  /* #D9F0FF */
-  --ink:          var(--color-ink);
-  --muted:        var(--color-muted);
-  --danger:       var(--color-danger);
-  --paper:        var(--color-background);
-  --surface:      var(--color-surface);
-  --line:         var(--color-border);
-  --steel:        var(--color-muted);
-  --white:        #FFFFFF;
-  --banner-shade: var(--gradient-banner-shade);
-  --shadow-card:  var(--shadow-card);
+  /* Web-specific aliases usados nos .module.css dos componentes */
+  --navy:        var(--color-dark-surface);           /* #13505b */
+  --navy-deep:   var(--color-dark-canvas);            /* #0d3840 */
+  --navy-soft:   var(--color-dark-surface-elevated);  /* #1a6472 */
+  --green:       var(--color-primary);                /* #119da4 */
+  --green-deep:  var(--color-primary-hover);          /* #0c7489 */
+  --green-soft:  var(--color-primary-subtle);         /* #e4f6f7 */
+  --ink:         var(--color-ink);                    /* #040404 */
+  --muted:       var(--color-muted);
+  --danger:      var(--color-danger);
+  --paper:       var(--color-background);
+  --surface:     var(--color-surface);
+  --line:        var(--color-border);
+  --steel:       var(--color-muted);
+  --white:       #ffffff;
+  --banner-shade:  var(--gradient-banner-shade);
+  --shadow-card:   var(--shadow-card);
   --shadow-header: var(--shadow-header);
   --shadow-dialog: var(--shadow-dialog);
-  --overlay:      var(--overlay);
-  --focus:        var(--color-focus);
-  --on-navy:            rgba(255, 255, 255, 0.92);
-  --on-navy-muted:      rgba(255, 255, 255, 0.74);
-  --on-navy-soft:       rgba(255, 255, 255, 0.82);
-  --on-navy-line:       rgba(255, 255, 255, 0.12);
-  --on-navy-border:     rgba(255, 255, 255, 0.16);
+  --overlay:       var(--overlay);
+  --focus:         var(--color-focus);
+  --on-navy:            rgba(232, 235, 230, 0.95);
+  --on-navy-muted:      rgba(232, 235, 230, 0.72);
+  --on-navy-soft:       rgba(232, 235, 230, 0.84);
+  --on-navy-line:       rgba(215, 217, 206, 0.14);
+  --on-navy-border:     rgba(215, 217, 206, 0.18);
   --on-navy-fill:       rgba(255, 255, 255, 0.05);
-  --on-navy-hover:      rgba(255, 255, 255, 0.10);
-  --dot:                rgba(255, 255, 255, 0.45);
-  --page-glow:    var(--gradient-page-glow);
+  --on-navy-hover:      rgba(255, 255, 255, 0.09);
+  --dot:                rgba(255, 255, 255, 0.40);
+  --page-glow:   var(--gradient-page-glow);
 }
 
 * {

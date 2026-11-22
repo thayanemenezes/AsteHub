@@ -5,8 +5,8 @@
   background: var(--site-secondary, var(--navy-deep));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(4, 30, 43, 0.25);
+  border-bottom: 1px solid rgba(215, 217, 206, 0.12);
+  box-shadow: 0 4px 20px rgba(13, 56, 64, 0.30);
   transition: background-color 200ms ease;
 }
 
@@ -83,13 +83,11 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
 .quote:hover {
-  background: var(--site-primary, var(--green-deep));
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(118, 129, 179, 0.40);
 }
 
 .menuButton {

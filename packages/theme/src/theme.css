@@ -3,151 +3,152 @@
 
   /* =========================================================================
      ASTEHUB DESIGN TOKENS
-     Primary Palette (Specification):
-     #7681B3 (Primary)
-     #6F73D2 (Medium Slate Blue)
-     #83C9F4 (Sky Blue)
-     #A3D5FF (Sky Blue Soft)
-     #D9F0FF (Alice Blue)
+     Source Palette (blue / indigo):
+       Glaucous       #7681B3  → primary (CTAs, links, focus)
+       Medium Slate   #6F73D2  → secondary / interactive accent
+       Sky Blue       #83C9F4  → tertiary / borders / chips
+       Sky Blue Light #A3D5FF  → primary light / hover tints
+       Alice Blue     #D9F0FF  → subtle surfaces / cards
      ========================================================================= */
-
-  /* Raw palette references */
-  --palette-glaucous: #7681B3;
-  --palette-medium-slate-blue: #6F73D2;
-  --palette-sky-vibrant: #83C9F4;
-  --palette-sky-soft: #A3D5FF;
-  --palette-alice-blue: #D9F0FF;
-
-  /* Primary Brand - #7681B3 */
-  --color-primary: #7681B3;
-  --color-primary-hover: #636EA2;
-  --color-primary-active: #525D91;
-  --color-primary-light: #8F9BCB;
-  --color-primary-subtle: #EEF2FA;
-  --color-primary-border: #CCD3E8;
-  --color-primary-contrast: #FFFFFF;
-
-  /* Secondary / Periwinkle - #6F73D2 */
-  --color-secondary: #6F73D2;
-  --color-secondary-hover: #5B5FB8;
-  --color-secondary-active: #4D51A8;
-  --color-secondary-light: #8C90E2;
-  --color-secondary-subtle: #EEF0FB;
-  --color-secondary-border: #CAD0F3;
-  --color-secondary-contrast: #FFFFFF;
-
-  /* Accent Highlight - #83C9F4 */
-  --color-accent: #83C9F4;
-  --color-accent-hover: #6CBCEE;
-  --color-accent-active: #55ADE9;
-  --color-accent-subtle: #E8F5FD;
-  --color-accent-border: #BCE2FA;
-  --color-accent-contrast: #0D3352;
-
-  /* Pastel Sky - #A3D5FF */
-  --color-sky: #A3D5FF;
-  --color-sky-hover: #8EC7FB;
-  --color-sky-subtle: #F0F7FF;
-  --color-sky-border: #CCE5FF;
-  --color-sky-contrast: #0E3354;
-
-  /* Ice Blue - #D9F0FF */
-  --color-ice: #D9F0FF;
-  --color-ice-subtle: #F4FAFF;
-  --color-ice-border: #BEE3FC;
-  --color-ice-contrast: #0F2B48;
-
-  /* High Contrast Typography & Neutrals */
-  --color-ink: #151B2E;
-  --color-ink-secondary: #333C57;
-  --color-muted: #586380;
-  --color-subtle: #8792AB;
-
-  /* Backgrounds & Surfaces */
-  --color-background: #F4F7FC;
-  --color-surface: #FFFFFF;
-  --color-surface-subtle: #F0F4FA;
-  --color-surface-card: #FFFFFF;
-  --color-border: #DFE5F0;
-  --color-border-subtle: #EDF1F7;
-  --color-border-strong: #C4CEE0;
-  --color-line: #DFE5F0;
-
-  /* Dark Canvas & Shells (Sidebar, Footer, Hero banners) */
-  --color-dark-canvas: #121624;
-  --color-dark-surface: #181D30;
-  --color-dark-surface-elevated: #222942;
-  --color-dark-border: rgba(255, 255, 255, 0.10);
-  --color-dark-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-dark-text: #F1F4FB;
-  --color-dark-muted: #9BA5C0;
-
-  /* Feedback */
-  --color-success: #1E8E63;
-  --color-success-subtle: #EFFBF5;
-  --color-warning: #D97706;
-  --color-warning-subtle: #FFFBEB;
-  --color-danger: #D9383A;
-  --color-danger-subtle: #FDF2F2;
-  --color-focus: #6F73D2;
-
-  /* Shadows */
-  --shadow-subtle: 0 4px 20px rgba(21, 27, 46, 0.04);
-  --shadow-card: 0 10px 30px rgba(21, 27, 46, 0.06);
-  --shadow-dialog: 0 24px 70px rgba(18, 22, 36, 0.28);
-  --shadow-header: 0 8px 24px rgba(18, 22, 36, 0.12);
-  --overlay: rgba(18, 22, 36, 0.48);
-
-  /* Gradients */
-  --gradient-auth-aside: linear-gradient(135deg, #181D30 0%, #242B48 55%, #7681B3 100%);
-  --gradient-welcome: radial-gradient(ellipse at 90% 20%, rgba(131, 201, 244, 0.25), transparent 45%), linear-gradient(115deg, #D9F0FF 0%, #EEF4FB 85%);
-  --gradient-banner-shade: linear-gradient(100deg, rgba(18, 22, 36, 0.94) 0%, rgba(18, 22, 36, 0.70) 50%, rgba(18, 22, 36, 0.15) 100%);
-  --gradient-page-glow: radial-gradient(circle at top right, rgba(118, 129, 179, 0.16), transparent 38%), radial-gradient(circle at bottom left, rgba(131, 201, 244, 0.12), transparent 32%);
+/* CSS HEX */
+--vanilla-custard: #f2f3aeff;
+--light-gold: #edd382ff;
+--sandy-brown: #fc9e4fff;
+--tiger-flame: #ff521bff;
+--prussian-blue: #020122ff;
 
   /* =========================================================================
-     COMPATIBILITY MAPPINGS FOR DASHBOARD & WEB
+     PRIMARY — Glaucous #7681B3
+     CTAs, links, focus rings, active nav items, breadcrumb active
+     Contrast on white: 3.6:1 (AA large) | on dark canvas: excellent
      ========================================================================= */
+  --color-primary:          #ff521bff;
+  --color-primary-hover:    rgba(255, 111, 27, 0.829);
+  --color-primary-active:   rgb(223, 66, 19);
+  --color-primary-light:    #ffb1a3;
+  --color-primary-xlight:   #ffcbc4;
+  --color-primary-subtle:   #ffdcd9;
+  --color-primary-border:   #f48b83;
+  --color-primary-contrast: #ffffff;
 
-  /* Dashboard compatibility aliases */
-  --ink: var(--color-ink);
-  --muted: var(--color-muted);
-  --accent: var(--color-primary);
-  --accent-dark: var(--color-dark-surface);
-  --paper: var(--color-background);
-  --line: var(--color-border);
-  --error: var(--color-danger);
-  --danger: var(--color-danger);
-  --surface: var(--color-surface);
+  /* =========================================================================
+     SECONDARY — Medium Slate Blue #6F73D2
+     Interactive accent, chips, badges, secondary buttons, hover states
+     ========================================================================= */
+  --color-secondary:          #edd382ff;
+  --color-secondary-hover:    #c4ba5f;
+  --color-secondary-active:   #b6ac50;
+  --color-secondary-light:    #e0d99e;
+  --color-secondary-subtle:   #fbfbec;
+  --color-secondary-border:   #ecebb4;
+  --color-secondary-contrast: #ffffff;
+
+  /* =========================================================================
+     TERTIARY — Sky Blue #83C9F4
+     Tags, decorative highlights, progress bars, decorative borders
+     ========================================================================= */
+  --color-tertiary:          #fc9e4fff;
+  --color-tertiary-hover:    #eeab6c;
+  --color-tertiary-subtle:   #ffead9;
+  --color-tertiary-border:   #ffcfa3;
+  --color-tertiary-contrast: #4a351e;
+
+  /* =========================================================================
+     NEUTRALS — blue-tinted ink + alice-blue paper
+     ========================================================================= */
+  --color-ink:            #2e1a1a;
+  --color-ink-secondary:  #502f2e;
+  --color-muted:          #8f7064;
+  --color-subtle:         #be9c93;
+
+  --color-background:     #fff5f3;
+  --color-surface:        #ffffff;
+  --color-surface-subtle: #fbf3ee;
+  --color-surface-card:   #ffffff;
+
+  --color-border:         #e8c8be;
+  --color-border-subtle:  #f5e6dd;
+  --color-border-strong:  #dec2a8;
+  --color-line:           #ecd3c8;
+
+  /* =========================================================================
+     DARK CANVAS & SHELLS
+     Sidebar, Footer, Hero banners, Auth Aside
+     ========================================================================= */
+  --color-dark-canvas:           #020122ff;
+  --color-dark-surface:          rgb(34, 5, 1);
+  --color-dark-surface-elevated: #262a4e;
+  --color-dark-border:           rgba(179, 122, 118, 0.18);
+  --color-dark-border-subtle:    rgba(179, 142, 118, 0.1);
+  --color-dark-text:             #ffebe8;
+  --color-dark-muted:            #be9893;
+
+  /* =========================================================================
+     FEEDBACK
+     ========================================================================= */
+  --color-success:        #4E9A6F;
+  --color-success-subtle: #E6F5ED;
+  --color-warning:        #B07D2A;
+  --color-warning-subtle: #FDF5E4;
+  --color-danger:         #C0392B;
+  --color-danger-subtle:  #FDF2F1;
+  --color-focus:          #7681B3;
+
+  /* =========================================================================
+     SHADOWS
+     ========================================================================= */
+  --shadow-subtle:  0 4px 20px rgba(46, 30, 26, 0.06);
+  --shadow-card:    0 10px 30px rgba(46, 30, 26, 0.09);
+  --shadow-dialog:  0 24px 70px rgba(46, 28, 26, 0.28);
+  --shadow-header:  0 8px 24px rgba(46, 28, 26, 0.12);
+  --overlay:        rgba(46, 29, 26, 0.52);
+
+  /* =========================================================================
+     GRADIENTS
+     ========================================================================= */
+  --gradient-auth-aside:   linear-gradient(135deg, #2e1d1a 0%, #463525 55%, #b3a876 100%);
+  --gradient-welcome:      radial-gradient(ellipse at 90% 20%, rgba(179, 145, 118, 0.18), transparent 45%), linear-gradient(45deg, #fff0d9 0%, #fce6e6 85%);
+  --gradient-banner-shade: linear-gradient(100deg, rgba(46, 31, 26, 0.94) 0%, rgba(46, 32, 26, 0.7) 50%, rgba(46, 33, 26, 0.15) 100%);
+  --gradient-page-glow:    radial-gradient(circle at top right, rgba(179, 145, 118, 0.14), transparent 38%), radial-gradient(circle at bottom left, rgba(210, 159, 111, 0.08), transparent 32%);
+
+  /* =========================================================================
+     COMPATIBILITY — Dashboard aliases
+     ========================================================================= */
+  --ink:            var(--color-ink);
+  --muted:          var(--color-muted);
+  --accent:         var(--color-primary);
+  --accent-dark:    var(--color-dark-surface);
+  --paper:          var(--color-background);
+  --line:           var(--color-border);
+  --error:          var(--color-danger);
+  --danger:         var(--color-danger);
+  --surface:        var(--color-surface);
   --surface-subtle: var(--color-surface-subtle);
-  --border: var(--color-border);
-  --border-subtle: var(--color-border-subtle);
-  --success: var(--color-success);
-  --focus: var(--color-focus);
+  --border:         var(--color-border);
+  --border-subtle:  var(--color-border-subtle);
+  --success:        var(--color-success);
+  --focus:          var(--color-focus);
 
-  /* Web site compatibility aliases */
-  --navy: var(--color-dark-surface);
-  --navy-deep: var(--color-dark-canvas);
-  --navy-soft: var(--color-dark-surface-elevated);
-  --green: var(--color-primary);
-  --green-deep: var(--color-primary-hover);
-  --green-soft: var(--color-ice);
-  --steel: var(--color-muted);
-  --white: #FFFFFF;
-  --banner-shade: var(--gradient-banner-shade);
-  --page-glow: var(--gradient-page-glow);
-  --on-navy: rgba(255, 255, 255, 0.92);
-  --on-navy-muted: rgba(255, 255, 255, 0.74);
-  --on-navy-soft: rgba(255, 255, 255, 0.82);
-  --on-navy-line: rgba(255, 255, 255, 0.12);
-  --on-navy-border: rgba(255, 255, 255, 0.16);
-  --on-navy-fill: rgba(255, 255, 255, 0.05);
-  --on-navy-hover: rgba(255, 255, 255, 0.10);
-  --dot: rgba(255, 255, 255, 0.45);
-}
-
-.brand-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 56px;
+  /* =========================================================================
+     COMPATIBILITY — Web (public site) aliases
+     Maps old green/navy names → new blue/indigo tokens
+     ========================================================================= */
+  --navy:        var(--color-dark-surface);          
+  --navy-deep:   var(--color-dark-text);           
+  --navy-soft:   var(--color-dark-surface-elevated); 
+  --green:       var(--color-primary);               
+  --green-deep:  var(--color-primary-hover);         
+  --green-soft:  var(--color-primary-subtle);        
+  --steel:       var(--color-muted);
+  --white:       #ffffff;
+  --banner-shade:    var(--gradient-banner-shade);
+  --page-glow:       var(--gradient-page-glow);
+  --on-navy:         rgba(255, 239, 232, 0.95);
+  --on-navy-muted:   rgba(255, 242, 232, 0.72);
+  --on-navy-soft:    rgba(255, 243, 232, 0.84);
+  --on-navy-line:    rgba(179, 132, 118, 0.16);
+  --on-navy-border:  rgba(179, 135, 118, 0.22);
+  --on-navy-fill:    rgba(255, 255, 255, 0.05);
+  --on-navy-hover:   rgba(255, 255, 255, 0.09);
+  --dot:             rgba(255, 255, 255, 0.40);
 }

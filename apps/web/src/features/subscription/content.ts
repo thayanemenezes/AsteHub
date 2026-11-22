@@ -434,23 +434,31 @@ export function formatMonthly(value: number) {
 export const hiringSteps = [
   {
     stepNumber: "01",
+    tagline: "Vitrine Digital",
     title: "Escolha seu veículo",
     text: "Explore nossa vitrine de modelos disponíveis e encontre o carro ideal para seu perfil, família ou atividade profissional.",
+    highlight: "Modelos 0km ou seminovos revisados",
   },
   {
     stepNumber: "02",
+    tagline: "Sob Medida",
     title: "Personalize seu plano",
     text: "Selecione o prazo de permanência desejado (12, 24 ou 36 meses) e a franquia mensal de quilometragem adequada à sua rodagem.",
+    highlight: "Franquia e prazo flexíveis",
   },
   {
     stepNumber: "03",
+    tagline: "Zero Burocracia",
     title: "Solicite sua proposta",
     text: "Envie seus dados cadastrais para uma análise rápida, sem burocracia, e receba atendimento exclusivo com proposta personalizada.",
+    highlight: "Aprovação ágil e 100% online",
   },
   {
     stepNumber: "04",
+    tagline: "Chave na Mão",
     title: "Comece a dirigir",
     text: "Com o contrato aprovado e assinado digitalmente, retire seu veículo revisado e pronto para a estrada, com tudo incluso.",
+    highlight: "Seguro, IPVA e revisões inclusos",
   },
 ];
 

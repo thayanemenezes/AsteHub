@@ -59,7 +59,7 @@ export function SiteHeader({ site }: { site: PublicSite }) {
           </nav>
 
           <div className={styles.actions}>
-            <QuoteTrigger className={styles.quote}>
+            <QuoteTrigger className={styles.quote} onOpen={() => setOpen(false)}>
               Solicitar orçamento
             </QuoteTrigger>
 
@@ -100,12 +100,7 @@ export function SiteHeader({ site }: { site: PublicSite }) {
               ))}
             </div>
             <div className={styles.drawerCta}>
-              <QuoteTrigger
-                className={styles.quoteMobile}
-                onOpen={() => setOpen(false)}
-              >
-                Solicitar orçamento
-              </QuoteTrigger>
+              
             </div>
           </nav>
         </div>
