@@ -42,9 +42,6 @@ export function SiteShell({
       }}
     >
       <div style={siteTheme}>
-        <a className={styles.skip} href="#conteudo">
-          Pular para o conteúdo principal
-        </a>
         <SiteHeader site={site} />
         <div id="conteudo">{children}</div>
         <SiteFooter site={site} />

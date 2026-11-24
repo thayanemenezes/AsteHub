@@ -10,6 +10,7 @@ import type { PublicSite } from "../public-site-api";
 
 const links = [
   { href: "/veiculos", label: "Assinatura" },
+  { href: "/#sobre", label: "Sobre" },
   { href: "/", label: "Unidades" },
   { href: "/#faq", label: "Dúvidas" },
 ];

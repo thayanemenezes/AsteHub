@@ -106,7 +106,7 @@
   /* =========================================================================
      GRADIENTS
      ========================================================================= */
-  --gradient-auth-aside:   linear-gradient(135deg, #2e1d1a 0%, #463525 55%, #b3a876 100%);
+  --gradient-auth-aside:   linear-gradient(135deg, #293a9b 0%, #a77738 55%, #cf6426 100%);
   --gradient-welcome:      radial-gradient(ellipse at 90% 20%, rgba(179, 145, 118, 0.18), transparent 45%), linear-gradient(45deg, #fff0d9 0%, #fce6e6 85%);
   --gradient-banner-shade: linear-gradient(100deg, rgba(46, 31, 26, 0.94) 0%, rgba(46, 32, 26, 0.7) 50%, rgba(46, 33, 26, 0.15) 100%);
   --gradient-page-glow:    radial-gradient(circle at top right, rgba(179, 145, 118, 0.14), transparent 38%), radial-gradient(circle at bottom left, rgba(210, 159, 111, 0.08), transparent 32%);

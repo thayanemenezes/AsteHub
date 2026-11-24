@@ -51,7 +51,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: min(680px, 95%);
+  max-width: 900px;
+  /* width: min(790px, 100%); */
   padding: 32px 48px;
   color: var(--white);
   z-index: 2;
@@ -75,10 +76,11 @@
   line-height: 1.05;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  white-space: pre-line;
 }
 
 .text {
-  max-width: 48ch;
+  /* max-width: 48ch; */
   color: var(--on-navy);
   font-size: clamp(14px, 1.4vw, 16px);
   line-height: 1.5;
