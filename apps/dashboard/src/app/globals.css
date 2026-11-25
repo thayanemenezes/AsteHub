@@ -258,7 +258,7 @@ h2 {
 
 .auth-aside > p:not(.eyebrow) {
   position: relative;
-  max-width: 300px;
+  max-width: 350px;
   margin-top: 18px;
   color: var(--color-dark-muted);
   font-size: 14px;

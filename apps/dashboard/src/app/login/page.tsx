@@ -100,9 +100,9 @@ export default function LoginPage() {
         <div className="aside-orbit orbit-one" />
         <div className="aside-orbit orbit-two" />
         <h2>
-          Sua plataforma de gestão de frotas.
+          Uma plataforma. Toda a sua operação conectada.
         </h2>
-        <p>Um produto Asterismo. </p>
+        <p>Gstão comercial e presença digital em um só lugar.</p>
       </aside>
     </main>
   );
